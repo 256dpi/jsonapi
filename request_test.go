@@ -157,3 +157,23 @@ func TestParseRequestFilters(t *testing.T) {
 		},
 	}, req)
 }
+
+func BenchmarkParseRequest(b *testing.B) {
+	r := constructRequest("/foo/1")
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		ParseRequest(r)
+	}
+}
+
+func BenchmarkParseRequestFilterAndSort(b *testing.B) {
+	r := constructRequest("/foo/1?sort=bar&filter[baz]=qux")
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		ParseRequest(r)
+	}
+}
