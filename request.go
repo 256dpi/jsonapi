@@ -37,15 +37,19 @@ type Request struct {
 	Filters map[string][]string
 }
 
-// TODO: Where to pass the URL prefix?
-func ParseRequest(r *http.Request) (*Request, error) {
+// ParseRequest will parse the passed request and return a neq Request with the
+// parsed data. It will return an error if the content type or url is invalid.
+func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 	// check content type
 	if r.Header.Get("Content-Type") != ContentType {
 		return nil, ErrInvalidContentType
 	}
 
-	// trim and split path
-	segments := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	// de-prefix and trim path
+	url := strings.Trim(strings.TrimPrefix(r.URL.Path, prefix), "/")
+
+	// split path
+	segments := strings.Split(url, "/")
 	if len(segments) == 0 || len(segments) > 4 {
 		return nil, ErrInvalidURL
 	}

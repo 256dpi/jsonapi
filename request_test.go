@@ -11,7 +11,7 @@ func TestParseRequestInvalidContentType(t *testing.T) {
 	r := constructRequest("")
 	r.Header.Set("Content-Type", "foo")
 
-	req, err := ParseRequest(r)
+	req, err := ParseRequest(r, "")
 	assert.Equal(t, ErrInvalidContentType, err)
 	assert.Nil(t, req)
 }
@@ -29,16 +29,26 @@ func TestParseRequestInvalidURL(t *testing.T) {
 	}
 
 	for _, r := range list {
-		req, err := ParseRequest(r)
+		req, err := ParseRequest(r, "")
 		assert.Equal(t, ErrInvalidURL, err)
 		assert.Nil(t, req)
 	}
 }
 
-func TestParseRequestResource(t *testing.T) {
-	r := constructRequest("/foo")
+func TestParseRequestPrefix(t *testing.T) {
+	r := constructRequest("foo/bar")
 
-	req, err := ParseRequest(r)
+	req, err := ParseRequest(r, "foo/")
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Resource: "bar",
+	}, req)
+}
+
+func TestParseRequestResource(t *testing.T) {
+	r := constructRequest("foo")
+
+	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource: "foo",
@@ -46,9 +56,9 @@ func TestParseRequestResource(t *testing.T) {
 }
 
 func TestParseRequestResourceID(t *testing.T) {
-	r := constructRequest("/foo/1")
+	r := constructRequest("foo/1")
 
-	req, err := ParseRequest(r)
+	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource:   "foo",
@@ -57,9 +67,9 @@ func TestParseRequestResourceID(t *testing.T) {
 }
 
 func TestParseRequestRelatedResource(t *testing.T) {
-	r := constructRequest("/foo/1/bar")
+	r := constructRequest("foo/1/bar")
 
-	req, err := ParseRequest(r)
+	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource:        "foo",
@@ -69,9 +79,9 @@ func TestParseRequestRelatedResource(t *testing.T) {
 }
 
 func TestParseRequestRelationship(t *testing.T) {
-	r := constructRequest("/foo/1/relationships/bar")
+	r := constructRequest("foo/1/relationships/bar")
 
-	req, err := ParseRequest(r)
+	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource:     "foo",
@@ -81,18 +91,18 @@ func TestParseRequestRelationship(t *testing.T) {
 }
 
 func TestParseRequestInclude(t *testing.T) {
-	r1 := constructRequest("/foo?include=bar,baz")
+	r1 := constructRequest("foo?include=bar,baz")
 
-	req, err := ParseRequest(r1)
+	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource: "foo",
 		Include:  []string{"bar", "baz"},
 	}, req)
 
-	r2 := constructRequest("/foo?include=bar&include=baz,qux")
+	r2 := constructRequest("foo?include=bar&include=baz,qux")
 
-	req, err = ParseRequest(r2)
+	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource: "foo",
@@ -101,18 +111,18 @@ func TestParseRequestInclude(t *testing.T) {
 }
 
 func TestParseRequestSorting(t *testing.T) {
-	r1 := constructRequest("/foo?sort=bar,baz")
+	r1 := constructRequest("foo?sort=bar,baz")
 
-	req, err := ParseRequest(r1)
+	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource: "foo",
 		Sorting:  []string{"bar", "baz"},
 	}, req)
 
-	r2 := constructRequest("/foo?sort=bar&sort=baz,qux")
+	r2 := constructRequest("foo?sort=bar&sort=baz,qux")
 
-	req, err = ParseRequest(r2)
+	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource: "foo",
@@ -121,9 +131,9 @@ func TestParseRequestSorting(t *testing.T) {
 }
 
 func TestParseRequestPage(t *testing.T) {
-	r1 := constructRequest("/foo?page[number]=1&page[size]=2")
+	r1 := constructRequest("foo?page[number]=1&page[size]=2")
 
-	req, err := ParseRequest(r1)
+	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource:   "foo",
@@ -133,9 +143,9 @@ func TestParseRequestPage(t *testing.T) {
 }
 
 func TestParseRequestFields(t *testing.T) {
-	r1 := constructRequest("/foo?fields[foo]=bar,baz")
+	r1 := constructRequest("foo?fields[foo]=bar,baz")
 
-	req, err := ParseRequest(r1)
+	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource: "foo",
@@ -146,9 +156,9 @@ func TestParseRequestFields(t *testing.T) {
 }
 
 func TestParseRequestFilters(t *testing.T) {
-	r1 := constructRequest("/foo?filter[foo]=bar,baz")
+	r1 := constructRequest("foo?filter[foo]=bar,baz")
 
-	req, err := ParseRequest(r1)
+	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Resource: "foo",
@@ -159,21 +169,21 @@ func TestParseRequestFilters(t *testing.T) {
 }
 
 func BenchmarkParseRequest(b *testing.B) {
-	r := constructRequest("/foo/1")
+	r := constructRequest("foo/1")
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		ParseRequest(r)
+		ParseRequest(r, "")
 	}
 }
 
 func BenchmarkParseRequestFilterAndSort(b *testing.B) {
-	r := constructRequest("/foo/1?sort=bar&filter[baz]=qux")
+	r := constructRequest("foo/1?sort=bar&filter[baz]=qux")
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		ParseRequest(r)
+		ParseRequest(r, "")
 	}
 }
