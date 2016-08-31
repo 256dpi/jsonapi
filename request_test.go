@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,11 +13,11 @@ func TestParseRequestInvalidContentType(t *testing.T) {
 	r.Header.Set("Content-Type", "foo")
 
 	req, err := ParseRequest(r, "")
-	assert.Equal(t, ErrInvalidContentType, err)
+	assert.Equal(t, ErrInvalidRequest, errors.Cause(err))
 	assert.Nil(t, req)
 }
 
-func TestParseRequestInvalidURL(t *testing.T) {
+func TestParseRequestInvalidRequest(t *testing.T) {
 	list := []*http.Request{
 		constructRequest(""),
 		constructRequest("/"),
@@ -24,13 +25,15 @@ func TestParseRequestInvalidURL(t *testing.T) {
 		constructRequest("foo/bar/baz/qux/quux"),
 		constructRequest("foo?page[number]=bar"),
 		constructRequest("foo?page[size]=bar"),
+		constructRequest("foo?page[number]=1"),
+		constructRequest("foo?page[size]=1"),
 		constructRequest("foo?page[number]=bar&page[number]=baz"),
 		constructRequest("foo?page[size]=bar&page[size]=baz"),
 	}
 
 	for _, r := range list {
 		req, err := ParseRequest(r, "")
-		assert.Equal(t, ErrInvalidURL, err)
+		assert.Equal(t, ErrInvalidRequest, errors.Cause(err))
 		assert.Nil(t, req)
 	}
 }

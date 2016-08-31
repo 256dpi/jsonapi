@@ -1,17 +1,16 @@
 package jsonapi
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 const ContentType = "application/vnd.api+json"
 
-var ErrInvalidContentType = errors.New("invalid content type")
-
-var ErrInvalidURL = errors.New("invalid url")
+var ErrInvalidRequest = errors.New("invalid request")
 
 type Request struct {
 	// Location
@@ -42,7 +41,7 @@ type Request struct {
 func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 	// check content type
 	if r.Header.Get("Content-Type") != ContentType {
-		return nil, ErrInvalidContentType
+		return nil, errors.Wrap(ErrInvalidRequest, "invalid content type")
 	}
 
 	// de-prefix and trim path
@@ -51,13 +50,13 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 	// split path
 	segments := strings.Split(url, "/")
 	if len(segments) == 0 || len(segments) > 4 {
-		return nil, ErrInvalidURL
+		return nil, errors.Wrap(ErrInvalidRequest, "invalid url segment count")
 	}
 
 	// check for invalid segments
 	for _, s := range segments {
 		if s == "" {
-			return nil, ErrInvalidURL
+			return nil, errors.Wrap(ErrInvalidRequest, "found empty segments")
 		}
 	}
 
@@ -84,11 +83,11 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 
 	// final check
 	if len(segments) > 2 && (req.RelatedResource == "" && req.Relationship == "") {
-		return nil, ErrInvalidURL
+		return nil, errors.Wrap(ErrInvalidRequest, "invalid relationships")
 	}
 
-	// set included resources
 	for key, values := range r.URL.Query() {
+		// set included resources
 		if key == "include" {
 			for _, v := range values {
 				req.Include = append(req.Include, strings.Split(v, ",")...)
@@ -97,6 +96,7 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 			continue
 		}
 
+		// set sorting
 		if key == "sort" {
 			for _, v := range values {
 				req.Sorting = append(req.Sorting, strings.Split(v, ",")...)
@@ -105,34 +105,37 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 			continue
 		}
 
+		// set page number
 		if key == "page[number]" {
 			if len(values) != 1 {
-				return nil, ErrInvalidURL
+				return nil, errors.Wrap(ErrInvalidRequest, "more than one value")
 			}
 
 			n, err := strconv.Atoi(values[0])
 			if err != nil {
-				return nil, ErrInvalidURL
+				return nil, errors.Wrap(ErrInvalidRequest, "not a number")
 			}
 
 			req.PageNumber = n
 			continue
 		}
 
+		// set page size
 		if key == "page[size]" {
 			if len(values) != 1 {
-				return nil, ErrInvalidURL
+				return nil, errors.Wrap(ErrInvalidRequest, "more than one value")
 			}
 
 			n, err := strconv.Atoi(values[0])
 			if err != nil {
-				return nil, ErrInvalidURL
+				return nil, errors.Wrap(ErrInvalidRequest, "not a number")
 			}
 
 			req.PageSize = n
 			continue
 		}
 
+		// set sparse fields
 		if strings.HasPrefix(key, "fields[") && strings.HasSuffix(key, "]") {
 			if req.Fields == nil {
 				req.Fields = make(map[string][]string)
@@ -145,6 +148,7 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 			}
 		}
 
+		// set filters
 		if strings.HasPrefix(key, "filter[") && strings.HasSuffix(key, "]") {
 			if req.Filters == nil {
 				req.Filters = make(map[string][]string)
@@ -158,7 +162,11 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 		}
 	}
 
-	// Parse Query Parameters
+	// check page number and page size
+	if (req.PageNumber > 0 && req.PageSize == 0) || (req.PageNumber == 0 && req.PageSize > 0) {
+		return nil, errors.Wrap(ErrInvalidRequest, "pagination requires both parameters")
+	}
+
 	// Parse Body
 
 	return req, nil
