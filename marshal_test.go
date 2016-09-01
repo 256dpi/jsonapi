@@ -9,7 +9,6 @@ import (
 
 func TestMarshalMinimumSinglePayload(t *testing.T) {
 	writer := bytes.NewBuffer(nil)
-
 	err := MarshalPayload(writer, &Payload{
 		Data: &HybridResource{
 			One: &Resource{
@@ -18,7 +17,6 @@ func TestMarshalMinimumSinglePayload(t *testing.T) {
 		},
 	})
 	assert.NoError(t, err)
-
 	assert.JSONEq(t, `{
   		"data": {
     		"type": "foo"
@@ -28,7 +26,6 @@ func TestMarshalMinimumSinglePayload(t *testing.T) {
 
 func TestMarshalSinglePayload(t *testing.T) {
 	writer := bytes.NewBuffer(nil)
-
 	err := MarshalPayload(writer, &Payload{
 		Data: &HybridResource{
 			One: &Resource{
@@ -38,7 +35,6 @@ func TestMarshalSinglePayload(t *testing.T) {
 		},
 	})
 	assert.NoError(t, err)
-
 	assert.JSONEq(t, `{
   		"data": {
     		"type": "foo",

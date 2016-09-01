@@ -1,6 +1,10 @@
 package jsonapi
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+)
 
 // See: http://jsonapi.org/format/#errors.
 type ErrorPayload struct {
@@ -26,10 +30,6 @@ type ErrorSource struct {
 	Pointer string `json:"pointer,omitempty"`
 }
 
-// TODO: Make Title and Detail mandatory?
-// TODO: Use opaque int type for status?
-// TODO: Use error type for detail or title?
-
 // See: http://jsonapi.org/format/#errors.
 type Error struct {
 	// A unique identifier for this particular occurrence of the problem.
@@ -39,7 +39,7 @@ type Error struct {
 	Links *ErrorLinks `json:"links,omitempty"`
 
 	// The HTTP status code applicable to this problem.
-	Status string `json:"status,omitempty"`
+	Status int `json:"status,string,omitempty"`
 
 	// An application-specific error code.
 	Code string `json:"code,omitempty"`
@@ -60,4 +60,23 @@ type Error struct {
 // Error returns a string representation of the error for logging purposes.
 func (e *Error) Error() string {
 	return fmt.Sprintf("%s: %s", e.Title, e.Detail)
+}
+
+func MarshalError(writer io.Writer, err *Error) error {
+	_err := json.NewEncoder(writer).Encode(err)
+	if _err != nil {
+		return _err
+	}
+
+	return nil
+}
+
+func UnmarshalError(reader io.Reader) (*Error, error) {
+	var err Error
+	_err := json.NewDecoder(reader).Decode(&err)
+	if _err != nil {
+		return nil, _err
+	}
+
+	return &err, nil
 }
