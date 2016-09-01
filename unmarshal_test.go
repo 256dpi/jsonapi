@@ -1,6 +1,7 @@
 package jsonapi
 
 import (
+	"bytes"
 	"io"
 	"testing"
 
@@ -67,4 +68,33 @@ func TestSinglePayload(t *testing.T) {
 			},
 		},
 	}, payload)
+}
+
+func BenchmarkUnmarshal(b *testing.B) {
+	payload := []byte(`{
+		"links": {
+			"self": "http://0.0.0.0:1234/api/foo/1"
+		},
+		"data": {
+			"type": "foo",
+			"id": "1",
+			"attributes": {
+				"foo": "bar",
+				"bar": "baz"
+			}
+		}
+	}`)
+
+	reader := bytes.NewReader(payload)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, err := UnmarshalPayload(reader)
+		if err != nil {
+			panic(err)
+		}
+
+		reader.Seek(0, io.SeekStart)
+	}
 }

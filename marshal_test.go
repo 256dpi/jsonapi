@@ -46,3 +46,34 @@ func TestMarshalSinglePayload(t *testing.T) {
 		}
 	}`, writer.String())
 }
+
+func BenchmarkMarshal(b *testing.B) {
+	payload := &Payload{
+		Links: &PayloadLinks{
+			Self: "http://0.0.0.0:1234/api/foo/1",
+		},
+		Data: &HybridResource{
+			One: &Resource{
+				Type: "foo",
+				ID:   "1",
+				Attributes: Map{
+					"foo": "bar",
+					"bar": "baz",
+				},
+			},
+		},
+	}
+
+	writer := bytes.NewBuffer(nil)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		err := MarshalPayload(writer, payload)
+		if err != nil {
+			panic(err)
+		}
+
+		writer.Reset()
+	}
+}
