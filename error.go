@@ -6,7 +6,8 @@ import (
 	"net/http"
 )
 
-// Error is a single error contained in the payloads error list.
+// Error objects provide additional information about problems encountered while
+// performing an operation.
 //
 // See: http://jsonapi.org/format/#errors.
 type Error struct {
@@ -35,15 +36,17 @@ type Error struct {
 	Meta Map `json:"meta,omitempty"`
 }
 
-// ErrorLinks is contained in an error.
+// ErrorLinks contains continuing links to other resources.
 //
 // See: http://jsonapi.org/format/#errors.
 type ErrorLinks struct {
-	// A link that leads to further details about this particular occurrence of the problem.
+	// A link that leads to further details about this particular occurrence of
+	// the problem.
 	About string `json:"about"`
 }
 
-// ErrorSource is contained in an error.
+// ErrorSource contains a parameter or pointer reference to the source of the
+// error.
 //
 // See: http://jsonapi.org/format/#errors.
 type ErrorSource struct {
@@ -81,7 +84,7 @@ func WriteErrorFromStatus(w http.ResponseWriter, status int) {
 	w.WriteHeader(status)
 
 	// write error object
-	json.NewEncoder(w).Encode(&Payload{
+	json.NewEncoder(w).Encode(&Document{
 		Errors: []*Error{
 			{
 				Status: status,
@@ -115,7 +118,7 @@ func WriteError(w http.ResponseWriter, err error) {
 	w.WriteHeader(anError.Status)
 
 	// write error object
-	json.NewEncoder(w).Encode(&Payload{
+	json.NewEncoder(w).Encode(&Document{
 		Errors: []*Error{anError},
 	})
 }

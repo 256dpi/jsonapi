@@ -8,10 +8,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ContentType is the official JSON API content type that should be used by
+// all requests and responses.
 const ContentType = "application/vnd.api+json"
 
+// ErrInvalidRequest is returned when the request is invalid.
 var ErrInvalidRequest = errors.New("invalid request")
 
+// A Request contains all JSON API related information parsed from a low level
+// request.
 type Request struct {
 	// Location
 	Resource        string

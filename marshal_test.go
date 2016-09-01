@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMarshalMinimumSinglePayload(t *testing.T) {
+func TestMarshalMinimumSingleDocument(t *testing.T) {
 	writer := bytes.NewBuffer(nil)
-	err := MarshalPayload(writer, &Payload{
+	err := MarshalDocument(writer, &Document{
 		Data: &HybridResource{
 			One: &Resource{
 				Type: "foo",
@@ -24,9 +24,9 @@ func TestMarshalMinimumSinglePayload(t *testing.T) {
 	}`, writer.String())
 }
 
-func TestMarshalSinglePayload(t *testing.T) {
+func TestMarshalSingleDocument(t *testing.T) {
 	writer := bytes.NewBuffer(nil)
-	err := MarshalPayload(writer, &Payload{
+	err := MarshalDocument(writer, &Document{
 		Data: &HybridResource{
 			One: &Resource{
 				Type: "foo",
@@ -44,8 +44,8 @@ func TestMarshalSinglePayload(t *testing.T) {
 }
 
 func BenchmarkMarshal(b *testing.B) {
-	payload := &Payload{
-		Links: &PayloadLinks{
+	doc := &Document{
+		Links: &DocumentLinks{
 			Self: "http://0.0.0.0:1234/api/foo/1",
 		},
 		Data: &HybridResource{
@@ -65,7 +65,7 @@ func BenchmarkMarshal(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		err := MarshalPayload(writer, payload)
+		err := MarshalDocument(writer, doc)
 		if err != nil {
 			panic(err)
 		}

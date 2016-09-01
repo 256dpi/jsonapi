@@ -10,36 +10,39 @@ import (
 var objectSuffix = []byte("{")
 var arraySuffix = []byte("[")
 
-func (c *HybridResource) UnmarshalJSON(payload []byte) error {
-	if bytes.HasPrefix(payload, objectSuffix) {
-		return json.Unmarshal(payload, &c.One)
+// UnmarshalJSON detects if the passed JSON is a single object or a list.
+func (c *HybridResource) UnmarshalJSON(doc []byte) error {
+	if bytes.HasPrefix(doc, objectSuffix) {
+		return json.Unmarshal(doc, &c.One)
 	}
 
-	if bytes.HasPrefix(payload, arraySuffix) {
-		return json.Unmarshal(payload, &c.Many)
-	}
-
-	return errors.New("invalid")
-}
-
-func (c *HybridPayload) UnmarshalJSON(payload []byte) error {
-	if bytes.HasPrefix(payload, objectSuffix) {
-		return json.Unmarshal(payload, &c.One)
-	}
-
-	if bytes.HasPrefix(payload, arraySuffix) {
-		return json.Unmarshal(payload, &c.Many)
+	if bytes.HasPrefix(doc, arraySuffix) {
+		return json.Unmarshal(doc, &c.Many)
 	}
 
 	return errors.New("invalid")
 }
 
-func UnmarshalPayload(reader io.Reader) (*Payload, error) {
-	var payload Payload
-	err := json.NewDecoder(reader).Decode(&payload)
+// UnmarshalJSON detects if the passed JSON is a single object or a list.
+func (c *HybridDocument) UnmarshalJSON(doc []byte) error {
+	if bytes.HasPrefix(doc, objectSuffix) {
+		return json.Unmarshal(doc, &c.One)
+	}
+
+	if bytes.HasPrefix(doc, arraySuffix) {
+		return json.Unmarshal(doc, &c.Many)
+	}
+
+	return errors.New("invalid")
+}
+
+// UnmarshalDocument reads data from a reader and tries to decode a new document.
+func UnmarshalDocument(r io.Reader) (*Document, error) {
+	var doc Document
+	err := json.NewDecoder(r).Decode(&doc)
 	if err != nil {
 		return nil, err
 	}
 
-	return &payload, nil
+	return &doc, nil
 }

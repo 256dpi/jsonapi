@@ -5,6 +5,7 @@ import (
 	"io"
 )
 
+// MarshalJSON will either encode a list or a single object.
 func (c *HybridResource) MarshalJSON() ([]byte, error) {
 	if c.Many != nil {
 		return json.Marshal(c.Many)
@@ -13,7 +14,8 @@ func (c *HybridResource) MarshalJSON() ([]byte, error) {
 	return json.Marshal(c.One)
 }
 
-func (c *HybridPayload) MarshalJSON() ([]byte, error) {
+// MarshalJSON will either encode a list or a single object.
+func (c *HybridDocument) MarshalJSON() ([]byte, error) {
 	if c.Many != nil {
 		return json.Marshal(c.Many)
 	}
@@ -21,8 +23,9 @@ func (c *HybridPayload) MarshalJSON() ([]byte, error) {
 	return json.Marshal(c.One)
 }
 
-func MarshalPayload(writer io.Writer, payload *Payload) error {
-	err := json.NewEncoder(writer).Encode(payload)
+// MarshalDocument will encode the document to the writer.
+func MarshalDocument(w io.Writer, doc *Document) error {
+	err := json.NewEncoder(w).Encode(doc)
 	if err != nil {
 		return err
 	}

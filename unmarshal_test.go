@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInvalidPayload(t *testing.T) {
+func TestInvalidDocument(t *testing.T) {
 	readers := []io.Reader{
 		stringReader(``),
 		stringReader(`1`),
@@ -18,38 +18,38 @@ func TestInvalidPayload(t *testing.T) {
 	}
 
 	for _, r := range readers {
-		payload, err := UnmarshalPayload(r)
+		doc, err := UnmarshalDocument(r)
 		assert.Error(t, err)
-		assert.Nil(t, payload)
+		assert.Nil(t, doc)
 	}
 }
 
-func TestEmptyPayload(t *testing.T) {
+func TestEmptyDocument(t *testing.T) {
 	// TODO: Should return error?
 
-	payload, err := UnmarshalPayload(stringReader(`{}`))
+	doc, err := UnmarshalDocument(stringReader(`{}`))
 	assert.NoError(t, err)
-	assert.Equal(t, &Payload{}, payload)
+	assert.Equal(t, &Document{}, doc)
 }
 
-func TestMinimumSinglePayload(t *testing.T) {
-	payload, err := UnmarshalPayload(stringReader(`{
+func TestMinimumSingleDocument(t *testing.T) {
+	doc, err := UnmarshalDocument(stringReader(`{
   		"data": {
     		"type": "foo"
 		}
 	}`))
 	assert.NoError(t, err)
-	assert.Equal(t, &Payload{
+	assert.Equal(t, &Document{
 		Data: &HybridResource{
 			One: &Resource{
 				Type: "foo",
 			},
 		},
-	}, payload)
+	}, doc)
 }
 
-func TestSinglePayload(t *testing.T) {
-	payload, err := UnmarshalPayload(stringReader(`{
+func TestSingleDocument(t *testing.T) {
+	doc, err := UnmarshalDocument(stringReader(`{
   		"data": {
     		"type": "foo",
     		"id": "1",
@@ -58,20 +58,20 @@ func TestSinglePayload(t *testing.T) {
 		}
 	}`))
 	assert.NoError(t, err)
-	assert.Equal(t, &Payload{
+	assert.Equal(t, &Document{
 		Data: &HybridResource{
 			One: &Resource{
 				Type:          "foo",
 				ID:            "1",
 				Attributes:    make(Map),
-				Relationships: make(map[string]HybridPayload),
+				Relationships: make(map[string]HybridDocument),
 			},
 		},
-	}, payload)
+	}, doc)
 }
 
 func BenchmarkUnmarshal(b *testing.B) {
-	payload := []byte(`{
+	doc := []byte(`{
 		"links": {
 			"self": "http://0.0.0.0:1234/api/foo/1"
 		},
@@ -85,12 +85,12 @@ func BenchmarkUnmarshal(b *testing.B) {
 		}
 	}`)
 
-	reader := bytes.NewReader(payload)
+	reader := bytes.NewReader(doc)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, err := UnmarshalPayload(reader)
+		_, err := UnmarshalDocument(reader)
 		if err != nil {
 			panic(err)
 		}
