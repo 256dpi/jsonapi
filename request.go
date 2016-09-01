@@ -4,12 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
-
-// ErrInvalidRequest is returned when the request is invalid.
-var ErrInvalidRequest = errors.New("invalid request")
 
 // A Request contains all JSON API related information parsed from a low level
 // request.
@@ -39,10 +34,12 @@ type Request struct {
 
 // ParseRequest will parse the passed request and return a new Request with the
 // parsed data. It will return an error if the content type or url is invalid.
+//
+// Note: The returned error can directly be written using WriteError.
 func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// check content type
 	if req.Header.Get("Content-Type") != ContentType {
-		return nil, errors.Wrap(ErrInvalidRequest, "invalid content type")
+		return nil, badRequest("Invalid content type")
 	}
 
 	// de-prefix and trim path
@@ -51,13 +48,13 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// split path
 	segments := strings.Split(url, "/")
 	if len(segments) == 0 || len(segments) > 4 {
-		return nil, errors.Wrap(ErrInvalidRequest, "invalid url segment count")
+		return nil, badRequest("Invalid URL segment count")
 	}
 
 	// check for invalid segments
 	for _, s := range segments {
 		if s == "" {
-			return nil, errors.Wrap(ErrInvalidRequest, "found empty segments")
+			return nil, badRequest("Found empty URL segments")
 		}
 	}
 
@@ -84,7 +81,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 
 	// final check
 	if len(segments) > 2 && (r.RelatedResource == "" && r.Relationship == "") {
-		return nil, errors.Wrap(ErrInvalidRequest, "invalid relationships")
+		return nil, badRequest("Invalid URL relationship format")
 	}
 
 	for key, values := range req.URL.Query() {
@@ -109,12 +106,12 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		// set page number
 		if key == "page[number]" {
 			if len(values) != 1 {
-				return nil, errors.Wrap(ErrInvalidRequest, "more than one value")
+				return nil, badRequestParam("More than one value", "page[number]")
 			}
 
 			n, err := strconv.Atoi(values[0])
 			if err != nil {
-				return nil, errors.Wrap(ErrInvalidRequest, "not a number")
+				return nil, badRequestParam("Not a number", "page[number]")
 			}
 
 			r.PageNumber = n
@@ -124,12 +121,12 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		// set page size
 		if key == "page[size]" {
 			if len(values) != 1 {
-				return nil, errors.Wrap(ErrInvalidRequest, "more than one value")
+				return nil, badRequestParam("More than one value", "page[size]")
 			}
 
 			n, err := strconv.Atoi(values[0])
 			if err != nil {
-				return nil, errors.Wrap(ErrInvalidRequest, "not a number")
+				return nil, badRequestParam("Not a number", "page[size]")
 			}
 
 			r.PageSize = n
@@ -163,9 +160,14 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		}
 	}
 
-	// check page number and page size
-	if (r.PageNumber > 0 && r.PageSize == 0) || (r.PageNumber == 0 && r.PageSize > 0) {
-		return nil, errors.Wrap(ErrInvalidRequest, "pagination requires both parameters")
+	// check page size
+	if r.PageNumber > 0 && r.PageSize <= 0 {
+		return nil, badRequestParam("Missing page size", "page[number]")
+	}
+
+	// check page number
+	if r.PageSize > 0 && r.PageNumber <= 0 {
+		return nil, badRequestParam("Missing page number", "page[size]")
 	}
 
 	// TODO: Parse Body.
