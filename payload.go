@@ -22,7 +22,7 @@ type PayloadLinks struct {
 type Payload struct {
 	// The payload's primary data in the form of a single resource or a list
 	// of resources.
-	Data *HybridResource `json:"data"`
+	Data *HybridResource `json:"data,omitempty"`
 
 	// A list of resources that are related to the primary data and/or other
 	// included resources.
@@ -30,6 +30,9 @@ type Payload struct {
 
 	// A set of links related to the primary data.
 	Links *PayloadLinks `json:"links,omitempty"`
+
+	// A list of errors that occurred during the request.
+	Errors []*Error `json:"errors,omitempty"`
 
 	// Non-standard meta-information about the payload.
 	Meta Map `json:"meta,omitempty"`

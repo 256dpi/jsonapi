@@ -3,33 +3,11 @@ package jsonapi
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	"net/http"
 )
 
-// See: http://jsonapi.org/format/#errors.
-type ErrorPayload struct {
-	// A list of errors that occurred during the request.
-	List []*Error `json:"errors"`
-
-	// Non-standard meta-information about the payload.
-	Meta Map `json:"meta,omitempty"`
-}
-
-// See: http://jsonapi.org/format/#errors.
-type ErrorLinks struct {
-	// A link that leads to further details about this particular occurrence of the problem.
-	About string `json:"about"`
-}
-
-// See: http://jsonapi.org/format/#errors.
-type ErrorSource struct {
-	// A string indicating which URI query parameter caused the error.
-	Parameter string `json:"parameter,omitempty"`
-
-	// A JSON Pointer to the associated entity in the request document.
-	Pointer string `json:"pointer,omitempty"`
-}
-
+// Error is a single error contained in the payloads error list.
+//
 // See: http://jsonapi.org/format/#errors.
 type Error struct {
 	// A unique identifier for this particular occurrence of the problem.
@@ -57,26 +35,89 @@ type Error struct {
 	Meta Map `json:"meta,omitempty"`
 }
 
+// ErrorLinks is contained in an error.
+//
+// See: http://jsonapi.org/format/#errors.
+type ErrorLinks struct {
+	// A link that leads to further details about this particular occurrence of the problem.
+	About string `json:"about"`
+}
+
+// ErrorSource is contained in an error.
+//
+// See: http://jsonapi.org/format/#errors.
+type ErrorSource struct {
+	// A string indicating which URI query parameter caused the error.
+	Parameter string `json:"parameter,omitempty"`
+
+	// A JSON Pointer to the associated entity in the request document.
+	Pointer string `json:"pointer,omitempty"`
+}
+
 // Error returns a string representation of the error for logging purposes.
 func (e *Error) Error() string {
 	return fmt.Sprintf("%s: %s", e.Title, e.Detail)
 }
 
-func MarshalError(writer io.Writer, err *Error) error {
-	_err := json.NewEncoder(writer).Encode(err)
-	if _err != nil {
-		return _err
+// WriteErrorFromStatus will write an error to the response writer that has
+// been derived from the passed status code.
+//
+// Note: If the passed status code is not a valid HTTP status code, a 500 status
+// code will be used instead.
+func WriteErrorFromStatus(w http.ResponseWriter, status int) {
+	// set content type
+	w.Header().Set("Content-Type", ContentType)
+
+	// get text
+	str := http.StatusText(status)
+
+	// check text
+	if str == "" {
+		status = http.StatusInternalServerError
+		str = http.StatusText(http.StatusInternalServerError)
 	}
 
-	return nil
+	// write status
+	w.WriteHeader(status)
+
+	// write error object
+	json.NewEncoder(w).Encode(&Payload{
+		Errors: []*Error{
+			{
+				Status: status,
+				Title:  str,
+			},
+		},
+	})
 }
 
-func UnmarshalError(reader io.Reader) (*Error, error) {
-	var err Error
-	_err := json.NewDecoder(reader).Decode(&err)
-	if _err != nil {
-		return nil, _err
+// WriteError will write the passed error to the response writer.
+//
+// Note: If the supplied error is not an Error it will call WriteErrorFromStatus
+// with StatusInternalServerError. Does the passed Error have an invalid or zero
+// Status it will be corrected to 500 - Internal Server Error.
+func WriteError(w http.ResponseWriter, err error) {
+	anError, ok := err.(*Error)
+	if !ok {
+		WriteErrorFromStatus(w, http.StatusInternalServerError)
+		return
 	}
 
-	return &err, nil
+	// set content type
+	w.Header().Set("Content-Type", ContentType)
+
+	// set status
+	if str := http.StatusText(anError.Status); str == "" {
+		anError.Status = http.StatusInternalServerError
+	}
+
+	// write status
+	w.WriteHeader(anError.Status)
+
+	// write error object
+	json.NewEncoder(w).Encode(&Payload{
+		Errors: []*Error{anError},
+	})
 }
+
+// TODO: Write a list of errors?

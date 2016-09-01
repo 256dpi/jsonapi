@@ -11,7 +11,8 @@ func Example() {
 	http.HandleFunc("/api/posts/1", func(w http.ResponseWriter, r *http.Request) {
 		req, err := ParseRequest(r, "/api/")
 		if err != nil {
-			panic(err)
+			WriteError(w, err)
+			return
 		}
 
 		fmt.Println(req.Resource)
