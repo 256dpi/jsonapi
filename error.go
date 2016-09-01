@@ -69,7 +69,7 @@ func (e *Error) Error() string {
 // code will be used instead.
 func WriteErrorFromStatus(w http.ResponseWriter, status int) {
 	// set content type
-	w.Header().Set("Content-Type", ContentType)
+	SetContentType(w)
 
 	// get text
 	str := http.StatusText(status)
@@ -107,7 +107,7 @@ func WriteError(w http.ResponseWriter, err error) {
 	}
 
 	// set content type
-	w.Header().Set("Content-Type", ContentType)
+	SetContentType(w)
 
 	// set status
 	if str := http.StatusText(anError.Status); str == "" {
