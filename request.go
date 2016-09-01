@@ -36,7 +36,7 @@ type Request struct {
 	Filters map[string][]string
 }
 
-// ParseRequest will parse the passed request and return a neq Request with the
+// ParseRequest will parse the passed request and return a new Request with the
 // parsed data. It will return an error if the content type or url is invalid.
 func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// check content type
@@ -167,7 +167,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		return nil, errors.Wrap(ErrInvalidRequest, "pagination requires both parameters")
 	}
 
-	// Parse Body
+	// TODO: Parse Body.
 
 	return r, nil
 }
