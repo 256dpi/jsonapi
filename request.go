@@ -38,14 +38,14 @@ type Request struct {
 
 // ParseRequest will parse the passed request and return a neq Request with the
 // parsed data. It will return an error if the content type or url is invalid.
-func ParseRequest(r *http.Request, prefix string) (*Request, error) {
+func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// check content type
-	if r.Header.Get("Content-Type") != ContentType {
+	if req.Header.Get("Content-Type") != ContentType {
 		return nil, errors.Wrap(ErrInvalidRequest, "invalid content type")
 	}
 
 	// de-prefix and trim path
-	url := strings.Trim(strings.TrimPrefix(r.URL.Path, prefix), "/")
+	url := strings.Trim(strings.TrimPrefix(req.URL.Path, prefix), "/")
 
 	// split path
 	segments := strings.Split(url, "/")
@@ -61,36 +61,36 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 	}
 
 	// allocate new request
-	req := &Request{}
+	r := &Request{}
 
 	// set resource
-	req.Resource = segments[0]
+	r.Resource = segments[0]
 
 	// set resource id
 	if len(segments) > 1 {
-		req.ResourceID = segments[1]
+		r.ResourceID = segments[1]
 	}
 
 	// set related resource
 	if len(segments) == 3 && segments[2] != "relationships" {
-		req.RelatedResource = segments[2]
+		r.RelatedResource = segments[2]
 	}
 
 	// set relationship
 	if len(segments) == 4 && segments[2] == "relationships" {
-		req.Relationship = segments[3]
+		r.Relationship = segments[3]
 	}
 
 	// final check
-	if len(segments) > 2 && (req.RelatedResource == "" && req.Relationship == "") {
+	if len(segments) > 2 && (r.RelatedResource == "" && r.Relationship == "") {
 		return nil, errors.Wrap(ErrInvalidRequest, "invalid relationships")
 	}
 
-	for key, values := range r.URL.Query() {
+	for key, values := range req.URL.Query() {
 		// set included resources
 		if key == "include" {
 			for _, v := range values {
-				req.Include = append(req.Include, strings.Split(v, ",")...)
+				r.Include = append(r.Include, strings.Split(v, ",")...)
 			}
 
 			continue
@@ -99,7 +99,7 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 		// set sorting
 		if key == "sort" {
 			for _, v := range values {
-				req.Sorting = append(req.Sorting, strings.Split(v, ",")...)
+				r.Sorting = append(r.Sorting, strings.Split(v, ",")...)
 			}
 
 			continue
@@ -116,7 +116,7 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 				return nil, errors.Wrap(ErrInvalidRequest, "not a number")
 			}
 
-			req.PageNumber = n
+			r.PageNumber = n
 			continue
 		}
 
@@ -131,43 +131,43 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 				return nil, errors.Wrap(ErrInvalidRequest, "not a number")
 			}
 
-			req.PageSize = n
+			r.PageSize = n
 			continue
 		}
 
 		// set sparse fields
 		if strings.HasPrefix(key, "fields[") && strings.HasSuffix(key, "]") {
-			if req.Fields == nil {
-				req.Fields = make(map[string][]string)
+			if r.Fields == nil {
+				r.Fields = make(map[string][]string)
 			}
 
 			typ := key[7 : len(key)-1]
 
 			for _, v := range values {
-				req.Fields[typ] = append(req.Fields[typ], strings.Split(v, ",")...)
+				r.Fields[typ] = append(r.Fields[typ], strings.Split(v, ",")...)
 			}
 		}
 
 		// set filters
 		if strings.HasPrefix(key, "filter[") && strings.HasSuffix(key, "]") {
-			if req.Filters == nil {
-				req.Filters = make(map[string][]string)
+			if r.Filters == nil {
+				r.Filters = make(map[string][]string)
 			}
 
 			typ := key[7 : len(key)-1]
 
 			for _, v := range values {
-				req.Filters[typ] = append(req.Filters[typ], strings.Split(v, ",")...)
+				r.Filters[typ] = append(r.Filters[typ], strings.Split(v, ",")...)
 			}
 		}
 	}
 
 	// check page number and page size
-	if (req.PageNumber > 0 && req.PageSize == 0) || (req.PageNumber == 0 && req.PageSize > 0) {
+	if (r.PageNumber > 0 && r.PageSize == 0) || (r.PageNumber == 0 && r.PageSize > 0) {
 		return nil, errors.Wrap(ErrInvalidRequest, "pagination requires both parameters")
 	}
 
 	// Parse Body
 
-	return req, nil
+	return r, nil
 }
