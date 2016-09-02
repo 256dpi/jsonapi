@@ -1,15 +1,16 @@
 package jsonapi
 
 import (
-	"bytes"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"net/http/httptest"
 )
 
 func TestMarshalMinimumSingleDocument(t *testing.T) {
-	writer := bytes.NewBuffer(nil)
-	err := MarshalDocument(writer, &Document{
+	writer := httptest.NewRecorder()
+	err := WriteResponse(writer, http.StatusOK, &Document{
 		Data: &HybridResource{
 			One: &Resource{
 				Type: "foo",
@@ -21,12 +22,12 @@ func TestMarshalMinimumSingleDocument(t *testing.T) {
   		"data": {
     		"type": "foo"
 		}
-	}`, writer.String())
+	}`, writer.Body.String())
 }
 
 func TestMarshalSingleDocument(t *testing.T) {
-	writer := bytes.NewBuffer(nil)
-	err := MarshalDocument(writer, &Document{
+	writer := httptest.NewRecorder()
+	err := WriteResponse(writer, http.StatusOK, &Document{
 		Data: &HybridResource{
 			One: &Resource{
 				Type: "foo",
@@ -40,7 +41,7 @@ func TestMarshalSingleDocument(t *testing.T) {
     		"type": "foo",
     		"id": "1"
 		}
-	}`, writer.String())
+	}`, writer.Body.String())
 }
 
 func BenchmarkMarshal(b *testing.B) {
@@ -60,16 +61,12 @@ func BenchmarkMarshal(b *testing.B) {
 		},
 	}
 
-	writer := bytes.NewBuffer(nil)
-
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		err := MarshalDocument(writer, doc)
+		err := WriteResponse(httptest.NewRecorder(), http.StatusOK, doc)
 		if err != nil {
 			panic(err)
 		}
-
-		writer.Reset()
 	}
 }
