@@ -1,6 +1,7 @@
 package jsonapi
 
 import (
+	"io"
 	"net/http"
 	"testing"
 
@@ -209,6 +210,66 @@ func TestParseRequestFilters(t *testing.T) {
 	}, req)
 }
 
+func TestParseRequestDocumentInvalidDocument(t *testing.T) {
+	readers := []io.Reader{
+		stringReader(``),
+		stringReader(`1`),
+		stringReader(`"foo"`),
+		stringReader(`true`),
+		stringReader(`[]`),
+	}
+
+	for _, r := range readers {
+		doc, err := ParseRequestDocument(r)
+		assert.Error(t, err)
+		assert.Nil(t, doc)
+	}
+}
+
+func TestParseRequestDocumentEmptyDocument(t *testing.T) {
+	doc, err := ParseRequestDocument(stringReader(`{}`))
+	assert.Error(t, err)
+	assert.Nil(t, doc)
+}
+
+func TestParseRequestDocumentMinimumSingleDocument(t *testing.T) {
+	doc, err := ParseRequestDocument(stringReader(`{
+  		"data": {
+    		"type": "foo"
+		}
+	}`))
+	assert.NoError(t, err)
+	assert.Equal(t, &Document{
+		Data: &HybridResource{
+			One: &Resource{
+				Type: "foo",
+			},
+		},
+	}, doc)
+}
+
+func TestParseRequestDocumentSingleDocument(t *testing.T) {
+	doc, err := ParseRequestDocument(stringReader(`{
+  		"data": {
+    		"type": "foo",
+    		"id": "1",
+    		"attributes": {},
+    		"relationships": {}
+		}
+	}`))
+	assert.NoError(t, err)
+	assert.Equal(t, &Document{
+		Data: &HybridResource{
+			One: &Resource{
+				Type:          "foo",
+				ID:            "1",
+				Attributes:    make(Map),
+				Relationships: make(map[string]HybridDocument),
+			},
+		},
+	}, doc)
+}
+
 func BenchmarkParseRequest(b *testing.B) {
 	r := constructRequest("GET", "foo/1")
 
@@ -226,5 +287,32 @@ func BenchmarkParseRequestFilterAndSort(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		ParseRequest(r, "")
+	}
+}
+
+func BenchmarkParseRequestDocument(b *testing.B) {
+	reader := stringReader(`{
+		"links": {
+			"self": "http://0.0.0.0:1234/api/foo/1"
+		},
+		"data": {
+			"type": "foo",
+			"id": "1",
+			"attributes": {
+				"foo": "bar",
+				"bar": "baz"
+			}
+		}
+	}`)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, err := ParseRequestDocument(reader)
+		if err != nil {
+			panic(err)
+		}
+
+		reader.Seek(0, io.SeekStart)
 	}
 }

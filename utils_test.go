@@ -2,7 +2,6 @@ package jsonapi
 
 import (
 	"bytes"
-	"io"
 	"net/http"
 	"net/url"
 )
@@ -24,6 +23,6 @@ func constructRequest(method, path string) *http.Request {
 	return r
 }
 
-func stringReader(str string) io.Reader {
-	return bytes.NewBufferString(str)
+func stringReader(str string) *bytes.Reader {
+	return bytes.NewReader([]byte(str))
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 )
 
 // TODO: Add Composer service that helps constructing documents and resources.
@@ -73,4 +74,27 @@ func (c *HybridDocument) UnmarshalJSON(doc []byte) error {
 	}
 
 	return errors.New("invalid")
+}
+
+func ParseRequestDocument(r io.Reader) (*Document, error) {
+	// prepare document
+	var doc Document
+
+	// decode body
+	err := json.NewDecoder(r).Decode(&doc)
+	if err != nil {
+		return nil, badRequest(err.Error())
+	}
+
+	// check for errors
+	if len(doc.Errors) > 0 {
+		return nil, badRequest("Request contains errors")
+	}
+
+	// check data
+	if doc.Data == nil || (doc.Data.One == nil && len(doc.Data.Many) == 0) {
+		return nil, badRequest("Mising data")
+	}
+
+	return &doc, nil
 }
