@@ -76,7 +76,7 @@ func WriteErrorFromStatus(w http.ResponseWriter, status int) {
 		str = http.StatusText(http.StatusInternalServerError)
 	}
 
-	WriteDocument(w, status, &Document{
+	WriteResponse(w, status, &Document{
 		Errors: []*Error{
 			{
 				Status: status,
@@ -103,7 +103,7 @@ func WriteError(w http.ResponseWriter, err error) {
 		anError.Status = http.StatusInternalServerError
 	}
 
-	WriteDocument(w, anError.Status, &Document{
+	WriteResponse(w, anError.Status, &Document{
 		Errors: []*Error{anError},
 	})
 }

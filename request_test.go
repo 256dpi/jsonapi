@@ -220,20 +220,20 @@ func TestParseRequestDocumentInvalidDocument(t *testing.T) {
 	}
 
 	for _, r := range readers {
-		doc, err := ParseRequestDocument(r)
+		doc, err := ParseBody(r)
 		assert.Error(t, err)
 		assert.Nil(t, doc)
 	}
 }
 
 func TestParseRequestDocumentEmptyDocument(t *testing.T) {
-	doc, err := ParseRequestDocument(stringReader(`{}`))
+	doc, err := ParseBody(stringReader(`{}`))
 	assert.Error(t, err)
 	assert.Nil(t, doc)
 }
 
 func TestParseRequestDocumentMinimumSingleDocument(t *testing.T) {
-	doc, err := ParseRequestDocument(stringReader(`{
+	doc, err := ParseBody(stringReader(`{
   		"data": {
     		"type": "foo"
 		}
@@ -249,7 +249,7 @@ func TestParseRequestDocumentMinimumSingleDocument(t *testing.T) {
 }
 
 func TestParseRequestDocumentSingleDocument(t *testing.T) {
-	doc, err := ParseRequestDocument(stringReader(`{
+	doc, err := ParseBody(stringReader(`{
   		"data": {
     		"type": "foo",
     		"id": "1",
@@ -308,7 +308,7 @@ func BenchmarkParseRequestDocument(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, err := ParseRequestDocument(reader)
+		_, err := ParseBody(reader)
 		if err != nil {
 			panic(err)
 		}
