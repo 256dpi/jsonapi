@@ -71,7 +71,7 @@ func main() {
 }
 
 func fetchPosts(_ *jsonapi.Request, w http.ResponseWriter) {
-	list := make([]*jsonapi.Resource, 0)
+	list := make([]*jsonapi.Resource, 0, len(store))
 	for _, post := range store {
 		list = append(list, &jsonapi.Resource{
 			Type: "posts",
