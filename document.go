@@ -1,5 +1,11 @@
 package jsonapi
 
+import (
+	"bytes"
+	"encoding/json"
+	"errors"
+)
+
 // TODO: Add Composer service that helps constructing documents and resources.
 
 // DocumentLinks are a set of links related to a documents primary data.
@@ -45,4 +51,26 @@ type HybridDocument struct {
 
 	// A list of documents.
 	Many []*Document
+}
+
+// MarshalJSON will either encode a list or a single object.
+func (c *HybridDocument) MarshalJSON() ([]byte, error) {
+	if c.Many != nil {
+		return json.Marshal(c.Many)
+	}
+
+	return json.Marshal(c.One)
+}
+
+// UnmarshalJSON detects if the passed JSON is a single object or a list.
+func (c *HybridDocument) UnmarshalJSON(doc []byte) error {
+	if bytes.HasPrefix(doc, objectSuffix) {
+		return json.Unmarshal(doc, &c.One)
+	}
+
+	if bytes.HasPrefix(doc, arraySuffix) {
+		return json.Unmarshal(doc, &c.Many)
+	}
+
+	return errors.New("invalid")
 }

@@ -1,5 +1,11 @@
 package jsonapi
 
+import (
+	"bytes"
+	"encoding/json"
+	"errors"
+)
+
 // Map is a general purpose map of string keys and arbitrary values.
 type Map map[string]interface{}
 
@@ -38,4 +44,26 @@ type HybridResource struct {
 
 	// A list of Resources.
 	Many []*Resource
+}
+
+// MarshalJSON will either encode a list or a single object.
+func (c *HybridResource) MarshalJSON() ([]byte, error) {
+	if c.Many != nil {
+		return json.Marshal(c.Many)
+	}
+
+	return json.Marshal(c.One)
+}
+
+// UnmarshalJSON detects if the passed JSON is a single object or a list.
+func (c *HybridResource) UnmarshalJSON(doc []byte) error {
+	if bytes.HasPrefix(doc, objectSuffix) {
+		return json.Unmarshal(doc, &c.One)
+	}
+
+	if bytes.HasPrefix(doc, arraySuffix) {
+		return json.Unmarshal(doc, &c.Many)
+	}
+
+	return errors.New("invalid")
 }
