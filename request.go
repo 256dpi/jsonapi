@@ -42,6 +42,9 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		return nil, badRequest("Invalid content type")
 	}
 
+	// TODO: Content-Type header is only required when sending data.
+	// TODO: Check "Accept" header.
+
 	// de-prefix and trim path
 	url := strings.Trim(strings.TrimPrefix(req.URL.Path, prefix), "/")
 
