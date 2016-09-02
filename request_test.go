@@ -57,6 +57,7 @@ func TestParseRequestPrefix(t *testing.T) {
 	req, err := ParseRequest(r, "foo/")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:   Fetch,
 		Resource: "bar",
 	}, req)
 }
@@ -67,6 +68,7 @@ func TestParseRequestResource(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:   Fetch,
 		Resource: "foo",
 	}, req)
 }
@@ -77,6 +79,7 @@ func TestParseRequestResourceID(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:     Fetch,
 		Resource:   "foo",
 		ResourceID: "1",
 	}, req)
@@ -88,6 +91,7 @@ func TestParseRequestRelatedResource(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:          Fetch,
 		Resource:        "foo",
 		ResourceID:      "1",
 		RelatedResource: "bar",
@@ -100,6 +104,7 @@ func TestParseRequestRelationship(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:       Fetch,
 		Resource:     "foo",
 		ResourceID:   "1",
 		Relationship: "bar",
@@ -112,6 +117,7 @@ func TestParseRequestInclude(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:   Fetch,
 		Resource: "foo",
 		Include:  []string{"bar", "baz"},
 	}, req)
@@ -121,6 +127,7 @@ func TestParseRequestInclude(t *testing.T) {
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:   Fetch,
 		Resource: "foo",
 		Include:  []string{"bar", "baz", "qux"},
 	}, req)
@@ -132,6 +139,7 @@ func TestParseRequestSorting(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:   Fetch,
 		Resource: "foo",
 		Sorting:  []string{"bar", "baz"},
 	}, req)
@@ -141,6 +149,7 @@ func TestParseRequestSorting(t *testing.T) {
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:   Fetch,
 		Resource: "foo",
 		Sorting:  []string{"bar", "baz", "qux"},
 	}, req)
@@ -152,6 +161,7 @@ func TestParseRequestPage(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:     Fetch,
 		Resource:   "foo",
 		PageNumber: 1,
 		PageSize:   2,
@@ -164,6 +174,7 @@ func TestParseRequestFields(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:   Fetch,
 		Resource: "foo",
 		Fields: map[string][]string{
 			"foo": {"bar", "baz"},
@@ -177,6 +188,7 @@ func TestParseRequestFilters(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Action:   Fetch,
 		Resource: "foo",
 		Filters: map[string][]string{
 			"foo": {"bar", "baz"},

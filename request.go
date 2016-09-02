@@ -9,9 +9,10 @@ import (
 // Action defines the basic intent of the request.
 type Action int
 
-// The following actions translate to standard HTTP methods.
+// The following actions translate to standard HTTP methods:
 const (
-	Fetch Action = iota
+	_ Action = iota
+	Fetch
 	Create
 	Update
 	Delete
