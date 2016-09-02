@@ -47,7 +47,7 @@ type Request struct {
 	Target Target
 
 	// Location
-	Resource        string
+	ResourceType    string
 	ResourceID      string
 	RelatedResource string
 	Relationship    string
@@ -125,7 +125,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	// set resource
-	r.Resource = segments[0]
+	r.ResourceType = segments[0]
 	r.Target = ResourceCollection
 
 	// set resource id

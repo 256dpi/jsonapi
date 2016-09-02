@@ -16,7 +16,7 @@ func Example() {
 			return
 		}
 
-		fmt.Println(req.Resource)
+		fmt.Println(req.ResourceType)
 		fmt.Println(req.ResourceID)
 	})
 
