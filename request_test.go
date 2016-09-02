@@ -7,27 +7,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseRequestInvalidContentType(t *testing.T) {
-	r := constructRequest("")
-	r.Header.Set("Content-Type", "foo")
+func TestParseRequestError(t *testing.T) {
+	invalidAccept := constructRequest("GET", "")
+	invalidAccept.Header.Set("Accept", "foo")
 
-	req, err := ParseRequest(r, "")
-	assert.Error(t, err)
-	assert.Nil(t, req)
-}
+	invalidContentType := constructRequest("GET", "")
+	invalidContentType.Header.Set("Content-Type", "foo")
 
-func TestParseRequestInvalidRequest(t *testing.T) {
 	list := []*http.Request{
-		constructRequest(""),
-		constructRequest("/"),
-		constructRequest("foo/bar/baz/qux"),
-		constructRequest("foo/bar/baz/qux/quux"),
-		constructRequest("foo?page[number]=bar"),
-		constructRequest("foo?page[size]=bar"),
-		constructRequest("foo?page[number]=1"),
-		constructRequest("foo?page[size]=1"),
-		constructRequest("foo?page[number]=bar&page[number]=baz"),
-		constructRequest("foo?page[size]=bar&page[size]=baz"),
+		invalidAccept,
+		invalidContentType,
+		constructRequest("PUT", ""),
+		constructRequest("GET", ""),
+		constructRequest("POST", ""),
+		constructRequest("GET", "/"),
+		constructRequest("GET", "foo/bar/baz/qux"),
+		constructRequest("GET", "foo/bar/baz/qux/quux"),
+		constructRequest("GET", "foo?page[number]=bar"),
+		constructRequest("GET", "foo?page[size]=bar"),
+		constructRequest("GET", "foo?page[number]=1"),
+		constructRequest("GET", "foo?page[size]=1"),
+		constructRequest("GET", "foo?page[number]=bar&page[number]=baz"),
+		constructRequest("GET", "foo?page[size]=bar&page[size]=baz"),
 	}
 
 	for _, r := range list {
@@ -37,8 +38,21 @@ func TestParseRequestInvalidRequest(t *testing.T) {
 	}
 }
 
+func TestParseRequestMethodOverride(t *testing.T) {
+	r := constructRequest("GET", "foo")
+	r.Header.Set("Content-Type", ContentType)
+	r.Header.Set("X-HTTP-Method-Override", "PATCH")
+
+	req, err := ParseRequest(r, "")
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Action:   Update,
+		Resource: "foo",
+	}, req)
+}
+
 func TestParseRequestPrefix(t *testing.T) {
-	r := constructRequest("foo/bar")
+	r := constructRequest("GET", "foo/bar")
 
 	req, err := ParseRequest(r, "foo/")
 	assert.NoError(t, err)
@@ -48,7 +62,7 @@ func TestParseRequestPrefix(t *testing.T) {
 }
 
 func TestParseRequestResource(t *testing.T) {
-	r := constructRequest("foo")
+	r := constructRequest("GET", "foo")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -58,7 +72,7 @@ func TestParseRequestResource(t *testing.T) {
 }
 
 func TestParseRequestResourceID(t *testing.T) {
-	r := constructRequest("foo/1")
+	r := constructRequest("GET", "foo/1")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -69,7 +83,7 @@ func TestParseRequestResourceID(t *testing.T) {
 }
 
 func TestParseRequestRelatedResource(t *testing.T) {
-	r := constructRequest("foo/1/bar")
+	r := constructRequest("GET", "foo/1/bar")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -81,7 +95,7 @@ func TestParseRequestRelatedResource(t *testing.T) {
 }
 
 func TestParseRequestRelationship(t *testing.T) {
-	r := constructRequest("foo/1/relationships/bar")
+	r := constructRequest("GET", "foo/1/relationships/bar")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -93,7 +107,7 @@ func TestParseRequestRelationship(t *testing.T) {
 }
 
 func TestParseRequestInclude(t *testing.T) {
-	r1 := constructRequest("foo?include=bar,baz")
+	r1 := constructRequest("GET", "foo?include=bar,baz")
 
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
@@ -102,7 +116,7 @@ func TestParseRequestInclude(t *testing.T) {
 		Include:  []string{"bar", "baz"},
 	}, req)
 
-	r2 := constructRequest("foo?include=bar&include=baz,qux")
+	r2 := constructRequest("GET", "foo?include=bar&include=baz,qux")
 
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
@@ -113,7 +127,7 @@ func TestParseRequestInclude(t *testing.T) {
 }
 
 func TestParseRequestSorting(t *testing.T) {
-	r1 := constructRequest("foo?sort=bar,baz")
+	r1 := constructRequest("GET", "foo?sort=bar,baz")
 
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
@@ -122,7 +136,7 @@ func TestParseRequestSorting(t *testing.T) {
 		Sorting:  []string{"bar", "baz"},
 	}, req)
 
-	r2 := constructRequest("foo?sort=bar&sort=baz,qux")
+	r2 := constructRequest("GET", "foo?sort=bar&sort=baz,qux")
 
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
@@ -133,7 +147,7 @@ func TestParseRequestSorting(t *testing.T) {
 }
 
 func TestParseRequestPage(t *testing.T) {
-	r1 := constructRequest("foo?page[number]=1&page[size]=2")
+	r1 := constructRequest("GET", "foo?page[number]=1&page[size]=2")
 
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
@@ -145,7 +159,7 @@ func TestParseRequestPage(t *testing.T) {
 }
 
 func TestParseRequestFields(t *testing.T) {
-	r1 := constructRequest("foo?fields[foo]=bar,baz")
+	r1 := constructRequest("GET", "foo?fields[foo]=bar,baz")
 
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
@@ -158,7 +172,7 @@ func TestParseRequestFields(t *testing.T) {
 }
 
 func TestParseRequestFilters(t *testing.T) {
-	r1 := constructRequest("foo?filter[foo]=bar,baz")
+	r1 := constructRequest("GET", "foo?filter[foo]=bar,baz")
 
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
@@ -171,7 +185,7 @@ func TestParseRequestFilters(t *testing.T) {
 }
 
 func BenchmarkParseRequest(b *testing.B) {
-	r := constructRequest("foo/1")
+	r := constructRequest("GET", "foo/1")
 
 	b.ResetTimer()
 
@@ -181,7 +195,7 @@ func BenchmarkParseRequest(b *testing.B) {
 }
 
 func BenchmarkParseRequestFilterAndSort(b *testing.B) {
-	r := constructRequest("foo/1?sort=bar&filter[baz]=qux")
+	r := constructRequest("GET", "foo/1?sort=bar&filter[baz]=qux")
 
 	b.ResetTimer()
 

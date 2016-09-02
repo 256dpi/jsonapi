@@ -6,9 +6,30 @@ import (
 	"strings"
 )
 
+// Action defines the basic intent of the request.
+type Action int
+
+// The following actions translate to standard HTTP methods.
+const (
+	Fetch Action = iota
+	Create
+	Update
+	Delete
+)
+
+var methodActionMap = map[string]Action{
+	"GET":    Fetch,
+	"POST":   Create,
+	"PATCH":  Update,
+	"DELETE": Delete,
+}
+
 // A Request contains all JSON API related information parsed from a low level
 // request.
 type Request struct {
+	// Action
+	Action Action
+
 	// Location
 	Resource        string
 	ResourceID      string
@@ -37,10 +58,32 @@ type Request struct {
 //
 // Note: The returned error can directly be written using WriteError.
 func ParseRequest(req *http.Request, prefix string) (*Request, error) {
+	// set overridden method if available
+	if req.Header.Get("X-HTTP-Method-Override") != "" {
+		req.Method = req.Header.Get("X-HTTP-Method-Override")
+	}
+
+	// map method to action
+	action, ok := methodActionMap[req.Method]
+	if !ok {
+		return nil, badRequest("Unsupported method")
+	}
+
+	// allocate new request
+	r := &Request{}
+
+	// write action
+	r.Action = action
+
 	// check content type header
 	contentType := req.Header.Get("Content-Type")
 	if contentType != "" && contentType != ContentType {
 		return nil, badRequest("Invalid content type header")
+	}
+
+	// check if request should come with data and has content type set
+	if (r.Action == Create || r.Action == Update) && contentType == "" {
+		return nil, badRequest("Missing content type header")
 	}
 
 	// check accept header
@@ -65,9 +108,6 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		}
 	}
 
-	// allocate new request
-	r := &Request{}
-
 	// set resource
 	r.Resource = segments[0]
 
@@ -90,6 +130,8 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	if len(segments) > 2 && (r.RelatedResource == "" && r.Relationship == "") {
 		return nil, badRequest("Invalid URL relationship format")
 	}
+
+	// TODO: Check if action is generally allowed on the URL?
 
 	for key, values := range req.URL.Query() {
 		// set included resources

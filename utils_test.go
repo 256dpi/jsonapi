@@ -7,13 +7,14 @@ import (
 	"net/url"
 )
 
-func constructRequest(path string) *http.Request {
+func constructRequest(method, path string) *http.Request {
 	u, err := url.Parse(path)
 	if err != nil {
 		panic(err)
 	}
 
 	r := &http.Request{
+		Method: method,
 		URL:    u,
 		Header: make(http.Header),
 	}
