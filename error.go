@@ -1,7 +1,6 @@
 package jsonapi
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -68,9 +67,6 @@ func (e *Error) Error() string {
 // Note: If the passed status code is not a valid HTTP status code, a 500 status
 // code will be used instead.
 func WriteErrorFromStatus(w http.ResponseWriter, status int) {
-	// set content type
-	SetContentType(w)
-
 	// get text
 	str := http.StatusText(status)
 
@@ -80,11 +76,7 @@ func WriteErrorFromStatus(w http.ResponseWriter, status int) {
 		str = http.StatusText(http.StatusInternalServerError)
 	}
 
-	// write status
-	w.WriteHeader(status)
-
-	// write error object
-	json.NewEncoder(w).Encode(&Document{
+	WriteDocument(w, status, &Document{
 		Errors: []*Error{
 			{
 				Status: status,
@@ -106,19 +98,12 @@ func WriteError(w http.ResponseWriter, err error) {
 		return
 	}
 
-	// set content type
-	SetContentType(w)
-
 	// set status
 	if str := http.StatusText(anError.Status); str == "" {
 		anError.Status = http.StatusInternalServerError
 	}
 
-	// write status
-	w.WriteHeader(anError.Status)
-
-	// write error object
-	json.NewEncoder(w).Encode(&Document{
+	WriteDocument(w, anError.Status, &Document{
 		Errors: []*Error{anError},
 	})
 }

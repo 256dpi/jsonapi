@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net/http"
 )
 
 // TODO: Add Composer service that helps constructing documents and resources.
@@ -76,6 +77,7 @@ func (c *HybridDocument) UnmarshalJSON(doc []byte) error {
 	return errors.New("invalid")
 }
 
+// ParseRequestDocument will decode a JSON API document from the passed reader.
 func ParseRequestDocument(r io.Reader) (*Document, error) {
 	// prepare document
 	var doc Document
@@ -97,4 +99,17 @@ func ParseRequestDocument(r io.Reader) (*Document, error) {
 	}
 
 	return &doc, nil
+}
+
+// WriteDocument will write the the status and supplied document to the passed
+// response writer.
+func WriteDocument(w http.ResponseWriter, status int, doc *Document) error {
+	// set content type
+	w.Header().Set("Content-Type", ContentType)
+
+	// write status
+	w.WriteHeader(status)
+
+	// write document
+	return json.NewEncoder(w).Encode(doc)
 }
