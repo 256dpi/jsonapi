@@ -3,6 +3,7 @@ package jsonapi
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/parnurzeal/gorequest"
 )
@@ -22,6 +23,8 @@ func Example() {
 	go func() {
 		http.ListenAndServe("0.0.0.0:4040", nil)
 	}()
+
+	time.Sleep(50 * time.Millisecond)
 
 	_, str, err := gorequest.New().
 		Get("http://0.0.0.0:4040/api/posts/1").
