@@ -37,13 +37,17 @@ type Request struct {
 //
 // Note: The returned error can directly be written using WriteError.
 func ParseRequest(req *http.Request, prefix string) (*Request, error) {
-	// check content type
-	if req.Header.Get("Content-Type") != ContentType {
-		return nil, badRequest("Invalid content type")
+	// check content type header
+	contentType := req.Header.Get("Content-Type")
+	if contentType != "" && contentType != ContentType {
+		return nil, badRequest("Invalid content type header")
 	}
 
-	// TODO: Content-Type header is only required when sending data.
-	// TODO: Check "Accept" header.
+	// check accept header
+	accept := req.Header.Get("Accept")
+	if accept != ContentType {
+		return nil, badRequest("Invalid accept header")
+	}
 
 	// de-prefix and trim path
 	url := strings.Trim(strings.TrimPrefix(req.URL.Path, prefix), "/")

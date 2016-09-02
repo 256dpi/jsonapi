@@ -25,7 +25,7 @@ func Example() {
 
 	_, str, err := gorequest.New().
 		Get("http://0.0.0.0:4040/api/posts/1").
-		Set("Content-Type", ContentType).
+		Set("Accept", ContentType).
 		End()
 	if err != nil {
 		panic(err[0])
