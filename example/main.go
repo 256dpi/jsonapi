@@ -31,6 +31,11 @@ func main() {
 			return
 		}
 
+		if req.ResourceType != "posts" {
+			jsonapi.WriteErrorFromStatus(w, http.StatusNotFound)
+			return
+		}
+
 		var doc *jsonapi.Document
 		if req.DocumentExpected() {
 			doc, err = jsonapi.ParseBody(r.Body)
