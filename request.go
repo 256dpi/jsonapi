@@ -25,11 +25,26 @@ var methodActionMap = map[string]Action{
 	"DELETE": Delete,
 }
 
+// Target specifies the format of the primary data the request ist targeting.
+type Target int
+
+// The following targets translate to JSON API URL patterns:
+const (
+	_ Target = iota
+	ResourceCollection
+	SingleResource
+	RelatedResource
+	Relationship
+)
+
 // A Request contains all JSON API related information parsed from a low level
 // request.
 type Request struct {
 	// Action
 	Action Action
+
+	// Target
+	Target Target
 
 	// Location
 	Resource        string
@@ -111,20 +126,24 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 
 	// set resource
 	r.Resource = segments[0]
+	r.Target = ResourceCollection
 
 	// set resource id
 	if len(segments) > 1 {
 		r.ResourceID = segments[1]
+		r.Target = SingleResource
 	}
 
 	// set related resource
 	if len(segments) == 3 && segments[2] != "relationships" {
 		r.RelatedResource = segments[2]
+		r.Target = RelatedResource
 	}
 
 	// set relationship
 	if len(segments) == 4 && segments[2] == "relationships" {
 		r.Relationship = segments[3]
+		r.Target = Relationship
 	}
 
 	// final check
