@@ -82,11 +82,7 @@ func fetchPosts(_ *jsonapi.Request, w http.ResponseWriter) {
 		})
 	}
 
-	jsonapi.WriteResponse(w, http.StatusOK, &jsonapi.Document{
-		Data: &jsonapi.HybridResource{
-			Many: list,
-		},
-	})
+	jsonapi.WriteResources(w, http.StatusOK, list)
 }
 
 func fetchPost(req *jsonapi.Request, w http.ResponseWriter) {
@@ -96,7 +92,7 @@ func fetchPost(req *jsonapi.Request, w http.ResponseWriter) {
 		return
 	}
 
-	writePost(w, post)
+	writePost(w, http.StatusOK, post)
 }
 
 func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) {
@@ -108,7 +104,7 @@ func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter
 	counter++
 	store[post.ID] = post
 
-	writePost(w, post)
+	writePost(w, http.StatusCreated, post)
 }
 
 func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) {
@@ -120,7 +116,7 @@ func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWrit
 
 	post.Title = doc.Data.One.Attributes["title"].(string)
 
-	writePost(w, post)
+	writePost(w, http.StatusOK, post)
 }
 
 func deletePost(req *jsonapi.Request, w http.ResponseWriter) {
@@ -135,16 +131,12 @@ func deletePost(req *jsonapi.Request, w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func writePost(w http.ResponseWriter, post *postModel) {
-	jsonapi.WriteResponse(w, http.StatusOK, &jsonapi.Document{
-		Data: &jsonapi.HybridResource{
-			One: &jsonapi.Resource{
-				Type: "posts",
-				ID:   post.ID,
-				Attributes: jsonapi.Map{
-					"title": post.Title,
-				},
-			},
+func writePost(w http.ResponseWriter, status int, post *postModel) {
+	jsonapi.WriteResource(w, status, &jsonapi.Resource{
+		Type: "posts",
+		ID:   post.ID,
+		Attributes: jsonapi.Map{
+			"title": post.Title,
 		},
 	})
 }

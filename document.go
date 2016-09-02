@@ -113,3 +113,27 @@ func WriteResponse(w http.ResponseWriter, status int, doc *Document) error {
 	// write document
 	return json.NewEncoder(w).Encode(doc)
 }
+
+// WriteResource will wrap the passed resource in a document and write it to the
+// passed response writer.
+func WriteResource(w http.ResponseWriter, status int, r *Resource) error {
+	// TODO: Use Pooled Document and HybridResource.
+
+	return WriteResponse(w, status, &Document{
+		Data: &HybridResource{
+			One: r,
+		},
+	})
+}
+
+// WriteResources will wrap the passed resources in a document and write it to the
+// passed response writer.
+func WriteResources(w http.ResponseWriter, status int, rs []*Resource) error {
+	// TODO: Use pooled Document and Hybrid Resource.
+
+	return WriteResponse(w, status, &Document{
+		Data: &HybridResource{
+			Many: rs,
+		},
+	})
+}
