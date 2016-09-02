@@ -97,8 +97,8 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		return nil, badRequest("Invalid content type header")
 	}
 
-	// check if request should come with data and has content type set
-	if (r.Action == Create || r.Action == Update) && contentType == "" {
+	// check if request should come with a document and has content type set
+	if r.DocumentExpected() && contentType == "" {
 		return nil, badRequest("Missing content type header")
 	}
 
@@ -239,7 +239,11 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		return nil, badRequestParam("Missing page number", "page[size]")
 	}
 
-	// TODO: Parse Body.
-
 	return r, nil
+}
+
+// DocumentExpected returns whether the request is expected to come with a
+// JSON API document.
+func (r *Request) DocumentExpected() bool {
+	return r.Action == Create || r.Action == Update
 }
