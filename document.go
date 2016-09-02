@@ -6,9 +6,18 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"sync"
 )
 
 // TODO: Add Composer service that helps constructing documents and resources.
+
+var documentPool = sync.Pool{
+	New: func() interface{} {
+		return &Document{
+			Data: &HybridResource{},
+		}
+	},
+}
 
 // DocumentLinks are a set of links related to a documents primary data.
 //
@@ -117,23 +126,44 @@ func WriteResponse(w http.ResponseWriter, status int, doc *Document) error {
 // WriteResource will wrap the passed resource in a document and write it to the
 // passed response writer.
 func WriteResource(w http.ResponseWriter, status int, r *Resource) error {
-	// TODO: Use Pooled Document and HybridResource.
+	// get document from pool
+	doc := getDocumentFromPool()
 
-	return WriteResponse(w, status, &Document{
-		Data: &HybridResource{
-			One: r,
-		},
-	})
+	// put document back when finished
+	defer documentPool.Put(doc)
+
+	// set resource
+	doc.Data.One = r
+
+	return WriteResponse(w, status, doc)
 }
 
-// WriteResources will wrap the passed resources in a document and write it to the
-// passed response writer.
+// WriteResources will wrap the passed resources in a document and write it to
+// the passed response writer. Using this function is more efficient
 func WriteResources(w http.ResponseWriter, status int, rs []*Resource) error {
-	// TODO: Use pooled Document and Hybrid Resource.
+	// get document from pool
+	doc := getDocumentFromPool()
 
-	return WriteResponse(w, status, &Document{
-		Data: &HybridResource{
-			Many: rs,
-		},
-	})
+	// put document back when finished
+	defer documentPool.Put(doc)
+
+	// set resource
+	doc.Data.Many = rs
+
+	return WriteResponse(w, status, doc)
+}
+
+func getDocumentFromPool() *Document {
+	// get document from pool
+	doc := documentPool.Get().(*Document)
+
+	// reset document
+	doc.Data.One = nil
+	doc.Data.Many = nil
+	doc.Included = nil
+	doc.Links = nil
+	doc.Errors = nil
+	doc.Meta = nil
+
+	return doc
 }

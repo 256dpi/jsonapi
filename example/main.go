@@ -132,6 +132,10 @@ func deletePost(req *jsonapi.Request, w http.ResponseWriter) {
 }
 
 func writePost(w http.ResponseWriter, status int, post *postModel) {
+	// TODO: Add included resource?
+	// TODO: Add meta information?
+	// TODO: Add links?
+
 	jsonapi.WriteResource(w, status, &jsonapi.Resource{
 		Type: "posts",
 		ID:   post.ID,
