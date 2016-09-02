@@ -47,10 +47,10 @@ func main() {
 
 		if req.Action == jsonapi.Fetch {
 			if req.Target == jsonapi.ResourceCollection {
-				fetchPostList(req, w)
+				fetchPosts(req, w)
 				return
 			} else if req.Target == jsonapi.SingleResource {
-				fetchSinglePost(req, w)
+				fetchPost(req, w)
 				return
 			}
 		} else if req.Action == jsonapi.Create && req.Target == jsonapi.ResourceCollection {
@@ -70,7 +70,7 @@ func main() {
 	http.ListenAndServe("0.0.0.0:4000", nil)
 }
 
-func fetchPostList(_ *jsonapi.Request, w http.ResponseWriter) {
+func fetchPosts(_ *jsonapi.Request, w http.ResponseWriter) {
 	list := make([]*jsonapi.Resource, 0)
 	for _, post := range store {
 		list = append(list, &jsonapi.Resource{
@@ -89,7 +89,7 @@ func fetchPostList(_ *jsonapi.Request, w http.ResponseWriter) {
 	})
 }
 
-func fetchSinglePost(req *jsonapi.Request, w http.ResponseWriter) {
+func fetchPost(req *jsonapi.Request, w http.ResponseWriter) {
 	post, ok := store[req.ResourceID]
 	if !ok {
 		jsonapi.WriteErrorFromStatus(w, http.StatusNotFound)
