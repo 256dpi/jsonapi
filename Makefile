@@ -2,12 +2,15 @@ all: fmt vet lint
 
 vet:
 	go vet .
+	go vet ./example
 
 fmt:
 	go fmt .
+	go fmt ./example
 
 lint:
 	golint .
+	golint ./example
 
 profile-mem:
 	mkdir -p ./bench
