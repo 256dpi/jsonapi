@@ -6,51 +6,6 @@ import (
 	"strings"
 )
 
-// Action is the internal mapping to standard HTTP request methods.
-type Action int
-
-const (
-	_ Action = iota
-
-	// Fetch maps to a GET request.
-	Fetch
-
-	// Create maps to a POST request.
-	Create
-
-	// Update maps to a PATCH request.
-	Update
-
-	// Delete maps to a DELETE request.
-	Delete
-)
-
-var methodActionMap = map[string]Action{
-	"GET":    Fetch,
-	"POST":   Create,
-	"PATCH":  Update,
-	"DELETE": Delete,
-}
-
-// Level specifies the format and level of the JSON API URL pattern.
-type Level int
-
-const (
-	_ Level = iota
-
-	// ResourceCollection denotes the one level pattern e.g. "/posts".
-	ResourceCollection
-
-	// SingleResource denotes the two level pattern e.g. "/posts/1".
-	SingleResource
-
-	// RelatedResources denotes the three level pattern e.g. "/posts/1/author".
-	RelatedResources
-
-	// Relationship denotes the four level pattern e.g. "/posts/1/relationships/author".
-	Relationship
-)
-
 // An Intent represents a valid combination of a request method and a URL pattern.
 type Intent int
 
@@ -104,9 +59,7 @@ const (
 // A Request contains all JSON API related information parsed from a low level
 // request.
 type Request struct {
-	// Action, Target and Intent
-	Action Action
-	Target Level
+	// Intent
 	Intent Intent
 
 	// Location
@@ -146,16 +99,12 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	// map method to action
-	action, ok := methodActionMap[method]
-	if !ok {
+	if method != "GET" && method != "POST" && method != "PATCH" && method != "DELETE" {
 		return nil, badRequest("Unsupported method")
 	}
 
 	// allocate new request
 	r := &Request{}
-
-	// write action
-	r.Action = action
 
 	// check content type header
 	contentType := req.Header.Get("Content-Type")
@@ -192,24 +141,24 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 
 	// set resource
 	r.ResourceType = segments[0]
-	r.Target = ResourceCollection
+	level := 1
 
 	// set resource id
 	if len(segments) > 1 {
 		r.ResourceID = segments[1]
-		r.Target = SingleResource
+		level = 2
 	}
 
 	// set related resource
 	if len(segments) == 3 && segments[2] != "relationships" {
 		r.RelatedResource = segments[2]
-		r.Target = RelatedResources
+		level = 3
 	}
 
 	// set relationship
 	if len(segments) == 4 && segments[2] == "relationships" {
 		r.Relationship = segments[3]
-		r.Target = Relationship
+		level = 4
 	}
 
 	// final check
@@ -218,37 +167,37 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	// calculate intent
-	switch r.Action {
-	case Fetch:
-		switch r.Target {
-		case ResourceCollection:
+	switch method {
+	case "GET":
+		switch level {
+		case 1:
 			r.Intent = ListResources
-		case SingleResource:
+		case 2:
 			r.Intent = FindResource
-		case RelatedResources:
+		case 3:
 			r.Intent = GetRelatedResources
-		case Relationship:
+		case 4:
 			r.Intent = GetRelationship
 		}
-	case Create:
-		switch r.Target {
-		case ResourceCollection:
+	case "POST":
+		switch level {
+		case 1:
 			r.Intent = CreateResource
-		case Relationship:
+		case 4:
 			r.Intent = AppendToRelationship
 		}
-	case Update:
-		switch r.Target {
-		case SingleResource:
+	case "PATCH":
+		switch level {
+		case 2:
 			r.Intent = UpdateResource
-		case Relationship:
+		case 4:
 			r.Intent = SetRelationship
 		}
-	case Delete:
-		switch r.Target {
-		case SingleResource:
+	case "DELETE":
+		switch level {
+		case 2:
 			r.Intent = DeleteResource
-		case Relationship:
+		case 4:
 			r.Intent = RemoveFromRelationship
 		}
 	}
@@ -350,7 +299,16 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 // DocumentExpected returns whether the request is expected to come with a
 // JSON API document.
 func (r *Request) DocumentExpected() bool {
-	return r.Action == Create || r.Action == Update
+	switch r.Intent {
+	case CreateResource:
+	case UpdateResource:
+	case SetRelationship:
+	case AppendToRelationship:
+	case RemoveFromRelationship:
+		return true
+	}
+
+	return false
 }
 
 func badRequest(detail string) *Error {
