@@ -112,11 +112,6 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		return nil, badRequest("Invalid content type header")
 	}
 
-	// check if request should come with a document and has content type set
-	if r.DocumentExpected() && contentType == "" {
-		return nil, badRequest("Missing content type header")
-	}
-
 	// check accept header
 	accept := req.Header.Get("Accept")
 	if accept != ContentType {
@@ -205,6 +200,11 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// check intent
 	if r.Intent == 0 {
 		return nil, badRequest("The URL and method combination is invalid")
+	}
+
+	// check if request should come with a document and has content type set
+	if r.DocumentExpected() && contentType == "" {
+		return nil, badRequest("Missing content type header")
 	}
 
 	for key, values := range req.URL.Query() {
@@ -300,11 +300,8 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 // JSON API document.
 func (r *Request) DocumentExpected() bool {
 	switch r.Intent {
-	case CreateResource:
-	case UpdateResource:
-	case SetRelationship:
-	case AppendToRelationship:
-	case RemoveFromRelationship:
+	case CreateResource, UpdateResource, SetRelationship,
+		AppendToRelationship, RemoveFromRelationship:
 		return true
 	}
 

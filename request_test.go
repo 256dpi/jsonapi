@@ -14,9 +14,12 @@ func TestParseRequestError(t *testing.T) {
 	invalidContentType := constructRequest("GET", "")
 	invalidContentType.Header.Set("Content-Type", "foo")
 
+	missingContentType := constructRequest("POST", "foo")
+
 	list := []*http.Request{
 		invalidAccept,
 		invalidContentType,
+		missingContentType,
 		constructRequest("PUT", ""),
 		constructRequest("GET", ""),
 		constructRequest("POST", ""),
@@ -29,6 +32,7 @@ func TestParseRequestError(t *testing.T) {
 		constructRequest("GET", "foo?page[size]=1"),
 		constructRequest("GET", "foo?page[number]=bar&page[number]=baz"),
 		constructRequest("GET", "foo?page[size]=bar&page[size]=baz"),
+		constructRequest("PATCH", "foo"),
 	}
 
 	for _, r := range list {
@@ -110,6 +114,36 @@ func TestParseRequestRelationship(t *testing.T) {
 		ResourceID:   "1",
 		Relationship: "bar",
 	}, req)
+}
+
+func TestParseRequestIntent(t *testing.T) {
+	list := []struct {
+		method string
+		url    string
+		intent Intent
+		doc    bool
+	}{
+		{"GET", "/posts", ListResources, false},
+		{"GET", "/posts/1", FindResource, false},
+		{"POST", "/posts", CreateResource, true},
+		{"PATCH", "/posts/1", UpdateResource, true},
+		{"DELETE", "/posts/1", DeleteResource, false},
+		{"GET", "/posts/1/author", GetRelatedResources, false},
+		{"GET", "/posts/1/relationships/author", GetRelationship, false},
+		{"PATCH", "/posts/1/relationships/author", SetRelationship, true},
+		{"POST", "/posts/1/relationships/comments", AppendToRelationship, true},
+		{"DELETE", "/posts/1/relationships/comments", RemoveFromRelationship, true},
+	}
+
+	for _, entry := range list {
+		r := constructRequest(entry.method, entry.url)
+		r.Header.Set("Content-Type", ContentType)
+
+		req, err := ParseRequest(r, "")
+		assert.NoError(t, err)
+		assert.Equal(t, entry.intent, req.Intent)
+		assert.Equal(t, entry.doc, req.DocumentExpected())
+	}
 }
 
 func TestParseRequestInclude(t *testing.T) {
