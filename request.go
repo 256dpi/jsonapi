@@ -46,6 +46,8 @@ type Request struct {
 	// Target
 	Target Target
 
+	// TODO: Add Request Intent like FetchCollection, FetchSingleResource?
+
 	// Location
 	ResourceType    string
 	ResourceID      string
@@ -246,4 +248,23 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 // JSON API document.
 func (r *Request) DocumentExpected() bool {
 	return r.Action == Create || r.Action == Update
+}
+
+func badRequest(detail string) *Error {
+	return &Error{
+		Status: http.StatusBadRequest,
+		Title:  http.StatusText(http.StatusBadRequest),
+		Detail: detail,
+	}
+}
+
+func badRequestParam(detail, param string) *Error {
+	return &Error{
+		Status: http.StatusBadRequest,
+		Title:  http.StatusText(http.StatusBadRequest),
+		Detail: detail,
+		Source: &ErrorSource{
+			Parameter: param,
+		},
+	}
 }
