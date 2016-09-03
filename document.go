@@ -11,7 +11,7 @@ import (
 
 // TODO: Add Composer service that helps constructing documents and resources.
 
-var documentPool = sync.Pool{
+var responseDocumentPool = sync.Pool{
 	New: func() interface{} {
 		return &Document{
 			Data: &HybridResource{},
@@ -127,10 +127,10 @@ func WriteResponse(w http.ResponseWriter, status int, doc *Document) error {
 // passed response writer.
 func WriteResource(w http.ResponseWriter, status int, r *Resource) error {
 	// get document from pool
-	doc := getDocumentFromPool()
+	doc := getResponseDocumentFromPool()
 
 	// put document back when finished
-	defer documentPool.Put(doc)
+	defer responseDocumentPool.Put(doc)
 
 	// set resource
 	doc.Data.One = r
@@ -142,10 +142,10 @@ func WriteResource(w http.ResponseWriter, status int, r *Resource) error {
 // the passed response writer. Using this function is more efficient
 func WriteResources(w http.ResponseWriter, status int, rs []*Resource) error {
 	// get document from pool
-	doc := getDocumentFromPool()
+	doc := getResponseDocumentFromPool()
 
 	// put document back when finished
-	defer documentPool.Put(doc)
+	defer responseDocumentPool.Put(doc)
 
 	// set resource
 	doc.Data.Many = rs
@@ -153,9 +153,9 @@ func WriteResources(w http.ResponseWriter, status int, rs []*Resource) error {
 	return WriteResponse(w, status, doc)
 }
 
-func getDocumentFromPool() *Document {
+func getResponseDocumentFromPool() *Document {
 	// get document from pool
-	doc := documentPool.Get().(*Document)
+	doc := responseDocumentPool.Get().(*Document)
 
 	// reset document
 	doc.Data.One = nil
