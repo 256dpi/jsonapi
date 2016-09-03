@@ -33,7 +33,7 @@ const (
 	_ Target = iota
 	ResourceCollection
 	SingleResource
-	RelatedResource
+	RelatedResources
 	Relationship
 )
 
@@ -142,7 +142,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// set related resource
 	if len(segments) == 3 && segments[2] != "relationships" {
 		r.RelatedResource = segments[2]
-		r.Target = RelatedResource
+		r.Target = RelatedResources
 	}
 
 	// set relationship

@@ -97,7 +97,7 @@ func TestParseRequestRelatedResource(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Action:          Fetch,
-		Target:          RelatedResource,
+		Target:          RelatedResources,
 		ResourceType:    "foo",
 		ResourceID:      "1",
 		RelatedResource: "bar",
