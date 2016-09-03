@@ -44,7 +44,7 @@ func TestParseRequestError(t *testing.T) {
 
 func TestParseRequestMethodOverride(t *testing.T) {
 	r := constructRequest("GET", "foo/1")
-	r.Header.Set("Content-Type", ContentType)
+	r.Header.Set("Content-Type", MediaType)
 	r.Header.Set("X-HTTP-Method-Override", "PATCH")
 
 	req, err := ParseRequest(r, "")
@@ -137,7 +137,7 @@ func TestParseRequestIntent(t *testing.T) {
 
 	for _, entry := range list {
 		r := constructRequest(entry.method, entry.url)
-		r.Header.Set("Content-Type", ContentType)
+		r.Header.Set("Content-Type", MediaType)
 
 		req, err := ParseRequest(r, "")
 		assert.NoError(t, err)

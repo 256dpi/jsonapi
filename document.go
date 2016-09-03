@@ -114,7 +114,7 @@ func ParseBody(r io.Reader) (*Document, error) {
 // response writer.
 func WriteResponse(w http.ResponseWriter, status int, doc *Document) error {
 	// set content type
-	w.Header().Set("Content-Type", ContentType)
+	w.Header().Set("Content-Type", MediaType)
 
 	// write status
 	w.WriteHeader(status)

@@ -5,6 +5,6 @@ package jsonapi
 var objectSuffix = []byte("{")
 var arraySuffix = []byte("[")
 
-// ContentType is the official JSON API content type that should be used by
+// MediaType is the official JSON API media type that should be used by
 // all requests and responses.
-const ContentType = "application/vnd.api+json"
+const MediaType = "application/vnd.api+json"

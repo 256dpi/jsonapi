@@ -108,13 +108,13 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 
 	// check content type header
 	contentType := req.Header.Get("Content-Type")
-	if contentType != "" && contentType != ContentType {
+	if contentType != "" && contentType != MediaType {
 		return nil, badRequest("Invalid content type header")
 	}
 
 	// check accept header
 	accept := req.Header.Get("Accept")
-	if accept != ContentType {
+	if accept != MediaType {
 		return nil, badRequest("Invalid accept header")
 	}
 

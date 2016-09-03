@@ -18,7 +18,7 @@ func constructRequest(method, path string) *http.Request {
 		Header: make(http.Header),
 	}
 
-	r.Header.Set("Accept", ContentType)
+	r.Header.Set("Accept", MediaType)
 
 	return r
 }
