@@ -79,8 +79,8 @@ func (e *Error) Error() string {
 // WriteErrorFromStatus will write an error to the response writer that has
 // been derived from the passed status code.
 //
-// Note: If the passed status code is not a valid HTTP status code, a 500 status
-// code will be used instead.
+// Note: If the passed status code is not a valid HTTP status code, an Internal
+// Server Error status code will be used instead.
 func WriteErrorFromStatus(w http.ResponseWriter, status int, detail string) error {
 	// get text
 	str := http.StatusText(status)
@@ -102,7 +102,7 @@ func WriteErrorFromStatus(w http.ResponseWriter, status int, detail string) erro
 //
 // Note: If the supplied error is not an Error it will call WriteErrorFromStatus
 // with StatusInternalServerError. Does the passed Error have an invalid or zero
-// Status it will be corrected to 500 - Internal Server Error.
+// status code it will be corrected to the Internal Server Error status code.
 func WriteError(w http.ResponseWriter, err error) error {
 	anError, ok := err.(*Error)
 	if !ok {
@@ -127,10 +127,10 @@ func WriteError(w http.ResponseWriter, err error) error {
 }
 
 // WriteErrorList will write the passed errors to the the response writer.
-// The method will calculate a common error code for all the errors.
+// The method will calculate a common status code for all the errors.
 //
-// Does a passed Error have an invalid or zero Status it will be corrected to
-// 500 - Internal Server Error.
+// Does a passed Error have an invalid or zero status code it will be corrected
+// to the Internal Server Error status code.
 func WriteErrorList(w http.ResponseWriter, errors ...*Error) error {
 	// write internal server error if no errors are passed
 	if len(errors) == 0 {
@@ -177,4 +177,9 @@ func WriteErrorList(w http.ResponseWriter, errors ...*Error) error {
 	doc.Errors = errors
 
 	return WriteResponse(w, commonStatus, doc)
+}
+
+// WriteErrorNotFound is a convenience function to write a not found error.
+func WriteErrorNotFound(w http.ResponseWriter, detail string) error {
+	return WriteErrorFromStatus(w, http.StatusNotFound, detail)
 }

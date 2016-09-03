@@ -244,6 +244,24 @@ func TestWriteErrorListSettleOn500(t *testing.T) {
 	}`, rec.Body.String())
 }
 
+func TestWriteErrorNotFound(t *testing.T) {
+	rec := httptest.NewRecorder()
+
+	WriteErrorNotFound(rec, "Resource absent")
+
+	res := rec.Result()
+
+	assert.Equal(t, http.StatusNotFound, res.StatusCode)
+	assert.Equal(t, ContentType, res.Header.Get("Content-Type"))
+	assert.JSONEq(t, `{
+		"errors": [{
+			"status": "404",
+			"title": "Not Found",
+			"detail": "Resource absent"
+		}]
+	}`, rec.Body.String())
+}
+
 func BenchmarkWriteError(b *testing.B) {
 	err := &Error{
 		Title:  "Internal Server Error",
