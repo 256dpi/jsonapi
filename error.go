@@ -3,7 +3,16 @@ package jsonapi
 import (
 	"fmt"
 	"net/http"
+	"sync"
 )
+
+var singleErrorDocumentPool = sync.Pool{
+	New: func() interface{} {
+		return &Document{
+			Errors: make([]*Error, 1),
+		}
+	},
+}
 
 // Error objects provide additional information about problems encountered while
 // performing an operation.
@@ -66,7 +75,7 @@ func (e *Error) Error() string {
 //
 // Note: If the passed status code is not a valid HTTP status code, a 500 status
 // code will be used instead.
-func WriteErrorFromStatus(w http.ResponseWriter, status int) {
+func WriteErrorFromStatus(w http.ResponseWriter, status int) error {
 	// get text
 	str := http.StatusText(status)
 
@@ -76,13 +85,9 @@ func WriteErrorFromStatus(w http.ResponseWriter, status int) {
 		str = http.StatusText(http.StatusInternalServerError)
 	}
 
-	WriteResponse(w, status, &Document{
-		Errors: []*Error{
-			{
-				Status: status,
-				Title:  str,
-			},
-		},
+	return WriteError(w, &Error{
+		Status: status,
+		Title:  str,
 	})
 }
 
@@ -91,11 +96,10 @@ func WriteErrorFromStatus(w http.ResponseWriter, status int) {
 // Note: If the supplied error is not an Error it will call WriteErrorFromStatus
 // with StatusInternalServerError. Does the passed Error have an invalid or zero
 // Status it will be corrected to 500 - Internal Server Error.
-func WriteError(w http.ResponseWriter, err error) {
+func WriteError(w http.ResponseWriter, err error) error {
 	anError, ok := err.(*Error)
 	if !ok {
-		WriteErrorFromStatus(w, http.StatusInternalServerError)
-		return
+		return WriteErrorFromStatus(w, http.StatusInternalServerError)
 	}
 
 	// set status
@@ -103,9 +107,16 @@ func WriteError(w http.ResponseWriter, err error) {
 		anError.Status = http.StatusInternalServerError
 	}
 
-	WriteResponse(w, anError.Status, &Document{
-		Errors: []*Error{anError},
-	})
+	// get document from pool
+	doc := singleErrorDocumentPool.Get().(*Document)
+
+	// put document back when finished
+	defer singleErrorDocumentPool.Put(doc)
+
+	// reset document
+	doc.Errors[0] = anError
+
+	return WriteResponse(w, anError.Status, doc)
 }
 
 // TODO: Write a list of errors?

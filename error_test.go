@@ -111,3 +111,28 @@ func TestWriteErrorFromStatusInvalidStatus(t *testing.T) {
 		}]
 	}`, rec.Body.String())
 }
+
+func BenchmarkWriteError(b *testing.B) {
+	err := &Error{
+		Title:  "Internal Server Error",
+		Status: http.StatusInternalServerError,
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		err := WriteError(httptest.NewRecorder(), err)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func BenchmarkWriteErrorFromStatus(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		err := WriteErrorFromStatus(httptest.NewRecorder(), http.StatusInternalServerError)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
