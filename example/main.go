@@ -21,9 +21,9 @@ func main() {
 	http.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		defer func() {
+		defer func(star time.Time) {
 			fmt.Printf("%s %s %s\n", pad(r.Method, 7), pad(r.URL.Path, 15), time.Since(start).String())
-		}()
+		}(start)
 
 		req, err := jsonapi.ParseRequest(r, "/api/")
 		if err != nil {
@@ -98,7 +98,7 @@ func fetchPost(req *jsonapi.Request, w http.ResponseWriter) {
 func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) {
 	post := &postModel{
 		ID:    strconv.Itoa(counter),
-		Title: doc.Data.One.Attributes["title"].(string),
+		Title: doc.Data.One.Attributes["title"].(string), // FIXME
 	}
 
 	counter++
@@ -114,7 +114,7 @@ func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWrit
 		return
 	}
 
-	post.Title = doc.Data.One.Attributes["title"].(string)
+	post.Title = doc.Data.One.Attributes["title"].(string) // FIXME
 
 	writePost(w, http.StatusOK, post)
 }
