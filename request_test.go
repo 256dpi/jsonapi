@@ -39,7 +39,7 @@ func TestParseRequestError(t *testing.T) {
 }
 
 func TestParseRequestMethodOverride(t *testing.T) {
-	r := constructRequest("GET", "foo")
+	r := constructRequest("GET", "foo/1")
 	r.Header.Set("Content-Type", ContentType)
 	r.Header.Set("X-HTTP-Method-Override", "PATCH")
 
@@ -47,8 +47,9 @@ func TestParseRequestMethodOverride(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Action:       Update,
-		Target:       ResourceCollection,
+		Target:       SingleResource,
 		ResourceType: "foo",
+		ResourceID:   "1",
 	}, req)
 }
 
