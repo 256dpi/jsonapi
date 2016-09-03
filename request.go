@@ -6,15 +6,22 @@ import (
 	"strings"
 )
 
-// Action defines the basic intent of the request.
+// Action is the internal mapping to standard HTTP request methods.
 type Action int
 
-// The following actions translate to standard HTTP methods:
 const (
 	_ Action = iota
+
+	// Fetch maps to a GET request.
 	Fetch
+
+	// Create maps to a POST request.
 	Create
+
+	// Update maps to a PATCH request.
 	Update
+
+	// Delete maps to a DELETE request.
 	Delete
 )
 
@@ -25,28 +32,82 @@ var methodActionMap = map[string]Action{
 	"DELETE": Delete,
 }
 
-// Target specifies the format of the primary data the request ist targeting.
-type Target int
+// Level specifies the format and level of the JSON API URL pattern.
+type Level int
 
-// The following targets translate to JSON API URL patterns:
 const (
-	_ Target = iota
+	_ Level = iota
+
+	// ResourceCollection denotes the one level pattern e.g. "/posts".
 	ResourceCollection
+
+	// SingleResource denotes the two level pattern e.g. "/posts/1".
 	SingleResource
+
+	// RelatedResources denotes the three level pattern e.g. "/posts/1/author".
 	RelatedResources
+
+	// Relationship denotes the four level pattern e.g. "/posts/1/relationships/author".
 	Relationship
+)
+
+// An Intent represents a valid combination of a request method and a URL pattern.
+type Intent int
+
+const (
+	_ Intent = iota
+
+	// ListResources is a variation of the following request:
+	// GET /posts
+	ListResources
+
+	// FindResource is a variation of the following request:
+	// GET /posts/1
+	FindResource
+
+	// CreateResource is a variation of the following request:
+	// POST /posts
+	CreateResource
+
+	// UpdateResource is a variation of the following request:
+	// PATCH /posts/1
+	UpdateResource
+
+	// DeleteResource is a variation of the following request:
+	// DELETE /posts/1
+	DeleteResource
+
+	// GetRelatedResources is a variation of the following requests:
+	// GET /posts/1/author
+	// GET /posts/1/comments
+	GetRelatedResources
+
+	// GetRelationship is a variation of the following requests:
+	// GET /posts/1/relationships/author
+	// GET /posts/1/relationships/comments
+	GetRelationship
+
+	// SetRelationship is a variation of the following requests:
+	// PATCH /posts/1/relationships/author.
+	// PATCH /posts/1/relationships/comments.
+	SetRelationship
+
+	// AppendToRelationship is a variation of the following request:
+	// POST /posts/1/relationships/comments
+	AppendToRelationship
+
+	// RemoveFromRelationship is a variation of the following request:
+	// DELETE /posts/1/relationships/comments
+	RemoveFromRelationship
 )
 
 // A Request contains all JSON API related information parsed from a low level
 // request.
 type Request struct {
-	// Action
+	// Action, Target and Intent
 	Action Action
-
-	// Target
-	Target Target
-
-	// TODO: Add Request Intent like FetchCollection, FetchSingleResource?
+	Target Level
+	Intent Intent
 
 	// Location
 	ResourceType    string
@@ -156,7 +217,46 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		return nil, badRequest("Invalid URL relationship format")
 	}
 
-	// TODO: Check if action is generally allowed on the URL?
+	// calculate intent
+	switch r.Action {
+	case Fetch:
+		switch r.Target {
+		case ResourceCollection:
+			r.Intent = ListResources
+		case SingleResource:
+			r.Intent = FindResource
+		case RelatedResources:
+			r.Intent = GetRelatedResources
+		case Relationship:
+			r.Intent = GetRelationship
+		}
+	case Create:
+		switch r.Target {
+		case ResourceCollection:
+			r.Intent = CreateResource
+		case Relationship:
+			r.Intent = AppendToRelationship
+		}
+	case Update:
+		switch r.Target {
+		case SingleResource:
+			r.Intent = UpdateResource
+		case Relationship:
+			r.Intent = SetRelationship
+		}
+	case Delete:
+		switch r.Target {
+		case SingleResource:
+			r.Intent = DeleteResource
+		case Relationship:
+			r.Intent = RemoveFromRelationship
+		}
+	}
+
+	// check intent
+	if r.Intent == 0 {
+		return nil, badRequest("The URL and method combination is invalid")
+	}
 
 	for key, values := range req.URL.Query() {
 		// set included resources

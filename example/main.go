@@ -45,21 +45,19 @@ func main() {
 			}
 		}
 
-		if req.Action == jsonapi.Fetch {
-			if req.Target == jsonapi.ResourceCollection {
-				fetchPosts(req, w)
-				return
-			} else if req.Target == jsonapi.SingleResource {
-				fetchPost(req, w)
-				return
-			}
-		} else if req.Action == jsonapi.Create && req.Target == jsonapi.ResourceCollection {
+		if req.Intent == jsonapi.ListResources {
+			listPosts(req, w)
+			return
+		} else if req.Intent == jsonapi.FindResource {
+			findPost(req, w)
+			return
+		} else if req.Intent == jsonapi.CreateResource {
 			createPost(req, doc, w)
 			return
-		} else if req.Action == jsonapi.Update && req.Target == jsonapi.SingleResource {
+		} else if req.Intent == jsonapi.UpdateResource {
 			updatePost(req, doc, w)
 			return
-		} else if req.Action == jsonapi.Delete && req.Target == jsonapi.SingleResource {
+		} else if req.Intent == jsonapi.DeleteResource {
 			deletePost(req, w)
 			return
 		}
@@ -70,7 +68,7 @@ func main() {
 	http.ListenAndServe("0.0.0.0:4000", nil)
 }
 
-func fetchPosts(_ *jsonapi.Request, w http.ResponseWriter) {
+func listPosts(_ *jsonapi.Request, w http.ResponseWriter) {
 	list := make([]*jsonapi.Resource, 0, len(store))
 	for _, post := range store {
 		list = append(list, &jsonapi.Resource{
@@ -85,7 +83,7 @@ func fetchPosts(_ *jsonapi.Request, w http.ResponseWriter) {
 	jsonapi.WriteResources(w, http.StatusOK, list)
 }
 
-func fetchPost(req *jsonapi.Request, w http.ResponseWriter) {
+func findPost(req *jsonapi.Request, w http.ResponseWriter) {
 	post, ok := store[req.ResourceID]
 	if !ok {
 		jsonapi.WriteErrorNotFound(w, "The requested resource does not exist")
