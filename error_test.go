@@ -40,6 +40,22 @@ func TestWriteError(t *testing.T) {
 	}`, rec.Body.String())
 }
 
+func TestWriteErrorEmpty(t *testing.T) {
+	rec := httptest.NewRecorder()
+
+	WriteError(rec, &Error{})
+
+	res := rec.Result()
+
+	assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	assert.Equal(t, ContentType, res.Header.Get("Content-Type"))
+	assert.JSONEq(t, `{
+		"errors": [{
+			"status": "500"
+		}]
+	}`, rec.Body.String())
+}
+
 func TestWriteErrorMissingStatus(t *testing.T) {
 	rec := httptest.NewRecorder()
 
@@ -78,10 +94,27 @@ func TestWriteErrorNonError(t *testing.T) {
 	}`, rec.Body.String())
 }
 
+func TestWriteErrorNil(t *testing.T) {
+	rec := httptest.NewRecorder()
+
+	WriteError(rec, nil)
+
+	res := rec.Result()
+
+	assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	assert.Equal(t, ContentType, res.Header.Get("Content-Type"))
+	assert.JSONEq(t, `{
+		"errors": [{
+			"status": "500",
+			"title": "Internal Server Error"
+		}]
+	}`, rec.Body.String())
+}
+
 func TestWriteErrorFromStatus(t *testing.T) {
 	rec := httptest.NewRecorder()
 
-	WriteErrorFromStatus(rec, http.StatusBadRequest)
+	WriteErrorFromStatus(rec, http.StatusBadRequest, "")
 
 	res := rec.Result()
 
@@ -98,7 +131,7 @@ func TestWriteErrorFromStatus(t *testing.T) {
 func TestWriteErrorFromStatusInvalidStatus(t *testing.T) {
 	rec := httptest.NewRecorder()
 
-	WriteErrorFromStatus(rec, 0)
+	WriteErrorFromStatus(rec, 0, "")
 
 	res := rec.Result()
 
@@ -108,6 +141,105 @@ func TestWriteErrorFromStatusInvalidStatus(t *testing.T) {
 		"errors": [{
 			"status": "500",
 			"title": "Internal Server Error"
+		}]
+	}`, rec.Body.String())
+}
+
+func TestWriteErrorListNone(t *testing.T) {
+	rec := httptest.NewRecorder()
+
+	WriteErrorList(rec)
+
+	res := rec.Result()
+
+	assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	assert.Equal(t, ContentType, res.Header.Get("Content-Type"))
+	assert.JSONEq(t, `{
+		"errors": [{
+			"status": "500",
+			"title": "Internal Server Error"
+		}]
+	}`, rec.Body.String())
+}
+
+func TestWriteErrorListInvalid(t *testing.T) {
+	rec := httptest.NewRecorder()
+
+	WriteErrorList(rec, &Error{})
+
+	res := rec.Result()
+
+	assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	assert.Equal(t, ContentType, res.Header.Get("Content-Type"))
+	assert.JSONEq(t, `{
+		"errors": [{
+			"status": "500"
+		}]
+	}`, rec.Body.String())
+}
+
+func TestWriteErrorListSame(t *testing.T) {
+	rec := httptest.NewRecorder()
+
+	WriteErrorList(rec, &Error{
+		Status: http.StatusMethodNotAllowed,
+	}, &Error{
+		Status: http.StatusMethodNotAllowed,
+	})
+
+	res := rec.Result()
+
+	assert.Equal(t, http.StatusMethodNotAllowed, res.StatusCode)
+	assert.Equal(t, ContentType, res.Header.Get("Content-Type"))
+	assert.JSONEq(t, `{
+		"errors": [{
+			"status": "405"
+		}, {
+			"status": "405"
+		}]
+	}`, rec.Body.String())
+}
+
+func TestWriteErrorListSettleOn400(t *testing.T) {
+	rec := httptest.NewRecorder()
+
+	WriteErrorList(rec, &Error{
+		Status: http.StatusUnauthorized,
+	}, &Error{
+		Status: http.StatusForbidden,
+	})
+
+	res := rec.Result()
+
+	assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+	assert.Equal(t, ContentType, res.Header.Get("Content-Type"))
+	assert.JSONEq(t, `{
+		"errors": [{
+			"status": "401"
+		}, {
+			"status": "403"
+		}]
+	}`, rec.Body.String())
+}
+
+func TestWriteErrorListSettleOn500(t *testing.T) {
+	rec := httptest.NewRecorder()
+
+	WriteErrorList(rec, &Error{
+		Status: http.StatusNotImplemented,
+	}, &Error{
+		Status: http.StatusBadGateway,
+	})
+
+	res := rec.Result()
+
+	assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	assert.Equal(t, ContentType, res.Header.Get("Content-Type"))
+	assert.JSONEq(t, `{
+		"errors": [{
+			"status": "501"
+		}, {
+			"status": "502"
 		}]
 	}`, rec.Body.String())
 }
@@ -130,7 +262,23 @@ func BenchmarkWriteError(b *testing.B) {
 
 func BenchmarkWriteErrorFromStatus(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		err := WriteErrorFromStatus(httptest.NewRecorder(), http.StatusInternalServerError)
+		err := WriteErrorFromStatus(httptest.NewRecorder(), http.StatusInternalServerError, "")
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func BenchmarkWriteErrorList(b *testing.B) {
+	err := &Error{
+		Title:  "Internal Server Error",
+		Status: http.StatusInternalServerError,
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		err := WriteErrorList(httptest.NewRecorder(), err, err)
 		if err != nil {
 			panic(err)
 		}

@@ -32,7 +32,7 @@ func main() {
 		}
 
 		if req.ResourceType != "posts" {
-			jsonapi.WriteErrorFromStatus(w, http.StatusNotFound)
+			jsonapi.WriteErrorFromStatus(w, http.StatusNotFound, "The requested resource is not available")
 			return
 		}
 
@@ -64,7 +64,7 @@ func main() {
 			return
 		}
 
-		jsonapi.WriteErrorFromStatus(w, http.StatusBadRequest)
+		jsonapi.WriteErrorFromStatus(w, http.StatusBadRequest, "The requested method is not available")
 	})
 
 	http.ListenAndServe("0.0.0.0:4000", nil)
@@ -88,7 +88,7 @@ func fetchPosts(_ *jsonapi.Request, w http.ResponseWriter) {
 func fetchPost(req *jsonapi.Request, w http.ResponseWriter) {
 	post, ok := store[req.ResourceID]
 	if !ok {
-		jsonapi.WriteErrorFromStatus(w, http.StatusNotFound)
+		jsonapi.WriteErrorFromStatus(w, http.StatusNotFound, "The requested resource does not exist")
 		return
 	}
 
@@ -110,7 +110,7 @@ func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter
 func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) {
 	post, ok := store[req.ResourceID]
 	if !ok {
-		jsonapi.WriteErrorFromStatus(w, http.StatusNotFound)
+		jsonapi.WriteErrorFromStatus(w, http.StatusNotFound, "The requested resource does not exist")
 		return
 	}
 
@@ -122,7 +122,7 @@ func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWrit
 func deletePost(req *jsonapi.Request, w http.ResponseWriter) {
 	_, ok := store[req.ResourceID]
 	if !ok {
-		jsonapi.WriteErrorFromStatus(w, http.StatusNotFound)
+		jsonapi.WriteErrorFromStatus(w, http.StatusNotFound, "The requested resource does not exist")
 		return
 	}
 

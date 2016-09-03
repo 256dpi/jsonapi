@@ -14,6 +14,12 @@ var singleErrorDocumentPool = sync.Pool{
 	},
 }
 
+var multiErrorDocumentPool = sync.Pool{
+	New: func() interface{} {
+		return &Document{}
+	},
+}
+
 // Error objects provide additional information about problems encountered while
 // performing an operation.
 //
@@ -75,7 +81,7 @@ func (e *Error) Error() string {
 //
 // Note: If the passed status code is not a valid HTTP status code, a 500 status
 // code will be used instead.
-func WriteErrorFromStatus(w http.ResponseWriter, status int) error {
+func WriteErrorFromStatus(w http.ResponseWriter, status int, detail string) error {
 	// get text
 	str := http.StatusText(status)
 
@@ -88,6 +94,7 @@ func WriteErrorFromStatus(w http.ResponseWriter, status int) error {
 	return WriteError(w, &Error{
 		Status: status,
 		Title:  str,
+		Detail: detail,
 	})
 }
 
@@ -99,7 +106,7 @@ func WriteErrorFromStatus(w http.ResponseWriter, status int) error {
 func WriteError(w http.ResponseWriter, err error) error {
 	anError, ok := err.(*Error)
 	if !ok {
-		return WriteErrorFromStatus(w, http.StatusInternalServerError)
+		return WriteErrorFromStatus(w, http.StatusInternalServerError, "")
 	}
 
 	// set status
@@ -119,4 +126,55 @@ func WriteError(w http.ResponseWriter, err error) error {
 	return WriteResponse(w, anError.Status, doc)
 }
 
-// TODO: Write a list of errors?
+// WriteErrorList will write the passed errors to the the response writer.
+// The method will calculate a common error code for all the errors.
+//
+// Does a passed Error have an invalid or zero Status it will be corrected to
+// 500 - Internal Server Error.
+func WriteErrorList(w http.ResponseWriter, errors ...*Error) error {
+	// write internal server error if no errors are passed
+	if len(errors) == 0 {
+		return WriteError(w, nil)
+	}
+
+	// prepare common status
+	commonStatus := 0
+
+	for _, err := range errors {
+		// check for zero and invalid status
+		if str := http.StatusText(err.Status); str == "" {
+			err.Status = 500
+		}
+
+		// set directly at beginning
+		if commonStatus == 0 {
+			commonStatus = err.Status
+			continue
+		}
+
+		// check if the same or already 500
+		if commonStatus == err.Status || commonStatus == 500 {
+			continue
+		}
+
+		// settle on 500 if already in 500er range
+		if err.Status >= 500 {
+			commonStatus = 500
+			continue
+		}
+
+		// settle on 400 if in 400er range
+		commonStatus = 400
+	}
+
+	// get document from pool
+	doc := multiErrorDocumentPool.Get().(*Document)
+
+	// put document back when finished
+	defer multiErrorDocumentPool.Put(doc)
+
+	// set errors
+	doc.Errors = errors
+
+	return WriteResponse(w, commonStatus, doc)
+}
