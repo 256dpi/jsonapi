@@ -76,13 +76,16 @@ type Request struct {
 //
 // Note: The returned error can directly be written using WriteError.
 func ParseRequest(req *http.Request, prefix string) (*Request, error) {
+	// get method
+	method := req.Method
+
 	// set overridden method if available
 	if req.Header.Get("X-HTTP-Method-Override") != "" {
-		req.Method = req.Header.Get("X-HTTP-Method-Override")
+		method = req.Header.Get("X-HTTP-Method-Override")
 	}
 
 	// map method to action
-	action, ok := methodActionMap[req.Method]
+	action, ok := methodActionMap[method]
 	if !ok {
 		return nil, badRequest("Unsupported method")
 	}
