@@ -84,7 +84,7 @@ func (e *Error) Error() string {
 func WriteError(w http.ResponseWriter, err error) error {
 	anError, ok := err.(*Error)
 	if !ok {
-		anError = InternalServerError("Unknown error encountered")
+		anError = InternalServerError("")
 	}
 
 	// set status

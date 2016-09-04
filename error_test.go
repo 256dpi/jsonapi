@@ -89,8 +89,7 @@ func TestWriteErrorNonError(t *testing.T) {
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
-			"title": "Internal Server Error",
-			"detail": "Unknown error encountered"
+			"title": "Internal Server Error"
 		}]
 	}`, rec.Body.String())
 }
@@ -107,8 +106,7 @@ func TestWriteErrorNil(t *testing.T) {
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
-			"title": "Internal Server Error",
-			"detail": "Unknown error encountered"
+			"title": "Internal Server Error"
 		}]
 	}`, rec.Body.String())
 }
@@ -125,8 +123,7 @@ func TestWriteErrorListNone(t *testing.T) {
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
-			"title": "Internal Server Error",
-			"detail": "Unknown error encountered"
+			"title": "Internal Server Error"
 		}]
 	}`, rec.Body.String())
 }
