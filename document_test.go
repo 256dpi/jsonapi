@@ -16,6 +16,18 @@ func TestParseBodyInvalidDocument(t *testing.T) {
 		stringReader(`"foo"`),
 		stringReader(`true`),
 		stringReader(`[]`),
+		stringReader(`{
+			"data": "foo"
+		}`),
+		stringReader(`{
+			"data": {
+				"type": "foo",
+				"id": "1",
+				"relationships": {
+					"bar": "foo"
+				}
+			}
+		}`),
 	}
 
 	for _, r := range readers {
@@ -41,7 +53,7 @@ func TestParseBodyEmptyDocument(t *testing.T) {
 	assert.Nil(t, doc)
 }
 
-func TestParseBodyMinimumSingleDocument(t *testing.T) {
+func TestParseBodyMinimumDocument(t *testing.T) {
 	doc, err := ParseBody(stringReader(`{
   		"data": {
     		"type": "foo"
@@ -57,7 +69,7 @@ func TestParseBodyMinimumSingleDocument(t *testing.T) {
 	}, doc)
 }
 
-func TestParseBodySingleDocument(t *testing.T) {
+func TestParseBodyDocument(t *testing.T) {
 	doc, err := ParseBody(stringReader(`{
   		"data": {
     		"type": "foo",
@@ -74,6 +86,108 @@ func TestParseBodySingleDocument(t *testing.T) {
 				ID:            "1",
 				Attributes:    make(Map),
 				Relationships: make(map[string]HybridDocument),
+			},
+		},
+	}, doc)
+}
+
+func TestParseBodyDocuments(t *testing.T) {
+	doc, err := ParseBody(stringReader(`{
+  		"data": [
+  			{
+				"type": "foo",
+				"id": "1",
+				"attributes": {},
+				"relationships": {}
+			}
+		]
+	}`))
+	assert.NoError(t, err)
+	assert.Equal(t, &Document{
+		Data: &HybridResource{
+			Many: []*Resource{
+				{
+					Type:          "foo",
+					ID:            "1",
+					Attributes:    make(Map),
+					Relationships: make(map[string]HybridDocument),
+				},
+			},
+		},
+	}, doc)
+}
+
+func TestParseBodyDocumentWithRelationship(t *testing.T) {
+	doc, err := ParseBody(stringReader(`{
+  		"data": {
+    		"type": "foo",
+    		"id": "1",
+    		"relationships": {
+    			"bar": {
+    				"data": {
+    					"type": "bar"
+    				}
+				}
+    		}
+		}
+	}`))
+	assert.NoError(t, err)
+	assert.Equal(t, &Document{
+		Data: &HybridResource{
+			One: &Resource{
+				Type: "foo",
+				ID:   "1",
+				Relationships: map[string]HybridDocument{
+					"bar": {
+						One: &Document{
+							Data: &HybridResource{
+								One: &Resource{
+									Type: "bar",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}, doc)
+}
+
+func TestParseBodyDocumentWithRelationships(t *testing.T) {
+	doc, err := ParseBody(stringReader(`{
+  		"data": {
+    		"type": "foo",
+    		"id": "1",
+    		"relationships": {
+    			"bar": [
+    				{
+    					"data": {
+    						"type": "bar"
+    					}
+    				}
+				]
+    		}
+		}
+	}`))
+	assert.NoError(t, err)
+	assert.Equal(t, &Document{
+		Data: &HybridResource{
+			One: &Resource{
+				Type: "foo",
+				ID:   "1",
+				Relationships: map[string]HybridDocument{
+					"bar": {
+						Many: []*Document{
+							{
+								Data: &HybridResource{
+									One: &Resource{
+										Type: "bar",
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}, doc)

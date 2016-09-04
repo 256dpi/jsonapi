@@ -85,7 +85,7 @@ func (c *HybridResource) UnmarshalJSON(doc []byte) error {
 		return json.Unmarshal(doc, &c.Many)
 	}
 
-	return errors.New("invalid")
+	return errors.New("Expected data to be an object or array")
 }
 
 // MarshalJSON will either encode a list or a single object.
@@ -107,12 +107,14 @@ func (c *HybridDocument) UnmarshalJSON(doc []byte) error {
 		return json.Unmarshal(doc, &c.Many)
 	}
 
-	return errors.New("invalid")
+	return errors.New("Expected relationship to be an object or array")
 }
 
 // WriteResource will wrap the passed resource, links and included resources in
 // a document and write it to the passed response writer.
 func WriteResource(w http.ResponseWriter, status int, res *Resource, links *DocumentLinks, included ...*Resource) error {
+	// TODO: Validate resource?
+
 	// get document from pool
 	doc := getResponseDocumentFromPool()
 
