@@ -50,6 +50,7 @@ func TestParseRequestMethodOverride(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r,
 		Intent:       UpdateResource,
 		ResourceType: "foo",
 		ResourceID:   "1",
@@ -62,6 +63,7 @@ func TestParseRequestPrefix(t *testing.T) {
 	req, err := ParseRequest(r, "foo/")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r,
 		Intent:       ListResources,
 		ResourceType: "bar",
 	}, req)
@@ -73,6 +75,7 @@ func TestParseRequestResource(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r,
 		Intent:       ListResources,
 		ResourceType: "foo",
 	}, req)
@@ -84,6 +87,7 @@ func TestParseRequestResourceID(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r,
 		Intent:       FindResource,
 		ResourceType: "foo",
 		ResourceID:   "1",
@@ -96,6 +100,7 @@ func TestParseRequestRelatedResource(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:         r,
 		Intent:          GetRelatedResources,
 		ResourceType:    "foo",
 		ResourceID:      "1",
@@ -109,6 +114,7 @@ func TestParseRequestRelationship(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r,
 		Intent:       GetRelationship,
 		ResourceType: "foo",
 		ResourceID:   "1",
@@ -152,6 +158,7 @@ func TestParseRequestInclude(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r1,
 		Intent:       ListResources,
 		ResourceType: "foo",
 		Include:      []string{"bar", "baz"},
@@ -162,6 +169,7 @@ func TestParseRequestInclude(t *testing.T) {
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r2,
 		Intent:       ListResources,
 		ResourceType: "foo",
 		Include:      []string{"bar", "baz", "qux"},
@@ -174,6 +182,7 @@ func TestParseRequestSorting(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r1,
 		Intent:       ListResources,
 		ResourceType: "foo",
 		Sorting:      []string{"bar", "baz"},
@@ -184,6 +193,7 @@ func TestParseRequestSorting(t *testing.T) {
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r2,
 		Intent:       ListResources,
 		ResourceType: "foo",
 		Sorting:      []string{"bar", "baz", "qux"},
@@ -191,11 +201,12 @@ func TestParseRequestSorting(t *testing.T) {
 }
 
 func TestParseRequestPage(t *testing.T) {
-	r1 := constructRequest("GET", "foo?page[number]=1&page[size]=2")
+	r := constructRequest("GET", "foo?page[number]=1&page[size]=2")
 
-	req, err := ParseRequest(r1, "")
+	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r,
 		Intent:       ListResources,
 		ResourceType: "foo",
 		PageNumber:   1,
@@ -204,11 +215,12 @@ func TestParseRequestPage(t *testing.T) {
 }
 
 func TestParseRequestFields(t *testing.T) {
-	r1 := constructRequest("GET", "foo?fields[foo]=bar,baz")
+	r := constructRequest("GET", "foo?fields[foo]=bar,baz")
 
-	req, err := ParseRequest(r1, "")
+	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r,
 		Intent:       ListResources,
 		ResourceType: "foo",
 		Fields: map[string][]string{
@@ -218,11 +230,12 @@ func TestParseRequestFields(t *testing.T) {
 }
 
 func TestParseRequestFilters(t *testing.T) {
-	r1 := constructRequest("GET", "foo?filter[foo]=bar,baz")
+	r := constructRequest("GET", "foo?filter[foo]=bar,baz")
 
-	req, err := ParseRequest(r1, "")
+	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
+		Request:      r,
 		Intent:       ListResources,
 		ResourceType: "foo",
 		Filters: map[string][]string{

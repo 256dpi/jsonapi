@@ -59,29 +59,33 @@ const (
 // A Request contains all JSON API related information parsed from a low level
 // request.
 type Request struct {
-	// Intent
+	// The Original HTTP request.
+	Request *http.Request
+
+	// The parsed JSON API intent of the request.
 	Intent Intent
 
-	// Location
+	// The fragments parsed from the URL of the request.
 	ResourceType    string
 	ResourceID      string
 	RelatedResource string
 	Relationship    string
 
-	// Inclusion of Related Resources
+	// The requested resources to be included in the response.
 	Include []string
 
-	// Pagination
+	// The pagination details of the request. Zero values mean no pagination
+	// details have been provided.
 	PageNumber int
 	PageSize   int
 
-	// Sorting
+	// The sorting that has been requested.
 	Sorting []string
 
-	// Sparse Fieldsets
+	// The sparse fieldsets that have been requested.
 	Fields map[string][]string
 
-	// Filtering
+	// The filtering that has been requested.
 	Filters map[string][]string
 }
 
@@ -104,7 +108,9 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	// allocate new request
-	r := &Request{}
+	r := &Request{
+		Request: req,
+	}
 
 	// check content type header
 	contentType := req.Header.Get("Content-Type")
