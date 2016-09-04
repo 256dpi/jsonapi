@@ -8,8 +8,6 @@ import "net/http"
 // all requests and responses.
 const MediaType = "application/vnd.api+json"
 
-var objectSuffix = []byte("{")
-var arraySuffix = []byte("[")
 
 // BadRequest returns a new bad request error.
 func BadRequest(detail string) *Error {

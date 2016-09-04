@@ -8,6 +8,9 @@ import (
 	"sync"
 )
 
+var objectSuffix = []byte("{")
+var arraySuffix = []byte("[")
+
 var responseDocumentPool = sync.Pool{
 	New: func() interface{} {
 		return &Document{
