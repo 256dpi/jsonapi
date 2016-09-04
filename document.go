@@ -9,8 +9,6 @@ import (
 	"sync"
 )
 
-// TODO: Add Composer service that helps constructing documents and resources.
-
 var responseDocumentPool = sync.Pool{
 	New: func() interface{} {
 		return &Document{
