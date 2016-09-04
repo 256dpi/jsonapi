@@ -1,21 +1,10 @@
 package jsonapi
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
-	"sync"
 )
-
-var responseDocumentPool = sync.Pool{
-	New: func() interface{} {
-		return &Document{
-			Data: &HybridResource{},
-		}
-	},
-}
 
 // DocumentLinks are a set of links related to a documents primary data.
 //
@@ -52,38 +41,6 @@ type Document struct {
 	Meta Map `json:"meta,omitempty"`
 }
 
-// HybridDocument is a transparent type that enables concrete marshalling and
-// unmarshalling of a single document value or a list of documents.
-type HybridDocument struct {
-	// A single document.
-	One *Document
-
-	// A list of documents.
-	Many []*Document
-}
-
-// MarshalJSON will either encode a list or a single object.
-func (c *HybridDocument) MarshalJSON() ([]byte, error) {
-	if c.Many != nil {
-		return json.Marshal(c.Many)
-	}
-
-	return json.Marshal(c.One)
-}
-
-// UnmarshalJSON detects if the passed JSON is a single object or a list.
-func (c *HybridDocument) UnmarshalJSON(doc []byte) error {
-	if bytes.HasPrefix(doc, objectSuffix) {
-		return json.Unmarshal(doc, &c.One)
-	}
-
-	if bytes.HasPrefix(doc, arraySuffix) {
-		return json.Unmarshal(doc, &c.Many)
-	}
-
-	return errors.New("invalid")
-}
-
 // ParseBody will decode a JSON API document from the passed request body reader.
 func ParseBody(r io.Reader) (*Document, error) {
 	// prepare document
@@ -97,7 +54,7 @@ func ParseBody(r io.Reader) (*Document, error) {
 
 	// check for errors
 	if len(doc.Errors) > 0 {
-		return nil, badRequest("Request contains errors")
+		return nil, badRequest("Body contains errors")
 	}
 
 	// check data
@@ -119,53 +76,4 @@ func WriteResponse(w http.ResponseWriter, status int, doc *Document) error {
 
 	// write document
 	return json.NewEncoder(w).Encode(doc)
-}
-
-// WriteResource will wrap the passed resource, links and included resources in
-// a document and write it to the passed response writer.
-func WriteResource(w http.ResponseWriter, status int, res *Resource, links *DocumentLinks, included ...*Resource) error {
-	// get document from pool
-	doc := getResponseDocumentFromPool()
-
-	// put document back when finished
-	defer responseDocumentPool.Put(doc)
-
-	// set data
-	doc.Data.One = res
-	doc.Links = links
-	doc.Included = included
-
-	return WriteResponse(w, status, doc)
-}
-
-// WriteResources will wrap the passed resources, links and included resources
-// in a document and write it to the passed response writer.
-func WriteResources(w http.ResponseWriter, status int, res []*Resource, links *DocumentLinks, included ...*Resource) error {
-	// get document from pool
-	doc := getResponseDocumentFromPool()
-
-	// put document back when finished
-	defer responseDocumentPool.Put(doc)
-
-	// set data
-	doc.Data.Many = res
-	doc.Links = links
-	doc.Included = included
-
-	return WriteResponse(w, status, doc)
-}
-
-func getResponseDocumentFromPool() *Document {
-	// get document from pool
-	doc := responseDocumentPool.Get().(*Document)
-
-	// reset document
-	doc.Data.One = nil
-	doc.Data.Many = nil
-	doc.Included = nil
-	doc.Links = nil
-	doc.Errors = nil
-	doc.Meta = nil
-
-	return doc
 }
