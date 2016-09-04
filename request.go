@@ -116,7 +116,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 
 	// map method to action
 	if method != "GET" && method != "POST" && method != "PATCH" && method != "DELETE" {
-		return nil, badRequest("Unsupported method")
+		return nil, BadRequest("Unsupported method")
 	}
 
 	// allocate new request
@@ -127,13 +127,13 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// check content type header
 	contentType := req.Header.Get("Content-Type")
 	if contentType != "" && contentType != MediaType {
-		return nil, badRequest("Invalid content type header")
+		return nil, BadRequest("Invalid content type header")
 	}
 
 	// check accept header
 	accept := req.Header.Get("Accept")
 	if accept != MediaType {
-		return nil, badRequest("Invalid accept header")
+		return nil, BadRequest("Invalid accept header")
 	}
 
 	// de-prefix and trim path
@@ -142,13 +142,13 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// split path
 	segments := strings.Split(url, "/")
 	if len(segments) == 0 || len(segments) > 4 {
-		return nil, badRequest("Invalid URL segment count")
+		return nil, BadRequest("Invalid URL segment count")
 	}
 
 	// check for invalid segments
 	for _, s := range segments {
 		if s == "" {
-			return nil, badRequest("Found empty URL segments")
+			return nil, BadRequest("Found empty URL segments")
 		}
 	}
 
@@ -176,7 +176,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 
 	// final check
 	if len(segments) > 2 && (r.RelatedResource == "" && r.Relationship == "") {
-		return nil, badRequest("Invalid URL relationship format")
+		return nil, BadRequest("Invalid URL relationship format")
 	}
 
 	// calculate intent
@@ -217,12 +217,12 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 
 	// check intent
 	if r.Intent == 0 {
-		return nil, badRequest("The URL and method combination is invalid")
+		return nil, BadRequest("The URL and method combination is invalid")
 	}
 
 	// check if request should come with a document and has content type set
 	if r.Intent.DocumentExpected() && contentType == "" {
-		return nil, badRequest("Missing content type header")
+		return nil, BadRequest("Missing content type header")
 	}
 
 	for key, values := range req.URL.Query() {
@@ -247,12 +247,12 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		// set page number
 		if key == "page[number]" {
 			if len(values) != 1 {
-				return nil, badRequestParam("More than one value", "page[number]")
+				return nil, BadRequestParam("More than one value", "page[number]")
 			}
 
 			n, err := strconv.Atoi(values[0])
 			if err != nil {
-				return nil, badRequestParam("Not a number", "page[number]")
+				return nil, BadRequestParam("Not a number", "page[number]")
 			}
 
 			r.PageNumber = n
@@ -262,12 +262,12 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		// set page size
 		if key == "page[size]" {
 			if len(values) != 1 {
-				return nil, badRequestParam("More than one value", "page[size]")
+				return nil, BadRequestParam("More than one value", "page[size]")
 			}
 
 			n, err := strconv.Atoi(values[0])
 			if err != nil {
-				return nil, badRequestParam("Not a number", "page[size]")
+				return nil, BadRequestParam("Not a number", "page[size]")
 			}
 
 			r.PageSize = n
@@ -303,12 +303,12 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 
 	// check page size
 	if r.PageNumber > 0 && r.PageSize <= 0 {
-		return nil, badRequestParam("Missing page size", "page[number]")
+		return nil, BadRequestParam("Missing page size", "page[number]")
 	}
 
 	// check page number
 	if r.PageSize > 0 && r.PageNumber <= 0 {
-		return nil, badRequestParam("Missing page number", "page[size]")
+		return nil, BadRequestParam("Missing page number", "page[size]")
 	}
 
 	return r, nil

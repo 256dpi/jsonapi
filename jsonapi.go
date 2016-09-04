@@ -11,8 +11,8 @@ const MediaType = "application/vnd.api+json"
 var objectSuffix = []byte("{")
 var arraySuffix = []byte("[")
 
-// returns a bad request error
-func badRequest(detail string) *Error {
+// BadRequest returns a new bad request error.
+func BadRequest(detail string) *Error {
 	return &Error{
 		Status: http.StatusBadRequest,
 		Title:  http.StatusText(http.StatusBadRequest),
@@ -20,8 +20,8 @@ func badRequest(detail string) *Error {
 	}
 }
 
-// returns a bad request error with a parameter source
-func badRequestParam(detail, param string) *Error {
+// BadRequestParam returns a new bad request error with a parameter source.
+func BadRequestParam(detail, param string) *Error {
 	return &Error{
 		Status: http.StatusBadRequest,
 		Title:  http.StatusText(http.StatusBadRequest),

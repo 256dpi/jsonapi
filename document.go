@@ -49,17 +49,17 @@ func ParseBody(r io.Reader) (*Document, error) {
 	// decode body
 	err := json.NewDecoder(r).Decode(&doc)
 	if err != nil {
-		return nil, badRequest(err.Error())
+		return nil, BadRequest(err.Error())
 	}
 
 	// check for errors
 	if len(doc.Errors) > 0 {
-		return nil, badRequest("Body contains errors")
+		return nil, BadRequest("Body contains errors")
 	}
 
 	// check data
 	if doc.Data == nil || (doc.Data.One == nil && len(doc.Data.Many) == 0) {
-		return nil, badRequest("Mising data")
+		return nil, BadRequest("Mising data")
 	}
 
 	return &doc, nil
