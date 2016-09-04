@@ -37,7 +37,7 @@ func main() {
 		}
 
 		var doc *jsonapi.Document
-		if req.DocumentExpected() {
+		if req.Intent.DocumentExpected() {
 			doc, err = jsonapi.ParseBody(r.Body)
 			if err != nil {
 				jsonapi.WriteError(w, err)

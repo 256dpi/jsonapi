@@ -56,6 +56,18 @@ const (
 	RemoveFromRelationship
 )
 
+// DocumentExpected returns whether the intent is expected to come with a
+// JSON API document.
+func (i Intent) DocumentExpected() bool {
+	switch i {
+	case CreateResource, UpdateResource, SetRelationship,
+		AppendToRelationship, RemoveFromRelationship:
+		return true
+	}
+
+	return false
+}
+
 // A Request contains all JSON API related information parsed from a low level
 // request.
 type Request struct {
@@ -209,7 +221,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	// check if request should come with a document and has content type set
-	if r.DocumentExpected() && contentType == "" {
+	if r.Intent.DocumentExpected() && contentType == "" {
 		return nil, badRequest("Missing content type header")
 	}
 
@@ -300,16 +312,4 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	return r, nil
-}
-
-// DocumentExpected returns whether the request is expected to come with a
-// JSON API document.
-func (r *Request) DocumentExpected() bool {
-	switch r.Intent {
-	case CreateResource, UpdateResource, SetRelationship,
-		AppendToRelationship, RemoveFromRelationship:
-		return true
-	}
-
-	return false
 }

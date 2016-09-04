@@ -148,7 +148,7 @@ func TestParseRequestIntent(t *testing.T) {
 		req, err := ParseRequest(r, "")
 		assert.NoError(t, err)
 		assert.Equal(t, entry.intent, req.Intent)
-		assert.Equal(t, entry.doc, req.DocumentExpected())
+		assert.Equal(t, entry.doc, req.Intent.DocumentExpected())
 	}
 }
 
