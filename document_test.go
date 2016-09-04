@@ -85,7 +85,7 @@ func TestParseBodyDocument(t *testing.T) {
 				Type:          "foo",
 				ID:            "1",
 				Attributes:    make(Map),
-				Relationships: make(map[string]HybridDocument),
+				Relationships: make(Relationships),
 			},
 		},
 	}, doc)
@@ -110,7 +110,7 @@ func TestParseBodyDocuments(t *testing.T) {
 					Type:          "foo",
 					ID:            "1",
 					Attributes:    make(Map),
-					Relationships: make(map[string]HybridDocument),
+					Relationships: make(Relationships),
 				},
 			},
 		},
@@ -137,7 +137,7 @@ func TestParseBodyDocumentWithRelationship(t *testing.T) {
 			One: &Resource{
 				Type: "foo",
 				ID:   "1",
-				Relationships: map[string]HybridDocument{
+				Relationships: Relationships{
 					"bar": {
 						One: &Document{
 							Data: &HybridResource{
@@ -175,7 +175,7 @@ func TestParseBodyDocumentWithRelationships(t *testing.T) {
 			One: &Resource{
 				Type: "foo",
 				ID:   "1",
-				Relationships: map[string]HybridDocument{
+				Relationships: Relationships{
 					"bar": {
 						Many: []*Document{
 							{

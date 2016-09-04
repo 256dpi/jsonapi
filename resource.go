@@ -19,6 +19,9 @@ var responseDocumentPool = sync.Pool{
 // Map is a general purpose map of string keys and arbitrary values.
 type Map map[string]interface{}
 
+// Relationships are can be part of resource and may hold one or many documents.
+type Relationships map[string]*HybridDocument
+
 // A Resource is carried by a document and provides the basic structure for
 // JSON API resource objects and resource identifier objects.
 //
@@ -40,7 +43,7 @@ type Resource struct {
 
 	// A relationships object describing relationships between the resource and
 	// other JSON API resources.
-	Relationships map[string]HybridDocument `json:"relationships,omitempty"`
+	Relationships Relationships `json:"relationships,omitempty"`
 
 	// Non-standard meta-information about the resource.
 	Meta Map `json:"meta,omitempty"`
@@ -67,44 +70,44 @@ type HybridDocument struct {
 }
 
 // MarshalJSON will either encode a list or a single object.
-func (c *HybridResource) MarshalJSON() ([]byte, error) {
-	if c.Many != nil {
-		return json.Marshal(c.Many)
+func (r *HybridResource) MarshalJSON() ([]byte, error) {
+	if r.Many != nil {
+		return json.Marshal(r.Many)
 	}
 
-	return json.Marshal(c.One)
+	return json.Marshal(r.One)
 }
 
 // UnmarshalJSON detects if the passed JSON is a single object or a list.
-func (c *HybridResource) UnmarshalJSON(doc []byte) error {
+func (r *HybridResource) UnmarshalJSON(doc []byte) error {
 	if bytes.HasPrefix(doc, objectSuffix) {
-		return json.Unmarshal(doc, &c.One)
+		return json.Unmarshal(doc, &r.One)
 	}
 
 	if bytes.HasPrefix(doc, arraySuffix) {
-		return json.Unmarshal(doc, &c.Many)
+		return json.Unmarshal(doc, &r.Many)
 	}
 
 	return errors.New("Expected data to be an object or array")
 }
 
 // MarshalJSON will either encode a list or a single object.
-func (c *HybridDocument) MarshalJSON() ([]byte, error) {
-	if c.Many != nil {
-		return json.Marshal(c.Many)
+func (d *HybridDocument) MarshalJSON() ([]byte, error) {
+	if d.Many != nil {
+		return json.Marshal(d.Many)
 	}
 
-	return json.Marshal(c.One)
+	return json.Marshal(d.One)
 }
 
 // UnmarshalJSON detects if the passed JSON is a single object or a list.
-func (c *HybridDocument) UnmarshalJSON(doc []byte) error {
+func (d *HybridDocument) UnmarshalJSON(doc []byte) error {
 	if bytes.HasPrefix(doc, objectSuffix) {
-		return json.Unmarshal(doc, &c.One)
+		return json.Unmarshal(doc, &d.One)
 	}
 
 	if bytes.HasPrefix(doc, arraySuffix) {
-		return json.Unmarshal(doc, &c.Many)
+		return json.Unmarshal(doc, &d.Many)
 	}
 
 	return errors.New("Expected relationship to be an object or array")
