@@ -25,6 +25,16 @@ func TestParseBodyInvalidDocument(t *testing.T) {
 	}
 }
 
+func TestParseBodyDocumentWithErrors(t *testing.T) {
+	doc, err := ParseBody(stringReader(`{
+		"errors": [{
+			"status": "404"
+		}]
+	}`))
+	assert.Error(t, err)
+	assert.Nil(t, doc)
+}
+
 func TestParseBodyEmptyDocument(t *testing.T) {
 	doc, err := ParseBody(stringReader(`{}`))
 	assert.Error(t, err)
