@@ -84,7 +84,7 @@ func TestParseBodyDocument(t *testing.T) {
 			One: &Resource{
 				Type:          "foo",
 				ID:            "1",
-				Attributes:    make(Map),
+				Attributes:    make(map[string]interface{}),
 				Relationships: make(map[string]*Document),
 			},
 		},
@@ -109,7 +109,7 @@ func TestParseBodyDocuments(t *testing.T) {
 				{
 					Type:          "foo",
 					ID:            "1",
-					Attributes:    make(Map),
+					Attributes:    make(map[string]interface{}),
 					Relationships: make(map[string]*Document),
 				},
 			},

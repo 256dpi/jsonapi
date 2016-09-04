@@ -76,28 +76,6 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("%s: %s", e.Title, e.Detail)
 }
 
-// WriteErrorFromStatus will write an error to the response writer that has
-// been derived from the passed status code.
-//
-// Note: If the passed status code is not a valid HTTP status code, an Internal
-// Server Error status code will be used instead.
-func WriteErrorFromStatus(w http.ResponseWriter, status int, detail string) error {
-	// get text
-	str := http.StatusText(status)
-
-	// check text
-	if str == "" {
-		status = http.StatusInternalServerError
-		str = http.StatusText(http.StatusInternalServerError)
-	}
-
-	return WriteError(w, &Error{
-		Status: status,
-		Title:  str,
-		Detail: detail,
-	})
-}
-
 // WriteError will write the passed error to the response writer.
 //
 // Note: If the supplied error is not an Error it will call WriteErrorFromStatus
@@ -106,7 +84,7 @@ func WriteErrorFromStatus(w http.ResponseWriter, status int, detail string) erro
 func WriteError(w http.ResponseWriter, err error) error {
 	anError, ok := err.(*Error)
 	if !ok {
-		return WriteErrorFromStatus(w, http.StatusInternalServerError, "")
+		anError = InternalServerError("Unknown error encountered")
 	}
 
 	// set status
@@ -179,7 +157,49 @@ func WriteErrorList(w http.ResponseWriter, errors ...*Error) error {
 	return WriteResponse(w, commonStatus, doc)
 }
 
-// WriteErrorNotFound is a convenience function to write a not found error.
-func WriteErrorNotFound(w http.ResponseWriter, detail string) error {
-	return WriteErrorFromStatus(w, http.StatusNotFound, detail)
+// ErrorFromStatus will return an error that has been derived from the passed
+// status code.
+//
+// Note: If the passed status code is not a valid HTTP status code, an Internal
+// Server Error status code will be used instead.
+func ErrorFromStatus(status int, detail string) *Error {
+	// get text
+	str := http.StatusText(status)
+
+	// check text
+	if str == "" {
+		status = http.StatusInternalServerError
+		str = http.StatusText(http.StatusInternalServerError)
+	}
+
+	return &Error{
+		Status: status,
+		Title:  str,
+		Detail: detail,
+	}
+}
+
+// NotFound returns a new not found error.
+func NotFound(detail string) *Error {
+	return ErrorFromStatus(http.StatusNotFound, detail)
+}
+
+// BadRequest returns a new bad request error.
+func BadRequest(detail string) *Error {
+	return ErrorFromStatus(http.StatusBadRequest, detail)
+}
+
+// BadRequestParam returns a new bad request error with a parameter source.
+func BadRequestParam(detail, param string) *Error {
+	err := ErrorFromStatus(http.StatusBadRequest, detail)
+	err.Source = &ErrorSource{
+		Parameter: param,
+	}
+
+	return err
+}
+
+// InternalServerError returns na new internal server error.
+func InternalServerError(detail string) *Error {
+	return ErrorFromStatus(http.StatusInternalServerError, detail)
 }

@@ -13,8 +13,8 @@ var counter = 1
 var store = make(map[string]*postModel)
 
 type postModel struct {
-	ID    string
-	Title string
+	ID    string `json:"-"`
+	Title string `json:"title"`
 }
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 		}
 
 		if req.ResourceType != "posts" {
-			jsonapi.WriteErrorNotFound(w, "The requested resource is not available")
+			jsonapi.WriteError(w, jsonapi.NotFound("The requested resource is not available"))
 			return
 		}
 
@@ -46,98 +46,98 @@ func main() {
 		}
 
 		if req.Intent == jsonapi.ListResources {
-			listPosts(req, w)
-			return
+			err = listPosts(req, w)
 		} else if req.Intent == jsonapi.FindResource {
-			findPost(req, w)
-			return
+			err = findPost(req, w)
 		} else if req.Intent == jsonapi.CreateResource {
-			createPost(req, doc, w)
-			return
+			err = createPost(req, doc, w)
 		} else if req.Intent == jsonapi.UpdateResource {
-			updatePost(req, doc, w)
-			return
+			err = updatePost(req, doc, w)
 		} else if req.Intent == jsonapi.DeleteResource {
-			deletePost(req, w)
-			return
+			err = deletePost(req, w)
+		} else {
+			err = jsonapi.BadRequest("The requested method is not available")
 		}
 
-		jsonapi.WriteErrorFromStatus(w, http.StatusBadRequest, "The requested method is not available")
+		if err != nil {
+			jsonapi.WriteError(w, err)
+		}
 	})
 
 	http.ListenAndServe("0.0.0.0:4000", nil)
 }
 
-func listPosts(_ *jsonapi.Request, w http.ResponseWriter) {
+func listPosts(_ *jsonapi.Request, w http.ResponseWriter) error {
 	list := make([]*jsonapi.Resource, 0, len(store))
 	for _, post := range store {
 		list = append(list, &jsonapi.Resource{
-			Type: "posts",
-			ID:   post.ID,
-			Attributes: jsonapi.Map{
-				"title": post.Title,
-			},
+			Type:       "posts",
+			ID:         post.ID,
+			Attributes: post,
 		})
 	}
 
-	jsonapi.WriteResources(w, http.StatusOK, list, &jsonapi.DocumentLinks{
+	return jsonapi.WriteResources(w, http.StatusOK, list, &jsonapi.DocumentLinks{
 		Self: "/api/posts",
 	})
 }
 
-func findPost(req *jsonapi.Request, w http.ResponseWriter) {
+func findPost(req *jsonapi.Request, w http.ResponseWriter) error {
 	post, ok := store[req.ResourceID]
 	if !ok {
-		jsonapi.WriteErrorNotFound(w, "The requested resource does not exist")
-		return
+		return jsonapi.NotFound("The requested resource does not exist")
 	}
 
-	writePost(w, http.StatusOK, post)
+	return writePost(w, http.StatusOK, post)
 }
 
-func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) {
+func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) error {
 	post := &postModel{
-		ID:    strconv.Itoa(counter),
-		Title: doc.Data.One.Attributes["title"].(string), // FIXME
+		ID: strconv.Itoa(counter),
+	}
+
+	err := jsonapi.MapToStruct(doc.Data.One.Attributes, post)
+	if err != nil {
+		return err
 	}
 
 	counter++
 	store[post.ID] = post
 
-	writePost(w, http.StatusCreated, post)
+	return writePost(w, http.StatusCreated, post)
 }
 
-func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) {
+func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) error {
 	post, ok := store[req.ResourceID]
 	if !ok {
-		jsonapi.WriteErrorNotFound(w, "The requested resource does not exist")
-		return
+		return jsonapi.NotFound("The requested resource does not exist")
 	}
 
-	post.Title = doc.Data.One.Attributes["title"].(string) // FIXME
+	err := jsonapi.MapToStruct(doc.Data.One.Attributes, post)
+	if err != nil {
+		return err
+	}
 
-	writePost(w, http.StatusOK, post)
+	return writePost(w, http.StatusOK, post)
 }
 
-func deletePost(req *jsonapi.Request, w http.ResponseWriter) {
+func deletePost(req *jsonapi.Request, w http.ResponseWriter) error {
 	_, ok := store[req.ResourceID]
 	if !ok {
-		jsonapi.WriteErrorNotFound(w, "The requested resource does not exist")
-		return
+		return jsonapi.NotFound("The requested resource does not exist")
 	}
 
 	delete(store, req.ResourceID)
 
 	w.WriteHeader(http.StatusOK)
+	return nil
 }
 
-func writePost(w http.ResponseWriter, status int, post *postModel) {
-	jsonapi.WriteResource(w, status, &jsonapi.Resource{
-		Type: "posts",
-		ID:   post.ID,
-		Attributes: jsonapi.Map{
-			"title": post.Title,
-		},
+func writePost(w http.ResponseWriter, status int, post *postModel) error {
+	return jsonapi.WriteResource(w, status, &jsonapi.Resource{
+		Type:       "posts",
+		ID:         post.ID,
+		Attributes: post,
 	}, &jsonapi.DocumentLinks{
 		Self: "/api/posts/" + post.ID,
 	})
