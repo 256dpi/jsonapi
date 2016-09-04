@@ -172,7 +172,7 @@ func BenchmarkWriteResource(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		err := WriteResource(httptest.NewRecorder(), http.StatusOK, res)
+		err := WriteResource(httptest.NewRecorder(), http.StatusOK, res, nil)
 		if err != nil {
 			panic(err)
 		}

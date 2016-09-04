@@ -40,7 +40,7 @@ type Document struct {
 
 	// A list of resources that are related to the primary data and/or other
 	// included resources.
-	Included []Resource `json:"included,omitempty"`
+	Included []*Resource `json:"included,omitempty"`
 
 	// A set of links related to the primary data.
 	Links *DocumentLinks `json:"links,omitempty"`
@@ -121,32 +121,36 @@ func WriteResponse(w http.ResponseWriter, status int, doc *Document) error {
 	return json.NewEncoder(w).Encode(doc)
 }
 
-// WriteResource will wrap the passed resource in a document and write it to the
-// passed response writer.
-func WriteResource(w http.ResponseWriter, status int, r *Resource) error {
+// WriteResource will wrap the passed resource, links and included resources in
+// a document and write it to the passed response writer.
+func WriteResource(w http.ResponseWriter, status int, res *Resource, links *DocumentLinks, included ...*Resource) error {
 	// get document from pool
 	doc := getResponseDocumentFromPool()
 
 	// put document back when finished
 	defer responseDocumentPool.Put(doc)
 
-	// set resource
-	doc.Data.One = r
+	// set data
+	doc.Data.One = res
+	doc.Links = links
+	doc.Included = included
 
 	return WriteResponse(w, status, doc)
 }
 
-// WriteResources will wrap the passed resources in a document and write it to
-// the passed response writer. Using this function is more efficient
-func WriteResources(w http.ResponseWriter, status int, rs []*Resource) error {
+// WriteResources will wrap the passed resources, links and included resources
+// in a document and write it to the passed response writer.
+func WriteResources(w http.ResponseWriter, status int, res []*Resource, links *DocumentLinks, included ...*Resource) error {
 	// get document from pool
 	doc := getResponseDocumentFromPool()
 
 	// put document back when finished
 	defer responseDocumentPool.Put(doc)
 
-	// set resource
-	doc.Data.Many = rs
+	// set data
+	doc.Data.Many = res
+	doc.Links = links
+	doc.Included = included
 
 	return WriteResponse(w, status, doc)
 }

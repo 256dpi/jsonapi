@@ -80,7 +80,9 @@ func listPosts(_ *jsonapi.Request, w http.ResponseWriter) {
 		})
 	}
 
-	jsonapi.WriteResources(w, http.StatusOK, list)
+	jsonapi.WriteResources(w, http.StatusOK, list, &jsonapi.DocumentLinks{
+		Self: "/api/posts",
+	})
 }
 
 func findPost(req *jsonapi.Request, w http.ResponseWriter) {
@@ -130,16 +132,14 @@ func deletePost(req *jsonapi.Request, w http.ResponseWriter) {
 }
 
 func writePost(w http.ResponseWriter, status int, post *postModel) {
-	// TODO: Add included resource?
-	// TODO: Add meta information?
-	// TODO: Add links?
-
 	jsonapi.WriteResource(w, status, &jsonapi.Resource{
 		Type: "posts",
 		ID:   post.ID,
 		Attributes: jsonapi.Map{
 			"title": post.Title,
 		},
+	}, &jsonapi.DocumentLinks{
+		Self: "/api/posts/" + post.ID,
 	})
 }
 
