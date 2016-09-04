@@ -101,14 +101,12 @@ func TestWriteResourceRelationship(t *testing.T) {
 	err := WriteResource(rec, http.StatusOK, &Resource{
 		Type: "foo",
 		ID:   "1",
-		Relationships: Relationships{
+		Relationships: map[string]*Document{
 			"bar": {
-				One: &Document{
-					Data: &HybridResource{
-						One: &Resource{
-							Type: "bar",
-							ID:   "2",
-						},
+				Data: &HybridResource{
+					One: &Resource{
+						Type: "bar",
+						ID:   "2",
 					},
 				},
 			},
@@ -126,45 +124,6 @@ func TestWriteResourceRelationship(t *testing.T) {
 						"id": "2"
 					}
 				}
-			}
-		}
-	}`, rec.Body.String())
-}
-
-func TestWriteResourceRelationships(t *testing.T) {
-	rec := httptest.NewRecorder()
-	err := WriteResource(rec, http.StatusOK, &Resource{
-		Type: "foo",
-		ID:   "1",
-		Relationships: Relationships{
-			"bar": {
-				Many: []*Document{
-					{
-						Data: &HybridResource{
-							One: &Resource{
-								Type: "bar",
-								ID:   "2",
-							},
-						},
-					},
-				},
-			},
-		},
-	}, nil)
-	assert.NoError(t, err)
-	assert.JSONEq(t, `{
-		"data": {
-			"type": "foo",
-			"id": "1",
-			"relationships": {
-				"bar": [
-					{
-						"data": {
-							"type": "bar",
-							"id": "2"
-						}
-					}
-				]
 			}
 		}
 	}`, rec.Body.String())

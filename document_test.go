@@ -85,7 +85,7 @@ func TestParseBodyDocument(t *testing.T) {
 				Type:          "foo",
 				ID:            "1",
 				Attributes:    make(Map),
-				Relationships: make(Relationships),
+				Relationships: make(map[string]*Document),
 			},
 		},
 	}, doc)
@@ -110,7 +110,7 @@ func TestParseBodyDocuments(t *testing.T) {
 					Type:          "foo",
 					ID:            "1",
 					Attributes:    make(Map),
-					Relationships: make(Relationships),
+					Relationships: make(map[string]*Document),
 				},
 			},
 		},
@@ -137,53 +137,11 @@ func TestParseBodyDocumentWithRelationship(t *testing.T) {
 			One: &Resource{
 				Type: "foo",
 				ID:   "1",
-				Relationships: Relationships{
+				Relationships: map[string]*Document{
 					"bar": {
-						One: &Document{
-							Data: &HybridResource{
-								One: &Resource{
-									Type: "bar",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}, doc)
-}
-
-func TestParseBodyDocumentWithRelationships(t *testing.T) {
-	doc, err := ParseBody(stringReader(`{
-  		"data": {
-    		"type": "foo",
-    		"id": "1",
-    		"relationships": {
-    			"bar": [
-    				{
-    					"data": {
-    						"type": "bar"
-    					}
-    				}
-				]
-    		}
-		}
-	}`))
-	assert.NoError(t, err)
-	assert.Equal(t, &Document{
-		Data: &HybridResource{
-			One: &Resource{
-				Type: "foo",
-				ID:   "1",
-				Relationships: Relationships{
-					"bar": {
-						Many: []*Document{
-							{
-								Data: &HybridResource{
-									One: &Resource{
-										Type: "bar",
-									},
-								},
+						Data: &HybridResource{
+							One: &Resource{
+								Type: "bar",
 							},
 						},
 					},
