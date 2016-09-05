@@ -140,7 +140,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	// de-prefix and trim path
-	url := strings.Trim(strings.TrimPrefix(req.URL.Path, r.Prefix), "/")
+	url := strings.TrimPrefix(strings.Trim(req.URL.Path, "/"), r.Prefix+"/")
 
 	// split path
 	segments := strings.Split(url, "/")

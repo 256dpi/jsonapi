@@ -58,16 +58,24 @@ func TestParseRequestMethodOverride(t *testing.T) {
 }
 
 func TestParseRequestPrefix(t *testing.T) {
-	r := constructRequest("GET", "foo/bar")
+	list := map[string]string{
+		"bar":           "",
+		"/bar":          "",
+		"foo/bar":       "foo",
+		"/foo/bar":      "foo",
+		"foo/bar/":      "/foo",
+		"/foo/bar/":     "foo/",
+		"baz/foo/bar/":  "/baz/foo",
+		"/baz/foo/bar/": "baz/foo/",
+	}
 
-	req, err := ParseRequest(r, "foo/")
-	assert.NoError(t, err)
-	assert.Equal(t, &Request{
-		Request:      r,
-		Intent:       ListResources,
-		Prefix:       "foo",
-		ResourceType: "bar",
-	}, req)
+	for url, prefix := range list {
+		r := constructRequest("GET", url)
+
+		req, err := ParseRequest(r, prefix)
+		assert.NoError(t, err)
+		assert.Equal(t, "bar", req.ResourceType)
+	}
 }
 
 func TestParseRequestResource(t *testing.T) {
