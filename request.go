@@ -78,6 +78,7 @@ type Request struct {
 	Intent Intent
 
 	// The fragments parsed from the URL of the request.
+	Prefix          string
 	ResourceType    string
 	ResourceID      string
 	RelatedResource string
@@ -123,6 +124,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// allocate new request
 	r := &Request{
 		Request: req,
+		Prefix:  prefix,
 	}
 
 	// check content type header
@@ -138,7 +140,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	// de-prefix and trim path
-	url := strings.Trim(strings.TrimPrefix(req.URL.Path, prefix), "/")
+	url := strings.Trim(strings.TrimPrefix(req.URL.Path, r.Prefix), "/")
 
 	// split path
 	segments := strings.Split(url, "/")
