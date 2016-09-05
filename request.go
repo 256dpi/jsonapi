@@ -102,7 +102,8 @@ type Request struct {
 }
 
 // ParseRequest will parse the passed request and return a new Request with the
-// parsed data. It will return an error if the content type or url is invalid.
+// parsed data. It will return an error if the content type, request method or
+// url is invalid.
 //
 // Note: The returned error can directly be written using WriteError.
 func ParseRequest(req *http.Request, prefix string) (*Request, error) {

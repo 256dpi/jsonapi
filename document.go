@@ -57,11 +57,6 @@ func ParseBody(r io.Reader) (*Document, error) {
 		return nil, BadRequest("Body contains errors")
 	}
 
-	// check data
-	if doc.Data == nil || (doc.Data.One == nil && len(doc.Data.Many) == 0) {
-		return nil, BadRequest("Mising data")
-	}
-
 	return &doc, nil
 }
 
