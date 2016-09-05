@@ -124,7 +124,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// allocate new request
 	r := &Request{
 		Request: req,
-		Prefix:  prefix,
+		Prefix:  strings.Trim(prefix, "/"),
 	}
 
 	// check content type header
@@ -315,4 +315,23 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	return r, nil
+}
+
+// Self will generate the "self" URL for this request.
+func (r *Request) Self() string {
+	segments := []string{r.Prefix, r.ResourceType}
+
+	// add id if available
+	if r.ResourceID != "" {
+		segments = append(segments, r.ResourceID)
+	}
+
+	// add related resource or relationship
+	if r.RelatedResource != "" {
+		segments = append(segments, r.RelatedResource)
+	} else if r.Relationship != "" {
+		segments = append(segments, "relationships", r.Relationship)
+	}
+
+	return strings.Join(segments, "/")
 }

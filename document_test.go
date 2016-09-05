@@ -47,12 +47,6 @@ func TestParseBodyDocumentWithErrors(t *testing.T) {
 	assert.Nil(t, doc)
 }
 
-func TestParseBodyEmptyDocument(t *testing.T) {
-	doc, err := ParseBody(stringReader(`{}`))
-	assert.Error(t, err)
-	assert.Nil(t, doc)
-}
-
 func TestParseBodyMinimumDocument(t *testing.T) {
 	doc, err := ParseBody(stringReader(`{
   		"data": {

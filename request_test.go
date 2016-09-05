@@ -65,6 +65,7 @@ func TestParseRequestPrefix(t *testing.T) {
 	assert.Equal(t, &Request{
 		Request:      r,
 		Intent:       ListResources,
+		Prefix:       "foo",
 		ResourceType: "bar",
 	}, req)
 }
@@ -149,6 +150,7 @@ func TestParseRequestIntent(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, entry.intent, req.Intent)
 		assert.Equal(t, entry.doc, req.Intent.DocumentExpected())
+		assert.Equal(t, entry.url, req.Self())
 	}
 }
 
