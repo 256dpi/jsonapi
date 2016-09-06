@@ -26,11 +26,11 @@ func main() {
 
 	router.Use(entryPoint)
 
-	router.Get("/api/posts", listPosts)
-	router.Get("/api/posts/:id", findPost)
-	router.Post("/api/posts", createPost)
-	router.Patch("/api/posts/:id", updatePost)
-	router.Delete("/api/posts/:id", deletePost)
+	router.GET("/api/posts", listPosts)
+	router.GET("/api/posts/:id", findPost)
+	router.POST("/api/posts", createPost)
+	router.PATCH("/api/posts/:id", updatePost)
+	router.DELETE("/api/posts/:id", deletePost)
 
 	router.Run(fasthttp.New("0.0.0.0:4000"))
 }
