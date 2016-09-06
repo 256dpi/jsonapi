@@ -24,50 +24,41 @@ func main() {
 		Format: "${method} ${uri} ${latency_human}\n",
 	}))
 
-	router.Any("/api/*all", entryPoint)
+	router.Use(entryPoint)
+
+	router.Get("/api/posts", listPosts)
+	router.Get("/api/posts/:id", findPost)
+	router.Post("/api/posts", createPost)
+	router.Patch("/api/posts/:id", updatePost)
+	router.Delete("/api/posts/:id", deletePost)
+
 	router.Run(fasthttp.New("0.0.0.0:4000"))
 }
 
-func entryPoint(ctx echo.Context) error {
-	req, err := jsonapi.ParseRequest(ctx.Request(), "/api/")
-	if err != nil {
-		return jsonapi.WriteError(ctx.Response(), err)
-	}
-
-	if req.ResourceType != "posts" {
-		return jsonapi.WriteError(ctx.Response(), jsonapi.NotFound("The requested resource is not available"))
-	}
-
-	var doc *jsonapi.Document
-	if req.Intent.DocumentExpected() {
-		doc, err = jsonapi.ParseBody(ctx.Request().Body())
+func entryPoint(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		req, err := jsonapi.ParseRequest(ctx.Request(), "/api/")
 		if err != nil {
 			return jsonapi.WriteError(ctx.Response(), err)
 		}
-	}
 
-	if req.Intent == jsonapi.ListResources {
-		err = listPosts(req, ctx)
-	} else if req.Intent == jsonapi.FindResource {
-		err = findPost(req, ctx)
-	} else if req.Intent == jsonapi.CreateResource {
-		err = createPost(req, ctx, doc)
-	} else if req.Intent == jsonapi.UpdateResource {
-		err = updatePost(req, ctx, doc)
-	} else if req.Intent == jsonapi.DeleteResource {
-		err = deletePost(req, ctx)
-	} else {
-		err = jsonapi.BadRequest("The requested method is not available")
-	}
+		ctx.Set("req", req)
 
-	if err != nil {
-		return jsonapi.WriteError(ctx.Response(), err)
-	}
+		var doc *jsonapi.Document
+		if req.Intent.DocumentExpected() {
+			doc, err = jsonapi.ParseBody(ctx.Request().Body())
+			if err != nil {
+				return jsonapi.WriteError(ctx.Response(), err)
+			}
 
-	return nil
+			ctx.Set("doc", doc)
+		}
+
+		return next(ctx)
+	}
 }
 
-func listPosts(_ *jsonapi.Request, ctx echo.Context) error {
+func listPosts(ctx echo.Context) error {
 	list := make([]*jsonapi.Resource, 0, len(store))
 	for _, post := range store {
 		list = append(list, &jsonapi.Resource{
@@ -82,7 +73,9 @@ func listPosts(_ *jsonapi.Request, ctx echo.Context) error {
 	})
 }
 
-func findPost(req *jsonapi.Request, ctx echo.Context) error {
+func findPost(ctx echo.Context) error {
+	req := ctx.Get("req").(*jsonapi.Request)
+
 	post, ok := store[req.ResourceID]
 	if !ok {
 		return jsonapi.NotFound("The requested resource does not exist")
@@ -91,7 +84,9 @@ func findPost(req *jsonapi.Request, ctx echo.Context) error {
 	return writePost(ctx, http.StatusOK, post)
 }
 
-func createPost(_ *jsonapi.Request, ctx echo.Context, doc *jsonapi.Document) error {
+func createPost(ctx echo.Context) error {
+	doc := ctx.Get("doc").(*jsonapi.Document)
+
 	post := &postModel{
 		ID: strconv.Itoa(counter),
 	}
@@ -107,7 +102,10 @@ func createPost(_ *jsonapi.Request, ctx echo.Context, doc *jsonapi.Document) err
 	return writePost(ctx, http.StatusCreated, post)
 }
 
-func updatePost(req *jsonapi.Request, ctx echo.Context, doc *jsonapi.Document) error {
+func updatePost(ctx echo.Context) error {
+	req := ctx.Get("req").(*jsonapi.Request)
+	doc := ctx.Get("doc").(*jsonapi.Document)
+
 	post, ok := store[req.ResourceID]
 	if !ok {
 		return jsonapi.NotFound("The requested resource does not exist")
@@ -121,7 +119,9 @@ func updatePost(req *jsonapi.Request, ctx echo.Context, doc *jsonapi.Document) e
 	return writePost(ctx, http.StatusOK, post)
 }
 
-func deletePost(req *jsonapi.Request, ctx echo.Context) error {
+func deletePost(ctx echo.Context) error {
+	req := ctx.Get("req").(*jsonapi.Request)
+
 	_, ok := store[req.ResourceID]
 	if !ok {
 		return jsonapi.NotFound("The requested resource does not exist")
