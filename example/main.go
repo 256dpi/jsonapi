@@ -25,7 +25,7 @@ func main() {
 			fmt.Printf("%s %s %s\n", pad(r.Method, 7), pad(r.URL.Path, 15), time.Since(start).String())
 		}(start)
 
-		req, err := jsonapi.ParseRequest(r, "/api/")
+		req, err := jsonapi.ParseHTTPRequest(r, "/api/")
 		if err != nil {
 			jsonapi.WriteError(w, err)
 			return

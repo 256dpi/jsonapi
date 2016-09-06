@@ -1,22 +1,22 @@
 package jsonapi
 
 import (
-	"net/http"
 	"testing"
 
+	"github.com/labstack/echo/engine"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParseRequestError(t *testing.T) {
 	invalidAccept := constructRequest("GET", "")
-	invalidAccept.Header.Set("Accept", "foo")
+	invalidAccept.Header().Set("Accept", "foo")
 
 	invalidContentType := constructRequest("GET", "")
-	invalidContentType.Header.Set("Content-Type", "foo")
+	invalidContentType.Header().Set("Content-Type", "foo")
 
 	missingContentType := constructRequest("POST", "foo")
 
-	list := []*http.Request{
+	list := []engine.Request{
 		invalidAccept,
 		invalidContentType,
 		missingContentType,
@@ -44,16 +44,16 @@ func TestParseRequestError(t *testing.T) {
 
 func TestParseRequestMethodOverride(t *testing.T) {
 	r := constructRequest("GET", "foo/1")
-	r.Header.Set("Content-Type", MediaType)
-	r.Header.Set("X-HTTP-Method-Override", "PATCH")
+	r.Header().Set("Content-Type", MediaType)
+	r.Header().Set("X-HTTP-Method-Override", "PATCH")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r,
-		Intent:       UpdateResource,
-		ResourceType: "foo",
-		ResourceID:   "1",
+		OriginalRequest: r,
+		Intent:          UpdateResource,
+		ResourceType:    "foo",
+		ResourceID:      "1",
 	}, req)
 }
 
@@ -84,9 +84,9 @@ func TestParseRequestResource(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r,
-		Intent:       ListResources,
-		ResourceType: "foo",
+		OriginalRequest: r,
+		Intent:          ListResources,
+		ResourceType:    "foo",
 	}, req)
 }
 
@@ -96,10 +96,10 @@ func TestParseRequestResourceID(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r,
-		Intent:       FindResource,
-		ResourceType: "foo",
-		ResourceID:   "1",
+		OriginalRequest: r,
+		Intent:          FindResource,
+		ResourceType:    "foo",
+		ResourceID:      "1",
 	}, req)
 }
 
@@ -109,7 +109,7 @@ func TestParseRequestRelatedResource(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:         r,
+		OriginalRequest: r,
 		Intent:          GetRelatedResources,
 		ResourceType:    "foo",
 		ResourceID:      "1",
@@ -123,11 +123,11 @@ func TestParseRequestRelationship(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r,
-		Intent:       GetRelationship,
-		ResourceType: "foo",
-		ResourceID:   "1",
-		Relationship: "bar",
+		OriginalRequest: r,
+		Intent:          GetRelationship,
+		ResourceType:    "foo",
+		ResourceID:      "1",
+		Relationship:    "bar",
 	}, req)
 }
 
@@ -152,7 +152,7 @@ func TestParseRequestIntent(t *testing.T) {
 
 	for _, entry := range list {
 		r := constructRequest(entry.method, entry.url)
-		r.Header.Set("Content-Type", MediaType)
+		r.Header().Set("Content-Type", MediaType)
 
 		req, err := ParseRequest(r, "")
 		assert.NoError(t, err)
@@ -168,10 +168,10 @@ func TestParseRequestInclude(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r1,
-		Intent:       ListResources,
-		ResourceType: "foo",
-		Include:      []string{"bar", "baz"},
+		OriginalRequest: r1,
+		Intent:          ListResources,
+		ResourceType:    "foo",
+		Include:         []string{"bar", "baz"},
 	}, req)
 
 	r2 := constructRequest("GET", "foo?include=bar&include=baz,qux")
@@ -179,10 +179,10 @@ func TestParseRequestInclude(t *testing.T) {
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r2,
-		Intent:       ListResources,
-		ResourceType: "foo",
-		Include:      []string{"bar", "baz", "qux"},
+		OriginalRequest: r2,
+		Intent:          ListResources,
+		ResourceType:    "foo",
+		Include:         []string{"bar", "baz", "qux"},
 	}, req)
 }
 
@@ -192,10 +192,10 @@ func TestParseRequestSorting(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r1,
-		Intent:       ListResources,
-		ResourceType: "foo",
-		Sorting:      []string{"bar", "baz"},
+		OriginalRequest: r1,
+		Intent:          ListResources,
+		ResourceType:    "foo",
+		Sorting:         []string{"bar", "baz"},
 	}, req)
 
 	r2 := constructRequest("GET", "foo?sort=bar&sort=baz,qux")
@@ -203,10 +203,10 @@ func TestParseRequestSorting(t *testing.T) {
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r2,
-		Intent:       ListResources,
-		ResourceType: "foo",
-		Sorting:      []string{"bar", "baz", "qux"},
+		OriginalRequest: r2,
+		Intent:          ListResources,
+		ResourceType:    "foo",
+		Sorting:         []string{"bar", "baz", "qux"},
 	}, req)
 }
 
@@ -216,11 +216,11 @@ func TestParseRequestPage(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r,
-		Intent:       ListResources,
-		ResourceType: "foo",
-		PageNumber:   1,
-		PageSize:     2,
+		OriginalRequest: r,
+		Intent:          ListResources,
+		ResourceType:    "foo",
+		PageNumber:      1,
+		PageSize:        2,
 	}, req)
 }
 
@@ -230,9 +230,9 @@ func TestParseRequestFields(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r,
-		Intent:       ListResources,
-		ResourceType: "foo",
+		OriginalRequest: r,
+		Intent:          ListResources,
+		ResourceType:    "foo",
 		Fields: map[string][]string{
 			"foo": {"bar", "baz"},
 		},
@@ -245,9 +245,9 @@ func TestParseRequestFilters(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		Request:      r,
-		Intent:       ListResources,
-		ResourceType: "foo",
+		OriginalRequest: r,
+		Intent:          ListResources,
+		ResourceType:    "foo",
 		Filters: map[string][]string{
 			"foo": {"bar", "baz"},
 		},

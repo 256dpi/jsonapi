@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/labstack/echo/engine"
+	"github.com/labstack/echo/engine/standard"
 )
 
 // An Intent represents a valid combination of a request method and a URL pattern.
@@ -72,7 +75,7 @@ func (i Intent) DocumentExpected() bool {
 // request.
 type Request struct {
 	// The Original HTTP request.
-	Request *http.Request
+	OriginalRequest engine.Request
 
 	// The parsed JSON API intent of the request.
 	Intent Intent
@@ -107,13 +110,13 @@ type Request struct {
 // url is invalid.
 //
 // Note: The returned error can directly be written using WriteError.
-func ParseRequest(req *http.Request, prefix string) (*Request, error) {
+func ParseRequest(req engine.Request, prefix string) (*Request, error) {
 	// get method
-	method := req.Method
+	method := req.Method()
 
 	// set overridden method if available
-	if req.Header.Get("X-HTTP-Method-Override") != "" {
-		method = req.Header.Get("X-HTTP-Method-Override")
+	if req.Header().Get("X-HTTP-Method-Override") != "" {
+		method = req.Header().Get("X-HTTP-Method-Override")
 	}
 
 	// map method to action
@@ -123,24 +126,24 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 
 	// allocate new request
 	r := &Request{
-		Request: req,
-		Prefix:  strings.Trim(prefix, "/"),
+		OriginalRequest: req,
+		Prefix:          strings.Trim(prefix, "/"),
 	}
 
 	// check content type header
-	contentType := req.Header.Get("Content-Type")
+	contentType := req.Header().Get("Content-Type")
 	if contentType != "" && contentType != MediaType {
 		return nil, BadRequest("Invalid content type header")
 	}
 
 	// check accept header
-	accept := req.Header.Get("Accept")
+	accept := req.Header().Get("Accept")
 	if accept != MediaType {
 		return nil, BadRequest("Invalid accept header")
 	}
 
 	// de-prefix and trim path
-	url := strings.TrimPrefix(strings.Trim(req.URL.Path, "/"), r.Prefix+"/")
+	url := strings.TrimPrefix(strings.Trim(req.URL().Path(), "/"), r.Prefix+"/")
 
 	// split path
 	segments := strings.Split(url, "/")
@@ -228,7 +231,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		return nil, BadRequest("Missing content type header")
 	}
 
-	for key, values := range req.URL.Query() {
+	for key, values := range req.URL().QueryParams() {
 		// set included resources
 		if key == "include" {
 			for _, v := range values {
@@ -315,6 +318,12 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	return r, nil
+}
+
+// ParseHTTPRequest is a convenience method to parse a standard http.Request
+// instead of the echo engine request interface.
+func ParseHTTPRequest(r *http.Request, prefix string) (*Request, error) {
+	return ParseRequest(standard.NewRequest(r, nil), prefix)
 }
 
 // Self will generate the "self" URL for this request.
