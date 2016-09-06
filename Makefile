@@ -2,15 +2,18 @@ all: fmt vet lint
 
 vet:
 	go vet .
-	go vet ./example
+	go vet ./examples/native
+	go vet ./examples/echo
 
 fmt:
 	go fmt .
-	go fmt ./example
+	go fmt ./examples/native
+	go fmt ./examples/echo
 
 lint:
 	golint .
-	golint ./example
+	golint ./examples/native
+	golint ./examples/echo
 
 profile-mem:
 	mkdir -p ./bench

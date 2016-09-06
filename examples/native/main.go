@@ -22,49 +22,53 @@ func main() {
 		start := time.Now()
 
 		defer func(star time.Time) {
-			fmt.Printf("%s %s %s\n", pad(r.Method, 7), pad(r.URL.Path, 15), time.Since(start).String())
+			fmt.Printf("%s %s %s\n", r.Method, r.URL.Path, time.Since(start).String())
 		}(start)
 
-		req, err := jsonapi.ParseHTTPRequest(r, "/api/")
-		if err != nil {
-			jsonapi.WriteError(w, err)
-			return
-		}
-
-		if req.ResourceType != "posts" {
-			jsonapi.WriteError(w, jsonapi.NotFound("The requested resource is not available"))
-			return
-		}
-
-		var doc *jsonapi.Document
-		if req.Intent.DocumentExpected() {
-			doc, err = jsonapi.ParseBody(r.Body)
-			if err != nil {
-				jsonapi.WriteError(w, err)
-				return
-			}
-		}
-
-		if req.Intent == jsonapi.ListResources {
-			err = listPosts(req, w)
-		} else if req.Intent == jsonapi.FindResource {
-			err = findPost(req, w)
-		} else if req.Intent == jsonapi.CreateResource {
-			err = createPost(req, doc, w)
-		} else if req.Intent == jsonapi.UpdateResource {
-			err = updatePost(req, doc, w)
-		} else if req.Intent == jsonapi.DeleteResource {
-			err = deletePost(req, w)
-		} else {
-			err = jsonapi.BadRequest("The requested method is not available")
-		}
-
-		if err != nil {
-			jsonapi.WriteError(w, err)
-		}
+		entryPoint(w, r)
 	})
 
 	http.ListenAndServe("0.0.0.0:4000", nil)
+}
+
+func entryPoint(w http.ResponseWriter, r *http.Request) {
+	req, err := jsonapi.ParseRequestHTTP(r, "/api/")
+	if err != nil {
+		jsonapi.WriteErrorHTTP(w, err)
+		return
+	}
+
+	if req.ResourceType != "posts" {
+		jsonapi.WriteErrorHTTP(w, jsonapi.NotFound("The requested resource is not available"))
+		return
+	}
+
+	var doc *jsonapi.Document
+	if req.Intent.DocumentExpected() {
+		doc, err = jsonapi.ParseBody(r.Body)
+		if err != nil {
+			jsonapi.WriteErrorHTTP(w, err)
+			return
+		}
+	}
+
+	if req.Intent == jsonapi.ListResources {
+		err = listPosts(req, w)
+	} else if req.Intent == jsonapi.FindResource {
+		err = findPost(req, w)
+	} else if req.Intent == jsonapi.CreateResource {
+		err = createPost(req, doc, w)
+	} else if req.Intent == jsonapi.UpdateResource {
+		err = updatePost(req, doc, w)
+	} else if req.Intent == jsonapi.DeleteResource {
+		err = deletePost(req, w)
+	} else {
+		err = jsonapi.BadRequest("The requested method is not available")
+	}
+
+	if err != nil {
+		jsonapi.WriteErrorHTTP(w, err)
+	}
 }
 
 func listPosts(_ *jsonapi.Request, w http.ResponseWriter) error {
@@ -77,7 +81,7 @@ func listPosts(_ *jsonapi.Request, w http.ResponseWriter) error {
 		})
 	}
 
-	return jsonapi.WriteResources(w, http.StatusOK, list, &jsonapi.DocumentLinks{
+	return jsonapi.WriteResourcesHTTP(w, http.StatusOK, list, &jsonapi.DocumentLinks{
 		Self: "/api/posts",
 	})
 }
@@ -134,23 +138,11 @@ func deletePost(req *jsonapi.Request, w http.ResponseWriter) error {
 }
 
 func writePost(w http.ResponseWriter, status int, post *postModel) error {
-	return jsonapi.WriteResource(w, status, &jsonapi.Resource{
+	return jsonapi.WriteResourceHTTP(w, status, &jsonapi.Resource{
 		Type:       "posts",
 		ID:         post.ID,
 		Attributes: post,
 	}, &jsonapi.DocumentLinks{
 		Self: "/api/posts/" + post.ID,
 	})
-}
-
-func pad(str string, n int) string {
-	for {
-		if len(str) < n {
-			str += " "
-		}
-
-		if len(str) >= n {
-			return str
-		}
-	}
 }
