@@ -3,6 +3,7 @@ package jsonapi
 import (
 	"bytes"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 
 	"github.com/labstack/echo/engine"
@@ -28,6 +29,12 @@ func constructHTTPRequest(method, path string) *http.Request {
 
 func constructRequest(method, path string) engine.Request {
 	return standard.NewRequest(constructHTTPRequest(method, path), nil)
+}
+
+func constructResponseAndRecorder() (engine.Response, *httptest.ResponseRecorder) {
+	rec := httptest.NewRecorder()
+	res := standard.NewResponse(rec, nil)
+	return res, rec
 }
 
 func stringReader(str string) *bytes.Reader {

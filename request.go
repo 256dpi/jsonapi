@@ -320,9 +320,9 @@ func ParseRequest(req engine.Request, prefix string) (*Request, error) {
 	return r, nil
 }
 
-// ParseHTTPRequest is a convenience method to parse a standard http.Request
+// ParseRequestHTTP is a convenience method to parse a standard http.Request
 // instead of the echo engine request interface.
-func ParseHTTPRequest(r *http.Request, prefix string) (*Request, error) {
+func ParseRequestHTTP(r *http.Request, prefix string) (*Request, error) {
 	return ParseRequest(standard.NewRequest(r, nil), prefix)
 }
 

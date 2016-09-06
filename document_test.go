@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/labstack/echo/engine/standard"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -146,8 +147,9 @@ func TestParseBodyDocumentWithRelationship(t *testing.T) {
 }
 
 func TestWriteResponseMinimumSingleDocument(t *testing.T) {
-	writer := httptest.NewRecorder()
-	err := WriteResponse(writer, http.StatusOK, &Document{
+	res, rec := constructResponseAndRecorder()
+
+	err := WriteResponse(res, http.StatusOK, &Document{
 		Data: &HybridResource{
 			One: &Resource{
 				Type: "foo",
@@ -159,12 +161,13 @@ func TestWriteResponseMinimumSingleDocument(t *testing.T) {
   		"data": {
     		"type": "foo"
 		}
-	}`, writer.Body.String())
+	}`, rec.Body.String())
 }
 
 func TestWriteResponseSingleDocument(t *testing.T) {
-	writer := httptest.NewRecorder()
-	err := WriteResponse(writer, http.StatusOK, &Document{
+	res, rec := constructResponseAndRecorder()
+
+	err := WriteResponse(res, http.StatusOK, &Document{
 		Data: &HybridResource{
 			One: &Resource{
 				Type: "foo",
@@ -178,7 +181,25 @@ func TestWriteResponseSingleDocument(t *testing.T) {
     		"type": "foo",
     		"id": "1"
 		}
-	}`, writer.Body.String())
+	}`, rec.Body.String())
+}
+
+func TestWriteHTTPResponse(t *testing.T) {
+	rec := httptest.NewRecorder()
+
+	err := WriteResponseHTTP(rec, http.StatusOK, &Document{
+		Data: &HybridResource{
+			One: &Resource{
+				Type: "foo",
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{
+  		"data": {
+    		"type": "foo"
+		}
+	}`, rec.Body.String())
 }
 
 func BenchmarkParseBody(b *testing.B) {
@@ -228,7 +249,9 @@ func BenchmarkWriteResponse(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		err := WriteResponse(httptest.NewRecorder(), http.StatusOK, doc)
+		res := standard.NewResponse(httptest.NewRecorder(), nil)
+
+		err := WriteResponse(res, http.StatusOK, doc)
 		if err != nil {
 			panic(err)
 		}

@@ -6,6 +6,9 @@ import (
 	"errors"
 	"net/http"
 	"sync"
+
+	"github.com/labstack/echo/engine"
+	"github.com/labstack/echo/engine/standard"
 )
 
 var objectSuffix = []byte("{")
@@ -86,7 +89,7 @@ func (r *HybridResource) UnmarshalJSON(doc []byte) error {
 
 // WriteResource will wrap the passed resource, links and included resources in
 // a document and write it to the passed response writer.
-func WriteResource(w http.ResponseWriter, status int, res *Resource, links *DocumentLinks, included ...*Resource) error {
+func WriteResource(res engine.Response, status int, resource *Resource, links *DocumentLinks, included ...*Resource) error {
 	// TODO: Validate resource?
 
 	// get document from pool
@@ -96,16 +99,22 @@ func WriteResource(w http.ResponseWriter, status int, res *Resource, links *Docu
 	defer responseDocumentPool.Put(doc)
 
 	// set data
-	doc.Data.One = res
+	doc.Data.One = resource
 	doc.Links = links
 	doc.Included = included
 
-	return WriteResponse(w, status, doc)
+	return WriteResponse(res, status, doc)
+}
+
+// WriteResourceHTTP is a convenience method to write to a standard
+// http.ResponseWriter instead of the echo engine response interface.
+func WriteResourceHTTP(w http.ResponseWriter, status int, resource *Resource, links *DocumentLinks, included ...*Resource) error {
+	return WriteResource(standard.NewResponse(w, nil), status, resource, links, included...)
 }
 
 // WriteResources will wrap the passed resources, links and included resources
 // in a document and write it to the passed response writer.
-func WriteResources(w http.ResponseWriter, status int, res []*Resource, links *DocumentLinks, included ...*Resource) error {
+func WriteResources(res engine.Response, status int, resources []*Resource, links *DocumentLinks, included ...*Resource) error {
 	// get document from pool
 	doc := getResponseDocumentFromPool()
 
@@ -113,11 +122,17 @@ func WriteResources(w http.ResponseWriter, status int, res []*Resource, links *D
 	defer responseDocumentPool.Put(doc)
 
 	// set data
-	doc.Data.Many = res
+	doc.Data.Many = resources
 	doc.Links = links
 	doc.Included = included
 
-	return WriteResponse(w, status, doc)
+	return WriteResponse(res, status, doc)
+}
+
+// WriteResourcesHTTP is a convenience method to write to a standard
+// http.ResponseWriter instead of the echo engine response interface.
+func WriteResourcesHTTP(w http.ResponseWriter, status int, resources []*Resource, links *DocumentLinks, included ...*Resource) error {
+	return WriteResources(standard.NewResponse(w, nil), status, resources, links, included...)
 }
 
 func getResponseDocumentFromPool() *Document {

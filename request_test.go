@@ -7,15 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseHTTPRequest(t *testing.T) {
-	r := constructHTTPRequest("GET", "foo")
-
-	req, err := ParseHTTPRequest(r, "")
-	assert.NoError(t, err)
-	assert.Equal(t, ListResources, req.Intent)
-	assert.Equal(t, "foo", req.ResourceType)
-}
-
 func TestParseRequestError(t *testing.T) {
 	invalidAccept := constructRequest("GET", "")
 	invalidAccept.Header().Set("Accept", "foo")
@@ -261,6 +252,15 @@ func TestParseRequestFilters(t *testing.T) {
 			"foo": {"bar", "baz"},
 		},
 	}, req)
+}
+
+func TestParseHTTPRequest(t *testing.T) {
+	r := constructHTTPRequest("GET", "foo")
+
+	req, err := ParseRequestHTTP(r, "")
+	assert.NoError(t, err)
+	assert.Equal(t, ListResources, req.Intent)
+	assert.Equal(t, "foo", req.ResourceType)
 }
 
 func BenchmarkParseRequest(b *testing.B) {

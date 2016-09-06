@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+
+	"github.com/labstack/echo/engine"
+	"github.com/labstack/echo/engine/standard"
 )
 
 var singleErrorDocumentPool = sync.Pool{
@@ -81,7 +84,7 @@ func (e *Error) Error() string {
 // Note: If the supplied error is not an Error it will call WriteErrorFromStatus
 // with StatusInternalServerError. Does the passed Error have an invalid or zero
 // status code it will be corrected to the Internal Server Error status code.
-func WriteError(w http.ResponseWriter, err error) error {
+func WriteError(res engine.Response, err error) error {
 	anError, ok := err.(*Error)
 	if !ok {
 		anError = InternalServerError("")
@@ -101,7 +104,13 @@ func WriteError(w http.ResponseWriter, err error) error {
 	// reset document
 	doc.Errors[0] = anError
 
-	return WriteResponse(w, anError.Status, doc)
+	return WriteResponse(res, anError.Status, doc)
+}
+
+// WriteErrorHTTP is a convenience method to write to a standard
+// http.ResponseWriter instead of the echo engine response interface.
+func WriteErrorHTTP(w http.ResponseWriter, err error) error {
+	return WriteError(standard.NewResponse(w, nil), err)
 }
 
 // WriteErrorList will write the passed errors to the the response writer.
@@ -109,10 +118,10 @@ func WriteError(w http.ResponseWriter, err error) error {
 //
 // Does a passed Error have an invalid or zero status code it will be corrected
 // to the Internal Server Error status code.
-func WriteErrorList(w http.ResponseWriter, errors ...*Error) error {
+func WriteErrorList(res engine.Response, errors ...*Error) error {
 	// write internal server error if no errors are passed
 	if len(errors) == 0 {
-		return WriteError(w, nil)
+		return WriteError(res, nil)
 	}
 
 	// prepare common status
@@ -154,7 +163,13 @@ func WriteErrorList(w http.ResponseWriter, errors ...*Error) error {
 	// set errors
 	doc.Errors = errors
 
-	return WriteResponse(w, commonStatus, doc)
+	return WriteResponse(res, commonStatus, doc)
+}
+
+// WriteErrorListHTTP is a convenience method to write to a standard
+// http.ResponseWriter instead of the echo engine response interface.
+func WriteErrorListHTTP(w http.ResponseWriter, errors ...*Error) error {
+	return WriteErrorList(standard.NewResponse(w, nil), errors...)
 }
 
 // ErrorFromStatus will return an error that has been derived from the passed
