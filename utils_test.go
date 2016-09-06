@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/engine/standard"
 )
 
-func constructRequest(method, path string) engine.Request {
+func constructHTTPRequest(method, path string) *http.Request {
 	u, err := url.Parse(path)
 	if err != nil {
 		panic(err)
@@ -23,7 +23,11 @@ func constructRequest(method, path string) engine.Request {
 
 	r.Header.Set("Accept", MediaType)
 
-	return standard.NewRequest(r, nil)
+	return r
+}
+
+func constructRequest(method, path string) engine.Request {
+	return standard.NewRequest(constructHTTPRequest(method, path), nil)
 }
 
 func stringReader(str string) *bytes.Reader {
