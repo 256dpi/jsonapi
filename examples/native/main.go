@@ -22,7 +22,7 @@ func main() {
 		start := time.Now()
 
 		defer func(star time.Time) {
-			fmt.Printf("%s %s %s\n", r.Method, r.URL.Path, time.Since(start).String())
+			fmt.Printf("%6s  %-13s  %s\n", r.Method, r.URL.Path, time.Since(start).String())
 		}(start)
 
 		entryPoint(w, r)
