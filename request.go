@@ -133,8 +133,8 @@ func ParseRequest(req engine.Request, prefix string) (*Request, error) {
 
 	// check accept header
 	accept := req.Header().Get("Accept")
-	if accept != MediaType {
-		return nil, BadRequest("Invalid accept header")
+	if accept != "" && accept != "*/*" && accept != "application/*" && accept != MediaType {
+		return nil, ErrorFromStatus(http.StatusNotAcceptable, "Invalid accept header")
 	}
 
 	// de-prefix and trim path

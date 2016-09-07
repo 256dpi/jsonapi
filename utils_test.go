@@ -16,15 +16,11 @@ func constructHTTPRequest(method, path string) *http.Request {
 		panic(err)
 	}
 
-	r := &http.Request{
+	return &http.Request{
 		Method: method,
 		URL:    u,
 		Header: make(http.Header),
 	}
-
-	r.Header.Set("Accept", MediaType)
-
-	return r
 }
 
 func constructRequest(method, path string) engine.Request {
