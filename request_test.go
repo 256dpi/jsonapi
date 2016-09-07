@@ -42,21 +42,6 @@ func TestParseRequestError(t *testing.T) {
 	}
 }
 
-func TestParseRequestMethodOverride(t *testing.T) {
-	r := constructRequest("GET", "foo/1")
-	r.Header().Set("Content-Type", MediaType)
-	r.Header().Set("X-HTTP-Method-Override", "PATCH")
-
-	req, err := ParseRequest(r, "")
-	assert.NoError(t, err)
-	assert.Equal(t, &Request{
-		OriginalRequest: r,
-		Intent:          UpdateResource,
-		ResourceType:    "foo",
-		ResourceID:      "1",
-	}, req)
-}
-
 func TestParseRequestPrefix(t *testing.T) {
 	list := map[string]string{
 		"bar":           "",

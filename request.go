@@ -114,11 +114,6 @@ func ParseRequest(req engine.Request, prefix string) (*Request, error) {
 	// get method
 	method := req.Method()
 
-	// set overridden method if available
-	if req.Header().Get("X-HTTP-Method-Override") != "" {
-		method = req.Header().Get("X-HTTP-Method-Override")
-	}
-
 	// map method to action
 	if method != "GET" && method != "POST" && method != "PATCH" && method != "DELETE" {
 		return nil, BadRequest("Unsupported method")
