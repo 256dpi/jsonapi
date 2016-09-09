@@ -1,9 +1,10 @@
 package compat
 
 import (
+	"net/http"
+
 	"github.com/gonfire/jsonapi"
 	"github.com/labstack/echo/engine/standard"
-	"net/http"
 )
 
 // ParseRequest is a convenience method to parse a standard http.Request.
