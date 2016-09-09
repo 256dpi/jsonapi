@@ -135,68 +135,6 @@ func TestWriteResourceRelationship(t *testing.T) {
 	}`, rec.Body.String())
 }
 
-func TestWriteResourceHTTP(t *testing.T) {
-	rec := httptest.NewRecorder()
-
-	err := WriteResourceHTTP(rec, http.StatusOK, &Resource{
-		Type: "foo",
-		ID:   "1",
-		Attributes: Map{
-			"foo": "bar",
-		},
-	}, nil)
-	assert.NoError(t, err)
-	assert.JSONEq(t, `{
-		"data": {
-			"type": "foo",
-			"id": "1",
-			"attributes": {
-				"foo": "bar"
-			}
-		}
-	}`, rec.Body.String())
-}
-
-func TestWriteResourcesHTTP(t *testing.T) {
-	rec := httptest.NewRecorder()
-
-	err := WriteResourcesHTTP(rec, http.StatusOK, []*Resource{
-		{
-			Type: "foo",
-			ID:   "1",
-			Attributes: Map{
-				"foo": "bar",
-			},
-		},
-		{
-			Type: "foo",
-			ID:   "2",
-			Attributes: Map{
-				"foo": "bar",
-			},
-		},
-	}, nil)
-	assert.NoError(t, err)
-	assert.JSONEq(t, `{
-		"data": [
-			{
-				"type": "foo",
-				"id": "1",
-				"attributes": {
-					"foo": "bar"
-				}
-			},
-			{
-				"type": "foo",
-				"id": "2",
-				"attributes": {
-					"foo": "bar"
-				}
-			}
-		]
-	}`, rec.Body.String())
-}
-
 func BenchmarkWriteResource(b *testing.B) {
 	resource := &Resource{
 		Type: "foo",

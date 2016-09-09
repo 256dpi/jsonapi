@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"net/http"
 	"sync"
 
 	"github.com/labstack/echo/engine"
-	"github.com/labstack/echo/engine/standard"
 )
 
 var objectSuffix = []byte("{")
@@ -106,12 +104,6 @@ func WriteResource(res engine.Response, status int, resource *Resource, links *D
 	return WriteResponse(res, status, doc)
 }
 
-// WriteResourceHTTP is a convenience method to write to a standard
-// http.ResponseWriter instead of the echo engine response interface.
-func WriteResourceHTTP(w http.ResponseWriter, status int, resource *Resource, links *DocumentLinks, included ...*Resource) error {
-	return WriteResource(standard.NewResponse(w, nil), status, resource, links, included...)
-}
-
 // WriteResources will wrap the passed resources, links and included resources
 // in a document and write it to the passed response writer.
 func WriteResources(res engine.Response, status int, resources []*Resource, links *DocumentLinks, included ...*Resource) error {
@@ -127,12 +119,6 @@ func WriteResources(res engine.Response, status int, resources []*Resource, link
 	doc.Included = included
 
 	return WriteResponse(res, status, doc)
-}
-
-// WriteResourcesHTTP is a convenience method to write to a standard
-// http.ResponseWriter instead of the echo engine response interface.
-func WriteResourcesHTTP(w http.ResponseWriter, status int, resources []*Resource, links *DocumentLinks, included ...*Resource) error {
-	return WriteResources(standard.NewResponse(w, nil), status, resources, links, included...)
 }
 
 func getResponseDocumentFromPool() *Document {

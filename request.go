@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/engine"
-	"github.com/labstack/echo/engine/standard"
 )
 
 // An Intent represents a valid combination of a request method and a URL pattern.
@@ -313,12 +312,6 @@ func ParseRequest(req engine.Request, prefix string) (*Request, error) {
 	}
 
 	return r, nil
-}
-
-// ParseRequestHTTP is a convenience method to parse a standard http.Request
-// instead of the echo engine request interface.
-func ParseRequestHTTP(r *http.Request, prefix string) (*Request, error) {
-	return ParseRequest(standard.NewRequest(r, nil), prefix)
 }
 
 // Self will generate the "self" URL for this request.

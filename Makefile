@@ -2,16 +2,19 @@ all: fmt vet lint
 
 vet:
 	go vet .
+	go vet ./compat
 	go vet ./examples/native
 	go vet ./examples/echo
 
 fmt:
 	go fmt .
+	go fmt ./compat
 	go fmt ./examples/native
 	go fmt ./examples/echo
 
 lint:
 	golint .
+	golint ./compat
 	golint ./examples/native
 	golint ./examples/echo
 

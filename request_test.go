@@ -239,15 +239,6 @@ func TestParseRequestFilters(t *testing.T) {
 	}, req)
 }
 
-func TestParseHTTPRequest(t *testing.T) {
-	r := constructHTTPRequest("GET", "foo")
-
-	req, err := ParseRequestHTTP(r, "")
-	assert.NoError(t, err)
-	assert.Equal(t, ListResources, req.Intent)
-	assert.Equal(t, "foo", req.ResourceType)
-}
-
 func BenchmarkParseRequest(b *testing.B) {
 	r := constructRequest("GET", "foo/1")
 

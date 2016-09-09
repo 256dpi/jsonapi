@@ -3,10 +3,8 @@ package jsonapi
 import (
 	"encoding/json"
 	"io"
-	"net/http"
 
 	"github.com/labstack/echo/engine"
-	"github.com/labstack/echo/engine/standard"
 )
 
 // DocumentLinks are a set of links related to a documents primary data.
@@ -74,10 +72,4 @@ func WriteResponse(res engine.Response, status int, doc *Document) error {
 
 	// write document
 	return json.NewEncoder(res).Encode(doc)
-}
-
-// WriteResponseHTTP is a convenience method to write to a standard
-// http.ResponseWriter instead of the echo engine response interface.
-func WriteResponseHTTP(res http.ResponseWriter, status int, doc *Document) error {
-	return WriteResponse(standard.NewResponse(res, nil), status, doc)
 }

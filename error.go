@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/labstack/echo/engine"
-	"github.com/labstack/echo/engine/standard"
 )
 
 var singleErrorDocumentPool = sync.Pool{
@@ -107,12 +106,6 @@ func WriteError(res engine.Response, err error) error {
 	return WriteResponse(res, anError.Status, doc)
 }
 
-// WriteErrorHTTP is a convenience method to write to a standard
-// http.ResponseWriter instead of the echo engine response interface.
-func WriteErrorHTTP(w http.ResponseWriter, err error) error {
-	return WriteError(standard.NewResponse(w, nil), err)
-}
-
 // WriteErrorList will write the passed errors to the the response writer.
 // The method will calculate a common status code for all the errors.
 //
@@ -164,12 +157,6 @@ func WriteErrorList(res engine.Response, errors ...*Error) error {
 	doc.Errors = errors
 
 	return WriteResponse(res, commonStatus, doc)
-}
-
-// WriteErrorListHTTP is a convenience method to write to a standard
-// http.ResponseWriter instead of the echo engine response interface.
-func WriteErrorListHTTP(w http.ResponseWriter, errors ...*Error) error {
-	return WriteErrorList(standard.NewResponse(w, nil), errors...)
 }
 
 // ErrorFromStatus will return an error that has been derived from the passed

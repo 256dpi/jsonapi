@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gonfire/jsonapi"
+	"github.com/gonfire/jsonapi/compat"
 )
 
 var counter = 1
@@ -32,14 +33,14 @@ func main() {
 }
 
 func entryPoint(w http.ResponseWriter, r *http.Request) {
-	req, err := jsonapi.ParseRequestHTTP(r, "/api/")
+	req, err := compat.ParseRequest(r, "/api/")
 	if err != nil {
-		jsonapi.WriteErrorHTTP(w, err)
+		compat.WriteError(w, err)
 		return
 	}
 
 	if req.ResourceType != "posts" {
-		jsonapi.WriteErrorHTTP(w, jsonapi.NotFound("The requested resource is not available"))
+		compat.WriteError(w, jsonapi.NotFound("The requested resource is not available"))
 		return
 	}
 
@@ -47,7 +48,7 @@ func entryPoint(w http.ResponseWriter, r *http.Request) {
 	if req.Intent.DocumentExpected() {
 		doc, err = jsonapi.ParseBody(r.Body)
 		if err != nil {
-			jsonapi.WriteErrorHTTP(w, err)
+			compat.WriteError(w, err)
 			return
 		}
 	}
@@ -67,7 +68,7 @@ func entryPoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		jsonapi.WriteErrorHTTP(w, err)
+		compat.WriteError(w, err)
 	}
 }
 
@@ -81,7 +82,7 @@ func listPosts(_ *jsonapi.Request, w http.ResponseWriter) error {
 		})
 	}
 
-	return jsonapi.WriteResourcesHTTP(w, http.StatusOK, list, &jsonapi.DocumentLinks{
+	return compat.WriteResources(w, http.StatusOK, list, &jsonapi.DocumentLinks{
 		Self: "/api/posts",
 	})
 }
@@ -138,7 +139,7 @@ func deletePost(req *jsonapi.Request, w http.ResponseWriter) error {
 }
 
 func writePost(w http.ResponseWriter, status int, post *postModel) error {
-	return jsonapi.WriteResourceHTTP(w, status, &jsonapi.Resource{
+	return compat.WriteResource(w, status, &jsonapi.Resource{
 		Type:       "posts",
 		ID:         post.ID,
 		Attributes: post,

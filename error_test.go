@@ -224,50 +224,6 @@ func TestErrorGenerators(t *testing.T) {
 	}
 }
 
-func TestWriteErrorHTTP(t *testing.T) {
-	rec := httptest.NewRecorder()
-
-	WriteErrorHTTP(rec, &Error{
-		Status: http.StatusNotFound,
-		Title:  "Resource Not Found",
-		Detail: "The requested resource cannot be found",
-	})
-
-	result := rec.Result()
-
-	assert.Equal(t, http.StatusNotFound, result.StatusCode)
-	assert.Equal(t, MediaType, result.Header.Get("Content-Type"))
-	assert.JSONEq(t, `{
-		"errors": [{
-			"status": "404",
-			"title": "Resource Not Found",
-			"detail": "The requested resource cannot be found"
-		}]
-	}`, rec.Body.String())
-}
-
-func TestWriteErrorListHTTP(t *testing.T) {
-	rec := httptest.NewRecorder()
-
-	WriteErrorListHTTP(rec, &Error{
-		Status: http.StatusMethodNotAllowed,
-	}, &Error{
-		Status: http.StatusMethodNotAllowed,
-	})
-
-	result := rec.Result()
-
-	assert.Equal(t, http.StatusMethodNotAllowed, result.StatusCode)
-	assert.Equal(t, MediaType, result.Header.Get("Content-Type"))
-	assert.JSONEq(t, `{
-		"errors": [{
-			"status": "405"
-		}, {
-			"status": "405"
-		}]
-	}`, rec.Body.String())
-}
-
 func BenchmarkWriteError(b *testing.B) {
 	err := &Error{
 		Title:  "Internal Server Error",

@@ -184,24 +184,6 @@ func TestWriteResponseSingleDocument(t *testing.T) {
 	}`, rec.Body.String())
 }
 
-func TestWriteHTTPResponse(t *testing.T) {
-	rec := httptest.NewRecorder()
-
-	err := WriteResponseHTTP(rec, http.StatusOK, &Document{
-		Data: &HybridResource{
-			One: &Resource{
-				Type: "foo",
-			},
-		},
-	})
-	assert.NoError(t, err)
-	assert.JSONEq(t, `{
-  		"data": {
-    		"type": "foo"
-		}
-	}`, rec.Body.String())
-}
-
 func BenchmarkParseBody(b *testing.B) {
 	reader := stringReader(`{
 		"links": {
