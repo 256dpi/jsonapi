@@ -12,10 +12,10 @@ Package [`jsonapi`](http://godoc.org/github.com/gonfire/jsonapi) provides struct
 
 # Usage
 
-The following examples shot the usage of this package:
+The following examples show the usage of this package:
 
-- [native](https://github.com/gonfire/jsonapi/blob/master/examples/native/main.go): This example implements a basic API using the standard HTTP package.
-- [echo](https://github.com/gonfire/jsonapi/blob/master/examples/echo/main.go): This example implements a basic API using the echo framework.
+- The [native](https://github.com/gonfire/jsonapi/blob/master/examples/native/main.go) example implements a basic API using the standard HTTP package.
+- The [echo](https://github.com/gonfire/jsonapi/blob/master/examples/echo/main.go) example implements a basic API using the echo framework.
 
 # Installation
 
