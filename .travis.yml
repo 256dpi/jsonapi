@@ -8,7 +8,7 @@ before_install:
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
 install:
-  - go get ./...
+  - go get -t ./...
 script:
   - go test -coverprofile=jsonapi.coverprofile
   - go test -coverprofile=compat.coverprofile ./compat
