@@ -1,4 +1,4 @@
-// Package jsonapi provides structure and methods to implement JSON API
+// Package jsonapi provides structures and methods to implement JSON API
 // compatible APIs. Most methods are tailored to be used together with the
 // echo framework, yet all of them also have a native counterpart in the compat
 // sub package that allows implementing APIs using the standard HTTP library.
