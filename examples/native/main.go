@@ -1,3 +1,4 @@
+// This example implements a basic API using the standard HTTP package.
 package main
 
 import (

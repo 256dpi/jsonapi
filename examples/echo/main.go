@@ -1,3 +1,4 @@
+// This example implements a basic API using the echo framework.
 package main
 
 import (

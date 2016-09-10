@@ -1,3 +1,5 @@
+// Package compat provides wrapper functions that allow a simple usage of the
+// jsonapi package together with the standard http package.
 package compat
 
 import (
