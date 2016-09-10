@@ -73,9 +73,6 @@ func (i Intent) DocumentExpected() bool {
 // A Request contains all JSON API related information parsed from a low level
 // request.
 type Request struct {
-	// The Original HTTP request.
-	OriginalRequest engine.Request
-
 	// The parsed JSON API intent of the request.
 	Intent Intent
 
@@ -120,8 +117,7 @@ func ParseRequest(req engine.Request, prefix string) (*Request, error) {
 
 	// allocate new request
 	r := &Request{
-		OriginalRequest: req,
-		Prefix:          strings.Trim(prefix, "/"),
+		Prefix: strings.Trim(prefix, "/"),
 	}
 
 	// check content type header

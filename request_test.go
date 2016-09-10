@@ -69,9 +69,8 @@ func TestParseRequestResource(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r,
-		Intent:          ListResources,
-		ResourceType:    "foo",
+		Intent:       ListResources,
+		ResourceType: "foo",
 	}, req)
 }
 
@@ -81,10 +80,9 @@ func TestParseRequestResourceID(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r,
-		Intent:          FindResource,
-		ResourceType:    "foo",
-		ResourceID:      "1",
+		Intent:       FindResource,
+		ResourceType: "foo",
+		ResourceID:   "1",
 	}, req)
 }
 
@@ -94,7 +92,6 @@ func TestParseRequestRelatedResource(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r,
 		Intent:          GetRelatedResources,
 		ResourceType:    "foo",
 		ResourceID:      "1",
@@ -108,11 +105,10 @@ func TestParseRequestRelationship(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r,
-		Intent:          GetRelationship,
-		ResourceType:    "foo",
-		ResourceID:      "1",
-		Relationship:    "bar",
+		Intent:       GetRelationship,
+		ResourceType: "foo",
+		ResourceID:   "1",
+		Relationship: "bar",
 	}, req)
 }
 
@@ -153,10 +149,9 @@ func TestParseRequestInclude(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r1,
-		Intent:          ListResources,
-		ResourceType:    "foo",
-		Include:         []string{"bar", "baz"},
+		Intent:       ListResources,
+		ResourceType: "foo",
+		Include:      []string{"bar", "baz"},
 	}, req)
 
 	r2 := constructRequest("GET", "foo?include=bar&include=baz,qux")
@@ -164,10 +159,9 @@ func TestParseRequestInclude(t *testing.T) {
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r2,
-		Intent:          ListResources,
-		ResourceType:    "foo",
-		Include:         []string{"bar", "baz", "qux"},
+		Intent:       ListResources,
+		ResourceType: "foo",
+		Include:      []string{"bar", "baz", "qux"},
 	}, req)
 }
 
@@ -177,10 +171,9 @@ func TestParseRequestSorting(t *testing.T) {
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r1,
-		Intent:          ListResources,
-		ResourceType:    "foo",
-		Sorting:         []string{"bar", "baz"},
+		Intent:       ListResources,
+		ResourceType: "foo",
+		Sorting:      []string{"bar", "baz"},
 	}, req)
 
 	r2 := constructRequest("GET", "foo?sort=bar&sort=baz,qux")
@@ -188,10 +181,9 @@ func TestParseRequestSorting(t *testing.T) {
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r2,
-		Intent:          ListResources,
-		ResourceType:    "foo",
-		Sorting:         []string{"bar", "baz", "qux"},
+		Intent:       ListResources,
+		ResourceType: "foo",
+		Sorting:      []string{"bar", "baz", "qux"},
 	}, req)
 }
 
@@ -201,11 +193,10 @@ func TestParseRequestPage(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r,
-		Intent:          ListResources,
-		ResourceType:    "foo",
-		PageNumber:      1,
-		PageSize:        2,
+		Intent:       ListResources,
+		ResourceType: "foo",
+		PageNumber:   1,
+		PageSize:     2,
 	}, req)
 }
 
@@ -215,9 +206,8 @@ func TestParseRequestFields(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r,
-		Intent:          ListResources,
-		ResourceType:    "foo",
+		Intent:       ListResources,
+		ResourceType: "foo",
 		Fields: map[string][]string{
 			"foo": {"bar", "baz"},
 		},
@@ -230,9 +220,8 @@ func TestParseRequestFilters(t *testing.T) {
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
-		OriginalRequest: r,
-		Intent:          ListResources,
-		ResourceType:    "foo",
+		Intent:       ListResources,
+		ResourceType: "foo",
 		Filters: map[string][]string{
 			"foo": {"bar", "baz"},
 		},

@@ -26,8 +26,8 @@ type Map map[string]interface{}
 // A Resource is carried by a document and provides the basic structure for
 // JSON API resource objects and resource identifier objects.
 //
-// See: http://jsonapi.org/format/#document-resource-objects.
-// See: http://jsonapi.org/format/#document-resource-identifier-objects.
+// See: http://jsonapi.org/format/#document-resource-objects and
+// http://jsonapi.org/format/#document-resource-identifier-objects.
 type Resource struct {
 	// The mandatory type of the resource.
 	Type string `json:"type"`
