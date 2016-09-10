@@ -1,17 +1,19 @@
 language: go
 go:
-    - 1.6
-    - 1.7
-    - tip
+  - 1.6
+  - 1.7
+  - tip
 before_install:
-    - go get github.com/modocache/gover
-    - go get github.com/mattn/goveralls
-    - go get golang.org/x/tools/cmd/cover
+  - go get github.com/modocache/gover
+  - go get github.com/mattn/goveralls
+  - go get golang.org/x/tools/cmd/cover
+install:
+  - go get ./...
 script:
-    - go test -coverprofile=jsonapi.coverprofile
-    - go test -coverprofile=compat.coverprofile ./compat
-    - $HOME/gopath/bin/gover
-    - $HOME/gopath/bin/goveralls -coverprofile=gover.coverprofile -service=travis-ci
+  - go test -coverprofile=jsonapi.coverprofile
+  - go test -coverprofile=compat.coverprofile ./compat
+  - $HOME/gopath/bin/gover
+  - $HOME/gopath/bin/goveralls -coverprofile=gover.coverprofile -service=travis-ci
 matrix:
   allow_failures:
     - go: tip
