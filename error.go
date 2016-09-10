@@ -80,9 +80,9 @@ func (e *Error) Error() string {
 
 // WriteError will write the passed error to the response writer.
 //
-// Note: If the supplied error is not an Error it will call WriteErrorFromStatus
-// with StatusInternalServerError. Does the passed Error have an invalid or zero
-// status code it will be corrected to the Internal Server Error status code.
+// Note: If the supplied error is not an Error a new InternalServerError is used
+// instead. Does the passed Error have an invalid or zero status code it will be
+// corrected to the Internal Server Error status code.
 func WriteError(res engine.Response, err error) error {
 	anError, ok := err.(*Error)
 	if !ok {
@@ -120,14 +120,14 @@ func WriteErrorList(res engine.Response, errors ...*Error) error {
 	// prepare common status
 	commonStatus := 0
 
-	for _, err := range errors {
+	for i, err := range errors {
 		// check for zero and invalid status
 		if str := http.StatusText(err.Status); str == "" {
-			err.Status = 500
+			err.Status = http.StatusInternalServerError
 		}
 
-		// set directly at beginning
-		if commonStatus == 0 {
+		// take the first status directly
+		if i == 0 {
 			commonStatus = err.Status
 			continue
 		}
