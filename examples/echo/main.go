@@ -47,7 +47,7 @@ func entryPoint(next echo.HandlerFunc) echo.HandlerFunc {
 
 		var doc *jsonapi.Document
 		if req.Intent.DocumentExpected() {
-			doc, err = jsonapi.ParseBody(ctx.Request().Body())
+			doc, err = jsonapi.ParseDocument(ctx.Request().Body())
 			if err != nil {
 				return jsonapi.WriteError(ctx.Response(), err)
 			}

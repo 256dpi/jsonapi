@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseBodyInvalidDocument(t *testing.T) {
+func TestParseDocumentInvalidInput(t *testing.T) {
 	readers := []io.Reader{
 		stringReader(``),
 		stringReader(`1`),
@@ -32,14 +32,14 @@ func TestParseBodyInvalidDocument(t *testing.T) {
 	}
 
 	for _, r := range readers {
-		doc, err := ParseBody(r)
+		doc, err := ParseDocument(r)
 		assert.Error(t, err)
 		assert.Nil(t, doc)
 	}
 }
 
-func TestParseBodyDocumentWithErrors(t *testing.T) {
-	doc, err := ParseBody(stringReader(`{
+func TestParseDocumentDocumentWithErrors(t *testing.T) {
+	doc, err := ParseDocument(stringReader(`{
 		"errors": [{
 			"status": "404"
 		}]
@@ -48,24 +48,8 @@ func TestParseBodyDocumentWithErrors(t *testing.T) {
 	assert.Nil(t, doc)
 }
 
-func TestParseBodyMinimumDocument(t *testing.T) {
-	doc, err := ParseBody(stringReader(`{
-  		"data": {
-    		"type": "foo"
-		}
-	}`))
-	assert.NoError(t, err)
-	assert.Equal(t, &Document{
-		Data: &HybridResource{
-			One: &Resource{
-				Type: "foo",
-			},
-		},
-	}, doc)
-}
-
-func TestParseBodyDocument(t *testing.T) {
-	doc, err := ParseBody(stringReader(`{
+func TestParseDocument(t *testing.T) {
+	doc, err := ParseDocument(stringReader(`{
   		"data": {
     		"type": "foo",
     		"id": "1",
@@ -86,8 +70,8 @@ func TestParseBodyDocument(t *testing.T) {
 	}, doc)
 }
 
-func TestParseBodyDocuments(t *testing.T) {
-	doc, err := ParseBody(stringReader(`{
+func TestParseDocumentWithManyResources(t *testing.T) {
+	doc, err := ParseDocument(stringReader(`{
   		"data": [
   			{
 				"type": "foo",
@@ -112,8 +96,8 @@ func TestParseBodyDocuments(t *testing.T) {
 	}, doc)
 }
 
-func TestParseBodyDocumentWithRelationship(t *testing.T) {
-	doc, err := ParseBody(stringReader(`{
+func TestParseDocumentDocumentWithRelationships(t *testing.T) {
+	doc, err := ParseDocument(stringReader(`{
   		"data": {
     		"type": "foo",
     		"id": "1",
@@ -146,24 +130,6 @@ func TestParseBodyDocumentWithRelationship(t *testing.T) {
 	}, doc)
 }
 
-func TestWriteResponseMinimumSingleDocument(t *testing.T) {
-	res, rec := constructResponseAndRecorder()
-
-	err := WriteResponse(res, http.StatusOK, &Document{
-		Data: &HybridResource{
-			One: &Resource{
-				Type: "foo",
-			},
-		},
-	})
-	assert.NoError(t, err)
-	assert.JSONEq(t, `{
-  		"data": {
-    		"type": "foo"
-		}
-	}`, rec.Body.String())
-}
-
 func TestWriteResponseSingleDocument(t *testing.T) {
 	res, rec := constructResponseAndRecorder()
 
@@ -184,7 +150,7 @@ func TestWriteResponseSingleDocument(t *testing.T) {
 	}`, rec.Body.String())
 }
 
-func BenchmarkParseBody(b *testing.B) {
+func BenchmarkParseDocument(b *testing.B) {
 	reader := stringReader(`{
 		"links": {
 			"self": "http://0.0.0.0:1234/api/foo/1"
@@ -202,7 +168,7 @@ func BenchmarkParseBody(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, err := ParseBody(reader)
+		_, err := ParseDocument(reader)
 		if err != nil {
 			panic(err)
 		}

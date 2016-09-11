@@ -42,8 +42,11 @@ type Document struct {
 	Meta Map `json:"meta,omitempty"`
 }
 
-// ParseBody will decode a JSON API document from the passed request body reader.
-func ParseBody(r io.Reader) (*Document, error) {
+// ParseDocument will decode a JSON API document from the passed reader.
+//
+// Note: If the read document contains errors the first Error will be returned
+// as an error.
+func ParseDocument(r io.Reader) (*Document, error) {
 	// prepare document
 	var doc Document
 
@@ -55,7 +58,7 @@ func ParseBody(r io.Reader) (*Document, error) {
 
 	// check for errors
 	if len(doc.Errors) > 0 {
-		return nil, BadRequest("Body contains errors")
+		return nil, doc.Errors[0]
 	}
 
 	return &doc, nil

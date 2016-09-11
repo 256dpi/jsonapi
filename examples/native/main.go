@@ -47,7 +47,7 @@ func entryPoint(w http.ResponseWriter, r *http.Request) {
 
 	var doc *jsonapi.Document
 	if req.Intent.DocumentExpected() {
-		doc, err = jsonapi.ParseBody(r.Body)
+		doc, err = jsonapi.ParseDocument(r.Body)
 		if err != nil {
 			compat.WriteError(w, err)
 			return

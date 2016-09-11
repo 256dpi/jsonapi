@@ -229,6 +229,10 @@ func TestParseRequestFilters(t *testing.T) {
 	}, req)
 }
 
+func TestZeroIntentRequestMethod(t *testing.T) {
+	assert.Empty(t, Intent(0).RequestMethod())
+}
+
 func BenchmarkParseRequest(b *testing.B) {
 	r := constructRequest("GET", "foo/1")
 
