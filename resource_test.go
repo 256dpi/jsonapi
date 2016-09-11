@@ -32,6 +32,20 @@ func TestResourceAssignAttributes(t *testing.T) {
 	assert.Equal(t, "foo", test.Foo)
 }
 
+func TestResourceAssignAttributesWithTag(t *testing.T) {
+	var test struct {
+		Foo string `json:"bar"`
+	}
+
+	r := &Resource{
+		Attributes: Map{"bar": "foo"},
+	}
+
+	err := r.AssignAttributes(&test)
+	assert.NoError(t, err)
+	assert.Equal(t, "foo", test.Foo)
+}
+
 func TestResourceAssignAttributesUnmatchedFields(t *testing.T) {
 	var test struct {
 		Foo string
