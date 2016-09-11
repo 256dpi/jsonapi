@@ -58,8 +58,11 @@ const (
 	RemoveFromRelationship
 )
 
-// DocumentExpected returns whether the intent is expected to come with a
-// JSON API document.
+// DocumentExpected returns whether a request using this intent is expected to
+// include a JSON API document.
+//
+// Note: A response from an API may always include a document that at least
+// contains one ore more errors.
 func (i Intent) DocumentExpected() bool {
 	switch i {
 	case CreateResource, UpdateResource, SetRelationship,
