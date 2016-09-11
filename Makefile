@@ -2,23 +2,23 @@ all: test fmt vet lint
 
 test:
 	go test -cover .
-	go test -cover ./adapters/echo
+	go test -cover ./adapter
 
 vet:
 	go vet .
-	go vet ./adapters/echo
+	go vet ./adapter
 	go vet ./examples/native
 	go vet ./examples/echo
 
 fmt:
 	go fmt .
-	go fmt ./adapters/echo
+	go fmt ./adapter
 	go fmt ./examples/native
 	go fmt ./examples/echo
 
 lint:
 	golint .
-	golint ./adapters/echo
+	golint ./adapter
 	golint ./examples/native
 	golint ./examples/echo
 

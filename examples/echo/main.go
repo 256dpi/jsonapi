@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gonfire/jsonapi"
-	"github.com/gonfire/jsonapi/adapters/echo"
+	"github.com/gonfire/jsonapi/adapter"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/fasthttp"
 	"github.com/labstack/echo/middleware"
