@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/labstack/echo/engine"
+	"github.com/mitchellh/mapstructure"
 )
 
 var objectSuffix = []byte("{")
@@ -19,9 +20,6 @@ var responseDocumentPool = sync.Pool{
 		}
 	},
 }
-
-// Map is a general purpose map of string keys and arbitrary values.
-type Map map[string]interface{}
 
 // A Resource is carried by a document and provides the basic structure for
 // JSON API resource objects and resource identifier objects.
@@ -51,6 +49,33 @@ type Resource struct {
 
 	// Non-standard meta-information about the resource.
 	Meta Map `json:"meta,omitempty"`
+}
+
+// AssignAttributes will assign the values in the attributes map to the target
+// struct using the mapstructure package.
+//
+// Note: The "json" tag will be respected to match field names.
+func (r *Resource) AssignAttributes(target interface{}) error {
+	// prepare decoder config
+	cfg := &mapstructure.DecoderConfig{
+		ZeroFields: true,
+		Result:     target,
+		TagName:    "json",
+	}
+
+	// create decoder
+	decoder, err := mapstructure.NewDecoder(cfg)
+	if err != nil {
+		return err
+	}
+
+	// run decoder
+	err = decoder.Decode(r.Attributes)
+	if err != nil {
+		return BadRequest(err.Error())
+	}
+
+	return nil
 }
 
 // HybridResource is a transparent type that enables concrete marshalling and

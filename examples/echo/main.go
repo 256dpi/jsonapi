@@ -92,7 +92,7 @@ func createPost(ctx echo.Context) error {
 		ID: strconv.Itoa(counter),
 	}
 
-	err := jsonapi.MapToStruct(doc.Data.One.Attributes, post)
+	err := doc.Data.One.AssignAttributes(post)
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func updatePost(ctx echo.Context) error {
 		return jsonapi.NotFound("The requested resource does not exist")
 	}
 
-	err := jsonapi.MapToStruct(doc.Data.One.Attributes, post)
+	err := doc.Data.One.AssignAttributes(post)
 	if err != nil {
 		return err
 	}

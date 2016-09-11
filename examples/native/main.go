@@ -102,7 +102,7 @@ func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter
 		ID: strconv.Itoa(counter),
 	}
 
-	err := jsonapi.MapToStruct(doc.Data.One.Attributes, post)
+	err := doc.Data.One.AssignAttributes(post)
 	if err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWrit
 		return jsonapi.NotFound("The requested resource does not exist")
 	}
 
-	err := jsonapi.MapToStruct(doc.Data.One.Attributes, post)
+	err := doc.Data.One.AssignAttributes(post)
 	if err != nil {
 		return err
 	}
