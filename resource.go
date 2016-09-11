@@ -118,7 +118,12 @@ func WriteResource(res Responder, status int, resource *Resource, links *Documen
 	doc := getResponseDocumentFromPool()
 
 	// put document back when finished
-	defer responseDocumentPool.Put(doc)
+	defer func() {
+		doc.Data.One = nil
+		doc.Links = nil
+		doc.Included = nil
+		responseDocumentPool.Put(doc)
+	}()
 
 	// set data
 	doc.Data.One = resource
@@ -135,7 +140,12 @@ func WriteResources(res Responder, status int, resources []*Resource, links *Doc
 	doc := getResponseDocumentFromPool()
 
 	// put document back when finished
-	defer responseDocumentPool.Put(doc)
+	defer func() {
+		doc.Data.Many = nil
+		doc.Links = nil
+		doc.Included = nil
+		responseDocumentPool.Put(doc)
+	}()
 
 	// set data
 	doc.Data.Many = resources

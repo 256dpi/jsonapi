@@ -96,9 +96,12 @@ func WriteError(res Responder, err error) error {
 	doc := singleErrorDocumentPool.Get().(*Document)
 
 	// put document back when finished
-	defer singleErrorDocumentPool.Put(doc)
+	defer func() {
+		doc.Errors[0] = nil
+		singleErrorDocumentPool.Put(doc)
+	}()
 
-	// reset document
+	// set error
 	doc.Errors[0] = anError
 
 	return WriteResponse(res, anError.Status, doc)
@@ -149,7 +152,10 @@ func WriteErrorList(res Responder, errors ...*Error) error {
 	doc := multiErrorDocumentPool.Get().(*Document)
 
 	// put document back when finished
-	defer multiErrorDocumentPool.Put(doc)
+	defer func() {
+		doc.Errors = nil
+		multiErrorDocumentPool.Put(doc)
+	}()
 
 	// set errors
 	doc.Errors = errors
