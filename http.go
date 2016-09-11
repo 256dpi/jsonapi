@@ -1,10 +1,6 @@
-package adapter
+package jsonapi
 
-import (
-	"net/http"
-
-	"github.com/gonfire/jsonapi"
-)
+import "net/http"
 
 type requestBridge struct {
 	request *http.Request
@@ -43,16 +39,16 @@ func (b *responseWriterBridge) Write(p []byte) (int, error) {
 }
 
 // BridgeRequest will return a bridge for the passed http request to be compatible
-// with the jsonapi.Requester interface.
-func BridgeRequest(r *http.Request) jsonapi.Requester {
+// with the Requester interface.
+func BridgeRequest(r *http.Request) Requester {
 	return &requestBridge{
 		request: r,
 	}
 }
 
 // BridgeResponseWriter will return a bride for the passed http response writer
-// to be compatible with the jsonapi.Responder interface.
-func BridgeResponseWriter(w http.ResponseWriter) jsonapi.Responder {
+// to be compatible with the Responder interface.
+func BridgeResponseWriter(w http.ResponseWriter) Responder {
 	return &responseWriterBridge{
 		responseWriter: w,
 	}

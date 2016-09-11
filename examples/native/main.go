@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gonfire/jsonapi"
-	"github.com/gonfire/jsonapi/adapters/http"
 )
 
 var counter = 1
@@ -34,9 +33,9 @@ func main() {
 }
 
 func entryPoint(writer http.ResponseWriter, r *http.Request) {
-	w := adapter.BridgeResponseWriter(writer)
+	w := jsonapi.BridgeResponseWriter(writer)
 
-	req, err := jsonapi.ParseRequest(adapter.BridgeRequest(r), "/api/")
+	req, err := jsonapi.ParseRequest(jsonapi.BridgeRequest(r), "/api/")
 	if err != nil {
 		jsonapi.WriteError(w, err)
 		return
