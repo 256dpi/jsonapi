@@ -3,8 +3,6 @@ package jsonapi
 import (
 	"encoding/json"
 	"io"
-
-	"github.com/labstack/echo/engine"
 )
 
 // DocumentLinks are a set of links related to a documents primary data.
@@ -66,9 +64,9 @@ func ParseDocument(r io.Reader) (*Document, error) {
 
 // WriteResponse will write the the status and supplied document to the passed
 // response writer.
-func WriteResponse(res engine.Response, status int, doc *Document) error {
+func WriteResponse(res Responder, status int, doc *Document) error {
 	// set content type
-	res.Header().Set("Content-Type", MediaType)
+	res.Set("Content-Type", MediaType)
 
 	// write status
 	res.WriteHeader(status)

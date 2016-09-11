@@ -2,10 +2,8 @@ package jsonapi
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/labstack/echo/engine/standard"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -77,7 +75,7 @@ func TestResourceAssignAttributesInvalidType(t *testing.T) {
 func TestWriteResourceEmpty(t *testing.T) {
 	// TODO: Should this raise an error?
 
-	res, rec := constructResponseAndRecorder()
+	res := newTestResponder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{}, nil)
 	assert.NoError(t, err)
@@ -85,11 +83,11 @@ func TestWriteResourceEmpty(t *testing.T) {
 		"data": {
 			"type": ""
 		}
-	}`, rec.Body.String())
+	}`, res.buffer.String())
 }
 
 func TestWriteResource(t *testing.T) {
-	res, rec := constructResponseAndRecorder()
+	res := newTestResponder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{
 		Type: "foo",
@@ -107,13 +105,13 @@ func TestWriteResource(t *testing.T) {
 				"foo": "bar"
 			}
 		}
-	}`, rec.Body.String())
+	}`, res.buffer.String())
 }
 
 func TestWriteResourcesEmpty(t *testing.T) {
 	// TODO: Should this raise an error?
 
-	res, rec := constructResponseAndRecorder()
+	res := newTestResponder()
 
 	err := WriteResources(res, http.StatusOK, []*Resource{{}}, nil)
 	assert.NoError(t, err)
@@ -123,11 +121,11 @@ func TestWriteResourcesEmpty(t *testing.T) {
 				"type": ""
 			}
 		]
-	}`, rec.Body.String())
+	}`, res.buffer.String())
 }
 
 func TestWriteResources(t *testing.T) {
-	res, rec := constructResponseAndRecorder()
+	res := newTestResponder()
 
 	err := WriteResources(res, http.StatusOK, []*Resource{
 		{
@@ -163,11 +161,11 @@ func TestWriteResources(t *testing.T) {
 				}
 			}
 		]
-	}`, rec.Body.String())
+	}`, res.buffer.String())
 }
 
 func TestWriteResourceRelationship(t *testing.T) {
-	res, rec := constructResponseAndRecorder()
+	res := newTestResponder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{
 		Type: "foo",
@@ -197,7 +195,7 @@ func TestWriteResourceRelationship(t *testing.T) {
 				}
 			}
 		}
-	}`, rec.Body.String())
+	}`, res.buffer.String())
 }
 
 func BenchmarkWriteResource(b *testing.B) {
@@ -213,7 +211,7 @@ func BenchmarkWriteResource(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := standard.NewResponse(httptest.NewRecorder(), nil)
+		res := newTestResponder()
 
 		err := WriteResource(res, http.StatusOK, resource, nil)
 		if err != nil {
@@ -245,7 +243,7 @@ func BenchmarkWriteResources(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := standard.NewResponse(httptest.NewRecorder(), nil)
+		res := newTestResponder()
 
 		err := WriteResources(res, http.StatusOK, resources, nil)
 		if err != nil {

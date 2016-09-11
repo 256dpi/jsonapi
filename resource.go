@@ -6,7 +6,6 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/labstack/echo/engine"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -112,7 +111,7 @@ func (r *HybridResource) UnmarshalJSON(doc []byte) error {
 
 // WriteResource will wrap the passed resource, links and included resources in
 // a document and write it to the passed response writer.
-func WriteResource(res engine.Response, status int, resource *Resource, links *DocumentLinks, included ...*Resource) error {
+func WriteResource(res Responder, status int, resource *Resource, links *DocumentLinks, included ...*Resource) error {
 	// TODO: Validate resource?
 
 	// get document from pool
@@ -131,7 +130,7 @@ func WriteResource(res engine.Response, status int, resource *Resource, links *D
 
 // WriteResources will wrap the passed resources, links and included resources
 // in a document and write it to the passed response writer.
-func WriteResources(res engine.Response, status int, resources []*Resource, links *DocumentLinks, included ...*Resource) error {
+func WriteResources(res Responder, status int, resources []*Resource, links *DocumentLinks, included ...*Resource) error {
 	// get document from pool
 	doc := getResponseDocumentFromPool()
 

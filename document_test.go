@@ -3,10 +3,8 @@ package jsonapi
 import (
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/labstack/echo/engine/standard"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -131,7 +129,7 @@ func TestParseDocumentDocumentWithRelationships(t *testing.T) {
 }
 
 func TestWriteResponseSingleDocument(t *testing.T) {
-	res, rec := constructResponseAndRecorder()
+	res := newTestResponder()
 
 	err := WriteResponse(res, http.StatusOK, &Document{
 		Data: &HybridResource{
@@ -147,7 +145,7 @@ func TestWriteResponseSingleDocument(t *testing.T) {
     		"type": "foo",
     		"id": "1"
 		}
-	}`, rec.Body.String())
+	}`, res.buffer.String())
 }
 
 func BenchmarkParseDocument(b *testing.B) {
@@ -197,7 +195,7 @@ func BenchmarkWriteResponse(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := standard.NewResponse(httptest.NewRecorder(), nil)
+		res := newTestResponder()
 
 		err := WriteResponse(res, http.StatusOK, doc)
 		if err != nil {

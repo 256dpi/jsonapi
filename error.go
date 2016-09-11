@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-
-	"github.com/labstack/echo/engine"
 )
 
 var singleErrorDocumentPool = sync.Pool{
@@ -83,7 +81,7 @@ func (e *Error) Error() string {
 // Note: If the supplied error is not an Error a new InternalServerError is used
 // instead. Does the passed Error have an invalid or zero status code it will be
 // corrected to the Internal Server Error status code.
-func WriteError(res engine.Response, err error) error {
+func WriteError(res Responder, err error) error {
 	anError, ok := err.(*Error)
 	if !ok {
 		anError = InternalServerError("")
@@ -111,7 +109,7 @@ func WriteError(res engine.Response, err error) error {
 //
 // Does a passed Error have an invalid or zero status code it will be corrected
 // to the Internal Server Error status code.
-func WriteErrorList(res engine.Response, errors ...*Error) error {
+func WriteErrorList(res Responder, errors ...*Error) error {
 	// write internal server error if no errors are passed
 	if len(errors) == 0 {
 		return WriteError(res, nil)

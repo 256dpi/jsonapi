@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gonfire/jsonapi"
+	"github.com/gonfire/jsonapi/adapters/echo"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/fasthttp"
 	"github.com/labstack/echo/middleware"
@@ -38,9 +39,12 @@ func main() {
 
 func entryPoint(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		req, err := jsonapi.ParseRequest(ctx.Request(), "/api/")
+		r := adapter.BridgeRequest(ctx.Request())
+		w := adapter.BridgeResponse(ctx.Response())
+
+		req, err := jsonapi.ParseRequest(r, "/api/")
 		if err != nil {
-			return jsonapi.WriteError(ctx.Response(), err)
+			return jsonapi.WriteError(w, err)
 		}
 
 		ctx.Set("req", req)
@@ -49,7 +53,7 @@ func entryPoint(next echo.HandlerFunc) echo.HandlerFunc {
 		if req.Intent.DocumentExpected() {
 			doc, err = jsonapi.ParseDocument(ctx.Request().Body())
 			if err != nil {
-				return jsonapi.WriteError(ctx.Response(), err)
+				return jsonapi.WriteError(w, err)
 			}
 
 			ctx.Set("doc", doc)
@@ -69,7 +73,9 @@ func listPosts(ctx echo.Context) error {
 		})
 	}
 
-	return jsonapi.WriteResources(ctx.Response(), http.StatusOK, list, &jsonapi.DocumentLinks{
+	w := adapter.BridgeResponse(ctx.Response())
+
+	return jsonapi.WriteResources(w, http.StatusOK, list, &jsonapi.DocumentLinks{
 		Self: "/api/posts",
 	})
 }
@@ -135,7 +141,9 @@ func deletePost(ctx echo.Context) error {
 }
 
 func writePost(ctx echo.Context, status int, post *postModel) error {
-	return jsonapi.WriteResource(ctx.Response(), status, &jsonapi.Resource{
+	w := adapter.BridgeResponse(ctx.Response())
+
+	return jsonapi.WriteResource(w, status, &jsonapi.Resource{
 		Type:       "posts",
 		ID:         post.ID,
 		Attributes: post,

@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/labstack/echo/engine"
 )
 
 // An Intent represents a valid combination of a request method and a URL pattern.
@@ -125,7 +123,7 @@ type Request struct {
 // url is invalid.
 //
 // Note: The returned error can directly be written using WriteError.
-func ParseRequest(req engine.Request, prefix string) (*Request, error) {
+func ParseRequest(req Requester, prefix string) (*Request, error) {
 	// get method
 	method := req.Method()
 
@@ -140,19 +138,19 @@ func ParseRequest(req engine.Request, prefix string) (*Request, error) {
 	}
 
 	// check content type header
-	contentType := req.Header().Get("Content-Type")
+	contentType := req.Get("Content-Type")
 	if contentType != "" && contentType != MediaType {
 		return nil, BadRequest("Invalid content type header")
 	}
 
 	// check accept header
-	accept := req.Header().Get("Accept")
+	accept := req.Get("Accept")
 	if accept != "" && accept != "*/*" && accept != "application/*" && accept != MediaType {
 		return nil, ErrorFromStatus(http.StatusNotAcceptable, "Invalid accept header")
 	}
 
 	// de-prefix and trim path
-	url := strings.TrimPrefix(strings.Trim(req.URL().Path(), "/"), r.Prefix+"/")
+	url := strings.TrimPrefix(strings.Trim(req.Path(), "/"), r.Prefix+"/")
 
 	// split path
 	segments := strings.Split(url, "/")
@@ -240,7 +238,7 @@ func ParseRequest(req engine.Request, prefix string) (*Request, error) {
 		return nil, BadRequest("Missing content type header")
 	}
 
-	for key, values := range req.URL().QueryParams() {
+	for key, values := range req.QueryParams() {
 		// set included resources
 		if key == "include" {
 			for _, v := range values {

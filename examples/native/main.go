@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gonfire/jsonapi"
-	"github.com/gonfire/jsonapi/compat"
+	"github.com/gonfire/jsonapi/adapters/http"
 )
 
 var counter = 1
@@ -33,15 +33,17 @@ func main() {
 	http.ListenAndServe("0.0.0.0:4000", nil)
 }
 
-func entryPoint(w http.ResponseWriter, r *http.Request) {
-	req, err := compat.ParseRequest(r, "/api/")
+func entryPoint(writer http.ResponseWriter, r *http.Request) {
+	w := adapter.BridgeResponseWriter(writer)
+
+	req, err := jsonapi.ParseRequest(adapter.BridgeRequest(r), "/api/")
 	if err != nil {
-		compat.WriteError(w, err)
+		jsonapi.WriteError(w, err)
 		return
 	}
 
 	if req.ResourceType != "posts" {
-		compat.WriteError(w, jsonapi.NotFound("The requested resource is not available"))
+		jsonapi.WriteError(w, jsonapi.NotFound("The requested resource is not available"))
 		return
 	}
 
@@ -49,7 +51,7 @@ func entryPoint(w http.ResponseWriter, r *http.Request) {
 	if req.Intent.DocumentExpected() {
 		doc, err = jsonapi.ParseDocument(r.Body)
 		if err != nil {
-			compat.WriteError(w, err)
+			jsonapi.WriteError(w, err)
 			return
 		}
 	}
@@ -69,11 +71,11 @@ func entryPoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		compat.WriteError(w, err)
+		jsonapi.WriteError(w, err)
 	}
 }
 
-func listPosts(_ *jsonapi.Request, w http.ResponseWriter) error {
+func listPosts(_ *jsonapi.Request, w jsonapi.Responder) error {
 	list := make([]*jsonapi.Resource, 0, len(store))
 	for _, post := range store {
 		list = append(list, &jsonapi.Resource{
@@ -83,12 +85,12 @@ func listPosts(_ *jsonapi.Request, w http.ResponseWriter) error {
 		})
 	}
 
-	return compat.WriteResources(w, http.StatusOK, list, &jsonapi.DocumentLinks{
+	return jsonapi.WriteResources(w, http.StatusOK, list, &jsonapi.DocumentLinks{
 		Self: "/api/posts",
 	})
 }
 
-func findPost(req *jsonapi.Request, w http.ResponseWriter) error {
+func findPost(req *jsonapi.Request, w jsonapi.Responder) error {
 	post, ok := store[req.ResourceID]
 	if !ok {
 		return jsonapi.NotFound("The requested resource does not exist")
@@ -97,7 +99,7 @@ func findPost(req *jsonapi.Request, w http.ResponseWriter) error {
 	return writePost(w, http.StatusOK, post)
 }
 
-func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) error {
+func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder) error {
 	post := &postModel{
 		ID: strconv.Itoa(counter),
 	}
@@ -113,7 +115,7 @@ func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter
 	return writePost(w, http.StatusCreated, post)
 }
 
-func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) error {
+func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder) error {
 	post, ok := store[req.ResourceID]
 	if !ok {
 		return jsonapi.NotFound("The requested resource does not exist")
@@ -127,7 +129,7 @@ func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWrit
 	return writePost(w, http.StatusOK, post)
 }
 
-func deletePost(req *jsonapi.Request, w http.ResponseWriter) error {
+func deletePost(req *jsonapi.Request, w jsonapi.Responder) error {
 	_, ok := store[req.ResourceID]
 	if !ok {
 		return jsonapi.NotFound("The requested resource does not exist")
@@ -139,8 +141,8 @@ func deletePost(req *jsonapi.Request, w http.ResponseWriter) error {
 	return nil
 }
 
-func writePost(w http.ResponseWriter, status int, post *postModel) error {
-	return compat.WriteResource(w, status, &jsonapi.Resource{
+func writePost(w jsonapi.Responder, status int, post *postModel) error {
+	return jsonapi.WriteResource(w, status, &jsonapi.Resource{
 		Type:       "posts",
 		ID:         post.ID,
 		Attributes: post,
