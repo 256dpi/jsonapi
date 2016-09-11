@@ -1,3 +1,4 @@
+// Package adapter implements an adapter for the echo framework.
 package adapter
 
 import (
