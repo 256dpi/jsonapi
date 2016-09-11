@@ -70,6 +70,22 @@ func (i Intent) DocumentExpected() bool {
 	return false
 }
 
+// RequestMethod returns the matching HTTP request method for an Intent.
+func (i Intent) RequestMethod() string {
+	switch i {
+	case ListResources, FindResource, GetRelatedResources, GetRelationship:
+		return "GET"
+	case CreateResource, AppendToRelationship:
+		return "POST"
+	case UpdateResource, SetRelationship:
+		return "PATCH"
+	case DeleteResource, RemoveFromRelationship:
+		return "DELETE"
+	}
+
+	return ""
+}
+
 // A Request contains all JSON API related information parsed from a low level
 // request.
 type Request struct {
