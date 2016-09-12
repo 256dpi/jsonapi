@@ -1,3 +1,4 @@
+// This example implements the client to query an API.
 package main
 
 import (
