@@ -26,22 +26,22 @@ func TestParseRequestError(t *testing.T) {
 		newTestRequester("GET", "foo/bar/baz/qux", nil),
 		newTestRequester("GET", "foo/bar/baz/qux/quux", nil),
 		newTestRequester("GET", "foo", map[string][]string{
-			"page[number]": []string{"bar"},
+			"page[number]": {"bar"},
 		}),
 		newTestRequester("GET", "foo", map[string][]string{
-			"page[size]": []string{"bar"},
+			"page[size]": {"bar"},
 		}),
 		newTestRequester("GET", "foo", map[string][]string{
-			"page[number]": []string{"1"},
+			"page[number]": {"1"},
 		}),
 		newTestRequester("GET", "foo", map[string][]string{
-			"page[size]": []string{"1"},
+			"page[size]": {"1"},
 		}),
 		newTestRequester("GET", "foo", map[string][]string{
-			"page[number]": []string{"bar", "baz"},
+			"page[number]": {"bar", "baz"},
 		}),
 		newTestRequester("GET", "foo", map[string][]string{
-			"page[size]": []string{"bar", "baz"},
+			"page[size]": {"bar", "baz"},
 		}),
 		newTestRequester("PATCH", "foo", nil),
 	}
@@ -157,7 +157,7 @@ func TestParseRequestIntent(t *testing.T) {
 
 func TestParseRequestInclude(t *testing.T) {
 	r1 := newTestRequester("GET", "foo", map[string][]string{
-		"include": []string{"bar,baz"},
+		"include": {"bar,baz"},
 	})
 
 	req, err := ParseRequest(r1, "")
@@ -169,7 +169,7 @@ func TestParseRequestInclude(t *testing.T) {
 	}, req)
 
 	r2 := newTestRequester("GET", "foo", map[string][]string{
-		"include": []string{"bar", "baz,qux"},
+		"include": {"bar", "baz,qux"},
 	})
 
 	req, err = ParseRequest(r2, "")
@@ -183,7 +183,7 @@ func TestParseRequestInclude(t *testing.T) {
 
 func TestParseRequestSorting(t *testing.T) {
 	r1 := newTestRequester("GET", "foo", map[string][]string{
-		"sort": []string{"bar,baz"},
+		"sort": {"bar,baz"},
 	})
 
 	req, err := ParseRequest(r1, "")
@@ -195,7 +195,7 @@ func TestParseRequestSorting(t *testing.T) {
 	}, req)
 
 	r2 := newTestRequester("GET", "foo", map[string][]string{
-		"sort": []string{"bar", "baz,qux"},
+		"sort": {"bar", "baz,qux"},
 	})
 
 	req, err = ParseRequest(r2, "")
@@ -209,8 +209,8 @@ func TestParseRequestSorting(t *testing.T) {
 
 func TestParseRequestPage(t *testing.T) {
 	r := newTestRequester("GET", "foo", map[string][]string{
-		"page[number]": []string{"1"},
-		"page[size]":   []string{"2"},
+		"page[number]": {"1"},
+		"page[size]":   {"2"},
 	})
 
 	req, err := ParseRequest(r, "")
@@ -225,7 +225,7 @@ func TestParseRequestPage(t *testing.T) {
 
 func TestParseRequestFields(t *testing.T) {
 	r := newTestRequester("GET", "foo", map[string][]string{
-		"fields[foo]": []string{"bar,baz"},
+		"fields[foo]": {"bar,baz"},
 	})
 
 	req, err := ParseRequest(r, "")
@@ -241,7 +241,7 @@ func TestParseRequestFields(t *testing.T) {
 
 func TestParseRequestFilters(t *testing.T) {
 	r := newTestRequester("GET", "foo", map[string][]string{
-		"filter[foo]": []string{"bar,baz"},
+		"filter[foo]": {"bar,baz"},
 	})
 
 	req, err := ParseRequest(r, "")
