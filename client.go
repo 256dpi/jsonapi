@@ -9,15 +9,18 @@ import (
 // Client is a very basic client implementation that simplifies interacting with
 // a JSON API compatible API.
 type Client struct {
-	base   string
-	client *http.Client
+	// The base URL of the API.
+	BaseURL string
+
+	// The underlying http client.
+	Client *http.Client
 }
 
 // NewClient creates and returns a new client.
-func NewClient(base string) *Client {
+func NewClient(baseURL string) *Client {
 	return &Client{
-		base:   base,
-		client: &http.Client{},
+		BaseURL: baseURL,
+		Client:  &http.Client{},
 	}
 }
 
@@ -33,7 +36,7 @@ func (c *Client) Request(req *Request, doc *Document) (*Document, error) {
 	}
 
 	// construct request
-	r, err := http.NewRequest(req.Intent.RequestMethod(), c.base+req.Self(), &buffer)
+	r, err := http.NewRequest(req.Intent.RequestMethod(), c.BaseURL+req.Self(), &buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +50,7 @@ func (c *Client) Request(req *Request, doc *Document) (*Document, error) {
 	}
 
 	// do request
-	res, err := c.client.Do(r)
+	res, err := c.Client.Do(r)
 	if err != nil {
 		return nil, err
 	}

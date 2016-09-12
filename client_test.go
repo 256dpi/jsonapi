@@ -20,7 +20,7 @@ func (r *testTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 func testClient() *Client {
 	c := NewClient("")
-	c.client.Transport = &testTransport{}
+	c.Client.Transport = &testTransport{}
 	return c
 }
 
@@ -151,7 +151,7 @@ func TestClientRequestNoContent(t *testing.T) {
 
 func TestClientRequestInvalidRequest(t *testing.T) {
 	c := testClient()
-	c.base = "%"
+	c.BaseURL = "%"
 
 	doc, err := c.Request(&Request{}, nil)
 	assert.Error(t, err)
@@ -160,7 +160,7 @@ func TestClientRequestInvalidRequest(t *testing.T) {
 
 func TestClientRequestUnderlyingError(t *testing.T) {
 	c := testClient()
-	c.client.Transport = nil
+	c.Client.Transport = nil
 
 	doc, err := c.Request(&Request{}, nil)
 	assert.Error(t, err)
