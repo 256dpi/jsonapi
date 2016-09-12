@@ -8,7 +8,7 @@
 
 **An extensible JSON API implementation for Go.**
 
-Package [`jsonapi`](http://godoc.org/github.com/gonfire/jsonapi) provides structures and methods to implement JSON API compatible APIs. Most methods are tailored to be used together with the echo framework, yet all of them also have a native counterpart in the [`compat`](http://godoc.org/github.com/gonfire/jsonapi/compat) sub package that allows implementing APIs using the standard HTTP library.
+Package [`jsonapi`](http://godoc.org/github.com/gonfire/jsonapi) provides structures and methods to implement JSON API compatible APIs. The library can be used with any framework or http library and ships with a built-in bridging for the native http standard library. The [`adapter`](http://godoc.org/github.com/gonfire/jsonapi/adapter) package provides additional bridging for the [echo](http://github.com/labstack/echo) framework.
 
 # Usage
 
