@@ -69,7 +69,7 @@ func listPosts(ctx echo.Context) error {
 		list = append(list, &jsonapi.Resource{
 			Type:       "posts",
 			ID:         post.ID,
-			Attributes: post,
+			Attributes: jsonapi.StructToMap(post),
 		})
 	}
 
@@ -146,7 +146,7 @@ func writePost(ctx echo.Context, status int, post *postModel) error {
 	return jsonapi.WriteResource(w, status, &jsonapi.Resource{
 		Type:       "posts",
 		ID:         post.ID,
-		Attributes: post,
+		Attributes: jsonapi.StructToMap(post),
 	}, &jsonapi.DocumentLinks{
 		Self: "/api/posts/" + post.ID,
 	})

@@ -51,7 +51,7 @@ type Resource struct {
 }
 
 // AssignAttributes will assign the values in the attributes map to the target
-// struct using the mapstructure package.
+// struct.
 //
 // Note: The "json" tag will be respected to match field names.
 func (r *Resource) AssignAttributes(target interface{}) error {
