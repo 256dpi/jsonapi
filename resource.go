@@ -36,11 +36,8 @@ type Resource struct {
 	// the server.
 	ID string `json:"id,omitempty"`
 
-	// An attributes object representing some of the resource's data.
-	//
-	// This field will contain a Map after parsing a request body and might be
-	// directly set to JSON compatible struct for writing responses.
-	Attributes interface{} `json:"attributes,omitempty"`
+	// An attributes map representing some of the resource's data.
+	Attributes Map `json:"attributes,omitempty"`
 
 	// A relationships object describing relationships between the resource and
 	// other JSON API resources.
