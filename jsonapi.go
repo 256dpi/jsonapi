@@ -36,10 +36,11 @@ type Responder interface {
 type Map map[string]interface{}
 
 // StructToMap will assign the fields of the source struct to a new map and
-// additionally filter the map on only include the fields specified if there
-// are any.
+// additionally filter the map to only include the fields specified.
 //
 // Note: The "json" tag will be respected to write proper field names.
+//
+// Note: If no fields to filter are specified, not filtering will be applied.
 func StructToMap(source interface{}, fields []string) Map {
 	// prepare structs helper
 	s := structs.New(source)
