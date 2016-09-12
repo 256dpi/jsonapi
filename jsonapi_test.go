@@ -50,3 +50,58 @@ func TestStructToMapFiltering(t *testing.T) {
 		"bar": "foo",
 	}, StructToMap(&test, []string{"bar"}))
 }
+
+func TestMapAssignInvalidTarget(t *testing.T) {
+	m := Map{"foo": "foo"}
+
+	err := m.Assign(nil)
+	assert.Error(t, err)
+}
+
+func TestMapAssign(t *testing.T) {
+	var test struct {
+		Foo string
+	}
+
+	m := Map{"foo": "foo"}
+
+	err := m.Assign(&test)
+	assert.NoError(t, err)
+	assert.Equal(t, "foo", test.Foo)
+}
+
+func TestMapAssignWithTag(t *testing.T) {
+	var test struct {
+		Foo string `json:"bar"`
+	}
+
+	m := Map{"bar": "foo"}
+
+	err := m.Assign(&test)
+	assert.NoError(t, err)
+	assert.Equal(t, "foo", test.Foo)
+}
+
+func TestMapAssignUnmatchedFields(t *testing.T) {
+	var test struct {
+		Foo string
+	}
+
+	m := Map{"bar": "foo"}
+
+	err := m.Assign(&test)
+	assert.NoError(t, err)
+	assert.Equal(t, "", test.Foo)
+}
+
+func TestMapAssignInvalidType(t *testing.T) {
+	var test struct {
+		Foo string
+	}
+
+	m := Map{"foo": 1}
+
+	err := m.Assign(&test)
+	assert.Error(t, err)
+	assert.Equal(t, "", test.Foo)
+}

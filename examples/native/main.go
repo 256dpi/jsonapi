@@ -103,7 +103,7 @@ func createPost(req *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder
 		ID: strconv.Itoa(counter),
 	}
 
-	err := doc.Data.One.AssignAttributes(post)
+	err := doc.Data.One.Attributes.Assign(post)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder
 		return jsonapi.NotFound("The requested resource does not exist")
 	}
 
-	err := doc.Data.One.AssignAttributes(post)
+	err := doc.Data.One.Attributes.Assign(post)
 	if err != nil {
 		return err
 	}

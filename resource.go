@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"sync"
-
-	"github.com/mitchellh/mapstructure"
 )
 
 var objectSuffix = []byte("{")
@@ -45,33 +43,6 @@ type Resource struct {
 
 	// Non-standard meta-information about the resource.
 	Meta Map `json:"meta,omitempty"`
-}
-
-// AssignAttributes will assign the values in the attributes map to the target
-// struct.
-//
-// Note: The "json" tag will be respected to match field names.
-func (r *Resource) AssignAttributes(target interface{}) error {
-	// prepare decoder config
-	cfg := &mapstructure.DecoderConfig{
-		ZeroFields: true,
-		Result:     target,
-		TagName:    "json",
-	}
-
-	// create decoder
-	decoder, err := mapstructure.NewDecoder(cfg)
-	if err != nil {
-		return err
-	}
-
-	// run decoder
-	err = decoder.Decode(r.Attributes)
-	if err != nil {
-		return BadRequest(err.Error())
-	}
-
-	return nil
 }
 
 // HybridResource is a transparent type that enables concrete marshalling and
