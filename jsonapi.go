@@ -35,11 +35,40 @@ type Responder interface {
 // Map is a general purpose map of string keys and arbitrary values.
 type Map map[string]interface{}
 
-// StructToMap  will assign the fields of the source struct to a new map.
+// StructToMap will assign the fields of the source struct to a new map and
+// additionally filter the map on only include the fields specified if there
+// are any.
 //
 // Note: The "json" tag will be respected to write proper field names.
-func StructToMap(source interface{}) Map {
+func StructToMap(source interface{}, fields []string) Map {
+	// prepare structs helper
 	s := structs.New(source)
 	s.TagName = "json"
-	return Map(s.Map())
+
+	// create map
+	m := Map(s.Map())
+
+	// return map directly of no fields are specified
+	if len(fields) == 0 {
+		return m
+	}
+
+	// filter map
+	for key := range m {
+		ok := false
+
+		// check if field is present
+		for _, field := range fields {
+			if field == key {
+				ok = true
+			}
+		}
+
+		// otherwise remove field
+		if !ok {
+			delete(m, key)
+		}
+	}
+
+	return m
 }

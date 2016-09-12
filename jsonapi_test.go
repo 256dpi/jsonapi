@@ -15,7 +15,7 @@ func TestStructToMap(t *testing.T) {
 
 	assert.Equal(t, Map{
 		"Foo": "foo",
-	}, StructToMap(&test))
+	}, StructToMap(&test, nil))
 }
 
 func TestStructToMapWithTag(t *testing.T) {
@@ -27,7 +27,7 @@ func TestStructToMapWithTag(t *testing.T) {
 
 	assert.Equal(t, Map{
 		"bar": "foo",
-	}, StructToMap(&test))
+	}, StructToMap(&test, nil))
 }
 
 func TestStructToMapOmitEmpty(t *testing.T) {
@@ -35,5 +35,18 @@ func TestStructToMapOmitEmpty(t *testing.T) {
 		Foo string `json:",omitempty"`
 	}
 
-	assert.Equal(t, Map{}, StructToMap(&test))
+	assert.Equal(t, Map{}, StructToMap(&test, nil))
+}
+
+func TestStructToMapFiltering(t *testing.T) {
+	var test struct {
+		Foo string `json:"bar"`
+	}
+
+	test.Foo = "foo"
+
+	assert.Equal(t, Map{}, StructToMap(&test, []string{"baz"}))
+	assert.Equal(t, Map{
+		"bar": "foo",
+	}, StructToMap(&test, []string{"bar"}))
 }

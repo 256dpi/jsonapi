@@ -74,13 +74,13 @@ func entryPoint(writer http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func listPosts(_ *jsonapi.Request, w jsonapi.Responder) error {
+func listPosts(req *jsonapi.Request, w jsonapi.Responder) error {
 	list := make([]*jsonapi.Resource, 0, len(store))
 	for _, post := range store {
 		list = append(list, &jsonapi.Resource{
 			Type:       "posts",
 			ID:         post.ID,
-			Attributes: jsonapi.StructToMap(post),
+			Attributes: jsonapi.StructToMap(post, req.Fields["posts"]),
 		})
 	}
 
@@ -95,10 +95,10 @@ func findPost(req *jsonapi.Request, w jsonapi.Responder) error {
 		return jsonapi.NotFound("The requested resource does not exist")
 	}
 
-	return writePost(w, http.StatusOK, post)
+	return writePost(req, w, http.StatusOK, post)
 }
 
-func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder) error {
+func createPost(req *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder) error {
 	post := &postModel{
 		ID: strconv.Itoa(counter),
 	}
@@ -111,7 +111,7 @@ func createPost(_ *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder) 
 	counter++
 	store[post.ID] = post
 
-	return writePost(w, http.StatusCreated, post)
+	return writePost(req, w, http.StatusCreated, post)
 }
 
 func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder) error {
@@ -125,7 +125,7 @@ func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder
 		return err
 	}
 
-	return writePost(w, http.StatusOK, post)
+	return writePost(req, w, http.StatusOK, post)
 }
 
 func deletePost(req *jsonapi.Request, w jsonapi.Responder) error {
@@ -140,11 +140,11 @@ func deletePost(req *jsonapi.Request, w jsonapi.Responder) error {
 	return nil
 }
 
-func writePost(w jsonapi.Responder, status int, post *postModel) error {
+func writePost(req *jsonapi.Request, w jsonapi.Responder, status int, post *postModel) error {
 	return jsonapi.WriteResource(w, status, &jsonapi.Resource{
 		Type:       "posts",
 		ID:         post.ID,
-		Attributes: jsonapi.StructToMap(post),
+		Attributes: jsonapi.StructToMap(post, req.Fields["posts"]),
 	}, &jsonapi.DocumentLinks{
 		Self: "/api/posts/" + post.ID,
 	})

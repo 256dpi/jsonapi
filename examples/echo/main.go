@@ -64,12 +64,14 @@ func entryPoint(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func listPosts(ctx echo.Context) error {
+	req := ctx.Get("req").(*jsonapi.Request)
+
 	list := make([]*jsonapi.Resource, 0, len(store))
 	for _, post := range store {
 		list = append(list, &jsonapi.Resource{
 			Type:       "posts",
 			ID:         post.ID,
-			Attributes: jsonapi.StructToMap(post),
+			Attributes: jsonapi.StructToMap(post, req.Fields["posts"]),
 		})
 	}
 
@@ -141,12 +143,14 @@ func deletePost(ctx echo.Context) error {
 }
 
 func writePost(ctx echo.Context, status int, post *postModel) error {
+	req := ctx.Get("req").(*jsonapi.Request)
+
 	w := adapter.BridgeResponse(ctx.Response())
 
 	return jsonapi.WriteResource(w, status, &jsonapi.Resource{
 		Type:       "posts",
 		ID:         post.ID,
-		Attributes: jsonapi.StructToMap(post),
+		Attributes: jsonapi.StructToMap(post, req.Fields["posts"]),
 	}, &jsonapi.DocumentLinks{
 		Self: "/api/posts/" + post.ID,
 	})
