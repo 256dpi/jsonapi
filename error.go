@@ -205,6 +205,16 @@ func BadRequestParam(detail, param string) *Error {
 	return err
 }
 
+// BadRequestPointer returns a new bad request error with a pointer source.
+func BadRequestPointer(detail, pointer string) *Error {
+	err := ErrorFromStatus(http.StatusBadRequest, detail)
+	err.Source = &ErrorSource{
+		Parameter: pointer,
+	}
+
+	return err
+}
+
 // InternalServerError returns na new internal server error.
 func InternalServerError(detail string) *Error {
 	return ErrorFromStatus(http.StatusInternalServerError, detail)

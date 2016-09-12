@@ -195,6 +195,7 @@ func TestErrorGenerators(t *testing.T) {
 		NotFound("foo"),
 		BadRequest("foo"),
 		BadRequestParam("foo", "bar"),
+		BadRequestPointer("foo", "bar"),
 	}
 
 	for _, err := range list {
