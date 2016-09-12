@@ -1,6 +1,10 @@
 package jsonapi
 
-import "bytes"
+import (
+	"bytes"
+	"io"
+	"io/ioutil"
+)
 
 type testRequester struct {
 	method      string
@@ -64,4 +68,13 @@ func newTestResponder() *testResponder {
 
 func stringReader(str string) *bytes.Reader {
 	return bytes.NewReader([]byte(str))
+}
+
+func readFullString(r io.Reader) string {
+	buf, err := ioutil.ReadAll(r)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(buf)
 }
