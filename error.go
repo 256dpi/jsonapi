@@ -81,7 +81,7 @@ func (e *Error) Error() string {
 // Note: If the supplied error is not an Error a new InternalServerError is used
 // instead. Does the passed Error have an invalid or zero status code it will be
 // corrected to the Internal Server Error status code.
-func WriteError(res Responder, err error) error {
+func WriteError(res http.ResponseWriter, err error) error {
 	anError, ok := err.(*Error)
 	if !ok {
 		anError = InternalServerError("")
@@ -112,7 +112,7 @@ func WriteError(res Responder, err error) error {
 //
 // Does a passed Error have an invalid or zero status code it will be corrected
 // to the Internal Server Error status code.
-func WriteErrorList(res Responder, errors ...*Error) error {
+func WriteErrorList(res http.ResponseWriter, errors ...*Error) error {
 	// write internal server error if no errors are passed
 	if len(errors) == 0 {
 		return WriteError(res, nil)

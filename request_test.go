@@ -1,49 +1,38 @@
 package jsonapi
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParseRequestError(t *testing.T) {
-	invalidAccept := newTestRequester("GET", "", nil)
-	invalidAccept.header["Accept"] = "foo"
+	invalidAccept := newTestRequest("GET", "")
+	invalidAccept.Header.Set("Accept", "foo")
 
-	invalidContentType := newTestRequester("GET", "", nil)
-	invalidContentType.header["Content-Type"] = "foo"
+	invalidContentType := newTestRequest("GET", "")
+	invalidContentType.Header.Set("Content-Type", "foo")
 
-	missingContentType := newTestRequester("POST", "foo", nil)
+	missingContentType := newTestRequest("POST", "foo")
 
-	list := []Requester{
+	list := []*http.Request{
 		invalidAccept,
 		invalidContentType,
 		missingContentType,
-		newTestRequester("PUT", "", nil),
-		newTestRequester("GET", "", nil),
-		newTestRequester("POST", "", nil),
-		newTestRequester("GET", "/", nil),
-		newTestRequester("GET", "foo/bar/baz/qux", nil),
-		newTestRequester("GET", "foo/bar/baz/qux/quux", nil),
-		newTestRequester("GET", "foo", map[string][]string{
-			"page[number]": {"bar"},
-		}),
-		newTestRequester("GET", "foo", map[string][]string{
-			"page[size]": {"bar"},
-		}),
-		newTestRequester("GET", "foo", map[string][]string{
-			"page[number]": {"1"},
-		}),
-		newTestRequester("GET", "foo", map[string][]string{
-			"page[size]": {"1"},
-		}),
-		newTestRequester("GET", "foo", map[string][]string{
-			"page[number]": {"bar", "baz"},
-		}),
-		newTestRequester("GET", "foo", map[string][]string{
-			"page[size]": {"bar", "baz"},
-		}),
-		newTestRequester("PATCH", "foo", nil),
+		newTestRequest("PUT", ""),
+		newTestRequest("GET", ""),
+		newTestRequest("POST", ""),
+		newTestRequest("GET", "/"),
+		newTestRequest("GET", "foo/bar/baz/qux"),
+		newTestRequest("GET", "foo/bar/baz/qux/quux"),
+		newTestRequest("GET", "foo?page[number]=bar"),
+		newTestRequest("GET", "foo?page[size]=bar"),
+		newTestRequest("GET", "foo?page[number]=1"),
+		newTestRequest("GET", "foo?page[size]=1"),
+		newTestRequest("GET", "foo?page[number]=bar&page[number]=baz"),
+		newTestRequest("GET", "foo?page[size]=bar&page[size]=baz"),
+		newTestRequest("PATCH", "foo"),
 	}
 
 	for _, r := range list {
@@ -66,7 +55,7 @@ func TestParseRequestPrefix(t *testing.T) {
 	}
 
 	for url, prefix := range list {
-		r := newTestRequester("GET", url, nil)
+		r := newTestRequest("GET", url)
 
 		req, err := ParseRequest(r, prefix)
 		assert.NoError(t, err)
@@ -75,7 +64,7 @@ func TestParseRequestPrefix(t *testing.T) {
 }
 
 func TestParseRequestResource(t *testing.T) {
-	r := newTestRequester("GET", "foo", nil)
+	r := newTestRequest("GET", "foo")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -86,7 +75,7 @@ func TestParseRequestResource(t *testing.T) {
 }
 
 func TestParseRequestResourceID(t *testing.T) {
-	r := newTestRequester("GET", "foo/1", nil)
+	r := newTestRequest("GET", "foo/1")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -98,7 +87,7 @@ func TestParseRequestResourceID(t *testing.T) {
 }
 
 func TestParseRequestRelatedResource(t *testing.T) {
-	r := newTestRequester("GET", "foo/1/bar", nil)
+	r := newTestRequest("GET", "foo/1/bar")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -111,7 +100,7 @@ func TestParseRequestRelatedResource(t *testing.T) {
 }
 
 func TestParseRequestRelationship(t *testing.T) {
-	r := newTestRequester("GET", "foo/1/relationships/bar", nil)
+	r := newTestRequest("GET", "foo/1/relationships/bar")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -143,8 +132,8 @@ func TestParseRequestIntent(t *testing.T) {
 	}
 
 	for _, entry := range list {
-		r := newTestRequester(entry.method, entry.url, nil)
-		r.header["Content-Type"] = MediaType
+		r := newTestRequest(entry.method, entry.url)
+		r.Header.Set("Content-Type", MediaType)
 
 		req, err := ParseRequest(r, "")
 		assert.NoError(t, err)
@@ -156,9 +145,7 @@ func TestParseRequestIntent(t *testing.T) {
 }
 
 func TestParseRequestInclude(t *testing.T) {
-	r1 := newTestRequester("GET", "foo", map[string][]string{
-		"include": {"bar,baz"},
-	})
+	r1 := newTestRequest("GET", "foo?include=bar,baz")
 
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
@@ -168,9 +155,7 @@ func TestParseRequestInclude(t *testing.T) {
 		Include:      []string{"bar", "baz"},
 	}, req)
 
-	r2 := newTestRequester("GET", "foo", map[string][]string{
-		"include": {"bar", "baz,qux"},
-	})
+	r2 := newTestRequest("GET", "foo?include=bar&include=baz,qux")
 
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
@@ -182,9 +167,7 @@ func TestParseRequestInclude(t *testing.T) {
 }
 
 func TestParseRequestSorting(t *testing.T) {
-	r1 := newTestRequester("GET", "foo", map[string][]string{
-		"sort": {"bar,baz"},
-	})
+	r1 := newTestRequest("GET", "foo?sort=bar,baz")
 
 	req, err := ParseRequest(r1, "")
 	assert.NoError(t, err)
@@ -194,9 +177,7 @@ func TestParseRequestSorting(t *testing.T) {
 		Sorting:      []string{"bar", "baz"},
 	}, req)
 
-	r2 := newTestRequester("GET", "foo", map[string][]string{
-		"sort": {"bar", "baz,qux"},
-	})
+	r2 := newTestRequest("GET", "foo?sort=bar&sort=baz,qux")
 
 	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
@@ -208,10 +189,7 @@ func TestParseRequestSorting(t *testing.T) {
 }
 
 func TestParseRequestPage(t *testing.T) {
-	r := newTestRequester("GET", "foo", map[string][]string{
-		"page[number]": {"1"},
-		"page[size]":   {"2"},
-	})
+	r := newTestRequest("GET", "foo?page[number]=1&page[size]=2")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -224,9 +202,7 @@ func TestParseRequestPage(t *testing.T) {
 }
 
 func TestParseRequestFields(t *testing.T) {
-	r := newTestRequester("GET", "foo", map[string][]string{
-		"fields[foo]": {"bar,baz"},
-	})
+	r := newTestRequest("GET", "foo?fields[foo]=bar,baz")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -240,9 +216,7 @@ func TestParseRequestFields(t *testing.T) {
 }
 
 func TestParseRequestFilters(t *testing.T) {
-	r := newTestRequester("GET", "foo", map[string][]string{
-		"filter[foo]": {"bar,baz"},
-	})
+	r := newTestRequest("GET", "foo?filter[foo]=bar,baz")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -260,7 +234,7 @@ func TestZeroIntentRequestMethod(t *testing.T) {
 }
 
 func BenchmarkParseRequest(b *testing.B) {
-	r := newTestRequester("GET", "foo/1", nil)
+	r := newTestRequest("GET", "foo/1")
 
 	b.ResetTimer()
 
@@ -270,7 +244,7 @@ func BenchmarkParseRequest(b *testing.B) {
 }
 
 func BenchmarkParseRequestFilterAndSort(b *testing.B) {
-	r := newTestRequester("GET", "foo/1?sort=bar&filter[baz]=qux", nil)
+	r := newTestRequest("GET", "foo/1?sort=bar&filter[baz]=qux")
 
 	b.ResetTimer()
 

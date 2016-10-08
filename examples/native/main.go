@@ -32,10 +32,8 @@ func main() {
 	http.ListenAndServe("0.0.0.0:4000", nil)
 }
 
-func entryPoint(writer http.ResponseWriter, r *http.Request) {
-	w := jsonapi.BridgeResponseWriter(writer)
-
-	req, err := jsonapi.ParseRequest(jsonapi.BridgeRequest(r), "/api/")
+func entryPoint(w http.ResponseWriter, r *http.Request) {
+	req, err := jsonapi.ParseRequest(r, "/api/")
 	if err != nil {
 		jsonapi.WriteError(w, err)
 		return
@@ -74,7 +72,7 @@ func entryPoint(writer http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func listPosts(req *jsonapi.Request, w jsonapi.Responder) error {
+func listPosts(req *jsonapi.Request, w http.ResponseWriter) error {
 	list := make([]*jsonapi.Resource, 0, len(store))
 	for _, post := range store {
 		list = append(list, &jsonapi.Resource{
@@ -89,7 +87,7 @@ func listPosts(req *jsonapi.Request, w jsonapi.Responder) error {
 	})
 }
 
-func findPost(req *jsonapi.Request, w jsonapi.Responder) error {
+func findPost(req *jsonapi.Request, w http.ResponseWriter) error {
 	post, ok := store[req.ResourceID]
 	if !ok {
 		return jsonapi.NotFound("The requested resource does not exist")
@@ -98,7 +96,7 @@ func findPost(req *jsonapi.Request, w jsonapi.Responder) error {
 	return writePost(req, w, http.StatusOK, post)
 }
 
-func createPost(req *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder) error {
+func createPost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) error {
 	post := &postModel{
 		ID: strconv.Itoa(counter),
 	}
@@ -114,7 +112,7 @@ func createPost(req *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder
 	return writePost(req, w, http.StatusCreated, post)
 }
 
-func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder) error {
+func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w http.ResponseWriter) error {
 	post, ok := store[req.ResourceID]
 	if !ok {
 		return jsonapi.NotFound("The requested resource does not exist")
@@ -128,7 +126,7 @@ func updatePost(req *jsonapi.Request, doc *jsonapi.Document, w jsonapi.Responder
 	return writePost(req, w, http.StatusOK, post)
 }
 
-func deletePost(req *jsonapi.Request, w jsonapi.Responder) error {
+func deletePost(req *jsonapi.Request, w http.ResponseWriter) error {
 	_, ok := store[req.ResourceID]
 	if !ok {
 		return jsonapi.NotFound("The requested resource does not exist")
@@ -140,7 +138,7 @@ func deletePost(req *jsonapi.Request, w jsonapi.Responder) error {
 	return nil
 }
 
-func writePost(req *jsonapi.Request, w jsonapi.Responder, status int, post *postModel) error {
+func writePost(req *jsonapi.Request, w http.ResponseWriter, status int, post *postModel) error {
 	return jsonapi.WriteResource(w, status, &jsonapi.Resource{
 		Type:       "posts",
 		ID:         post.ID,

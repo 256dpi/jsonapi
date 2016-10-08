@@ -10,7 +10,7 @@ import (
 func TestWriteResourceEmpty(t *testing.T) {
 	// TODO: Should this raise an error?
 
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{}, nil)
 	assert.NoError(t, err)
@@ -18,11 +18,11 @@ func TestWriteResourceEmpty(t *testing.T) {
 		"data": {
 			"type": ""
 		}
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteResource(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{
 		Type: "foo",
@@ -40,13 +40,13 @@ func TestWriteResource(t *testing.T) {
 				"foo": "bar"
 			}
 		}
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteResourcesEmpty(t *testing.T) {
 	// TODO: Should this raise an error?
 
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	err := WriteResources(res, http.StatusOK, []*Resource{{}}, nil)
 	assert.NoError(t, err)
@@ -56,11 +56,11 @@ func TestWriteResourcesEmpty(t *testing.T) {
 				"type": ""
 			}
 		]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteResources(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	err := WriteResources(res, http.StatusOK, []*Resource{
 		{
@@ -96,11 +96,11 @@ func TestWriteResources(t *testing.T) {
 				}
 			}
 		]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteResourceRelationship(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{
 		Type: "foo",
@@ -130,7 +130,7 @@ func TestWriteResourceRelationship(t *testing.T) {
 				}
 			}
 		}
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func BenchmarkWriteResource(b *testing.B) {
@@ -146,7 +146,7 @@ func BenchmarkWriteResource(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := newTestResponder()
+		res := newTestResponseRecorder()
 
 		err := WriteResource(res, http.StatusOK, resource, nil)
 		if err != nil {
@@ -178,7 +178,7 @@ func BenchmarkWriteResources(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := newTestResponder()
+		res := newTestResponseRecorder()
 
 		err := WriteResources(res, http.StatusOK, resources, nil)
 		if err != nil {

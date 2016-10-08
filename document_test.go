@@ -129,7 +129,7 @@ func TestParseDocumentDocumentWithRelationships(t *testing.T) {
 }
 
 func TestWriteResponseSingleDocument(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	err := WriteResponse(res, http.StatusOK, &Document{
 		Data: &HybridResource{
@@ -145,7 +145,7 @@ func TestWriteResponseSingleDocument(t *testing.T) {
     		"type": "foo",
     		"id": "1"
 		}
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func BenchmarkParseDocument(b *testing.B) {
@@ -195,7 +195,7 @@ func BenchmarkWriteResponse(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := newTestResponder()
+		res := newTestResponseRecorder()
 
 		err := WriteResponse(res, http.StatusOK, doc)
 		if err != nil {

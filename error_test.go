@@ -18,7 +18,7 @@ func TestError(t *testing.T) {
 }
 
 func TestWriteError(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	WriteError(res, &Error{
 		Status: http.StatusNotFound,
@@ -26,111 +26,111 @@ func TestWriteError(t *testing.T) {
 		Detail: "The requested resource cannot be found",
 	})
 
-	assert.Equal(t, http.StatusNotFound, res.status)
-	assert.Equal(t, MediaType, res.header["Content-Type"])
+	assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "404",
 			"title": "Resource Not Found",
 			"detail": "The requested resource cannot be found"
 		}]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteErrorEmpty(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	WriteError(res, &Error{})
 
-	assert.Equal(t, http.StatusInternalServerError, res.status)
-	assert.Equal(t, MediaType, res.header["Content-Type"])
+	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500"
 		}]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteErrorMissingStatus(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	WriteError(res, &Error{
 		Title:  "Resource Not Found",
 		Detail: "The requested resource cannot be found",
 	})
 
-	assert.Equal(t, http.StatusInternalServerError, res.status)
-	assert.Equal(t, MediaType, res.header["Content-Type"])
+	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
 			"title": "Resource Not Found",
 			"detail": "The requested resource cannot be found"
 		}]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteErrorNonError(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	WriteError(res, errors.New("invalid"))
 
-	assert.Equal(t, http.StatusInternalServerError, res.status)
-	assert.Equal(t, MediaType, res.header["Content-Type"])
+	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
 			"title": "Internal Server Error"
 		}]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteErrorNil(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	WriteError(res, nil)
 
-	assert.Equal(t, http.StatusInternalServerError, res.status)
-	assert.Equal(t, MediaType, res.header["Content-Type"])
+	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
 			"title": "Internal Server Error"
 		}]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteErrorListNone(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	WriteErrorList(res)
 
-	assert.Equal(t, http.StatusInternalServerError, res.status)
-	assert.Equal(t, MediaType, res.header["Content-Type"])
+	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
 			"title": "Internal Server Error"
 		}]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteErrorListInvalid(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	WriteErrorList(res, &Error{})
 
-	assert.Equal(t, http.StatusInternalServerError, res.status)
-	assert.Equal(t, MediaType, res.header["Content-Type"])
+	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500"
 		}]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteErrorListSame(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	WriteErrorList(res, &Error{
 		Status: http.StatusMethodNotAllowed,
@@ -138,19 +138,19 @@ func TestWriteErrorListSame(t *testing.T) {
 		Status: http.StatusMethodNotAllowed,
 	})
 
-	assert.Equal(t, http.StatusMethodNotAllowed, res.status)
-	assert.Equal(t, MediaType, res.header["Content-Type"])
+	assert.Equal(t, http.StatusMethodNotAllowed, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "405"
 		}, {
 			"status": "405"
 		}]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteErrorListSettleOn400(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	WriteErrorList(res, &Error{
 		Status: http.StatusUnauthorized,
@@ -158,19 +158,19 @@ func TestWriteErrorListSettleOn400(t *testing.T) {
 		Status: http.StatusForbidden,
 	})
 
-	assert.Equal(t, http.StatusBadRequest, res.status)
-	assert.Equal(t, MediaType, res.header["Content-Type"])
+	assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "401"
 		}, {
 			"status": "403"
 		}]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestWriteErrorListSettleOn500(t *testing.T) {
-	res := newTestResponder()
+	res := newTestResponseRecorder()
 
 	WriteErrorList(res, &Error{
 		Status: http.StatusNotImplemented,
@@ -178,15 +178,15 @@ func TestWriteErrorListSettleOn500(t *testing.T) {
 		Status: http.StatusBadGateway,
 	})
 
-	assert.Equal(t, http.StatusInternalServerError, res.status)
-	assert.Equal(t, MediaType, res.header["Content-Type"])
+	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "501"
 		}, {
 			"status": "502"
 		}]
-	}`, res.buffer.String())
+	}`, res.Body.String())
 }
 
 func TestErrorGenerators(t *testing.T) {
@@ -212,7 +212,7 @@ func BenchmarkWriteError(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := newTestResponder()
+		res := newTestResponseRecorder()
 
 		err := WriteError(res, err)
 		if err != nil {
@@ -230,7 +230,7 @@ func BenchmarkWriteErrorList(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := newTestResponder()
+		res := newTestResponseRecorder()
 
 		err := WriteErrorList(res, err, err)
 		if err != nil {

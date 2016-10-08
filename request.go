@@ -123,9 +123,9 @@ type Request struct {
 // url is invalid.
 //
 // Note: The returned error can directly be written using WriteError.
-func ParseRequest(req Requester, prefix string) (*Request, error) {
+func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	// get method
-	method := req.Method()
+	method := req.Method
 
 	// map method to action
 	if method != "GET" && method != "POST" && method != "PATCH" && method != "DELETE" {
@@ -138,19 +138,19 @@ func ParseRequest(req Requester, prefix string) (*Request, error) {
 	}
 
 	// check content type header
-	contentType := req.Get("Content-Type")
+	contentType := req.Header.Get("Content-Type")
 	if contentType != "" && contentType != MediaType {
 		return nil, BadRequest("Invalid content type header")
 	}
 
 	// check accept header
-	accept := req.Get("Accept")
+	accept := req.Header.Get("Accept")
 	if accept != "" && accept != "*/*" && accept != "application/*" && accept != MediaType {
 		return nil, ErrorFromStatus(http.StatusNotAcceptable, "Invalid accept header")
 	}
 
 	// de-prefix and trim path
-	url := strings.TrimPrefix(strings.Trim(req.Path(), "/"), r.Prefix+"/")
+	url := strings.TrimPrefix(strings.Trim(req.URL.Path, "/"), r.Prefix+"/")
 
 	// split path
 	segments := strings.Split(url, "/")
@@ -238,7 +238,7 @@ func ParseRequest(req Requester, prefix string) (*Request, error) {
 		return nil, BadRequest("Missing content type header")
 	}
 
-	for key, values := range req.QueryParams() {
+	for key, values := range req.URL.Query() {
 		// set included resources
 		if key == "include" {
 			for _, v := range values {

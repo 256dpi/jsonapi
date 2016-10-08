@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"sync"
 )
 
@@ -79,7 +80,7 @@ func (r *HybridResource) UnmarshalJSON(doc []byte) error {
 
 // WriteResource will wrap the passed resource, links and included resources in
 // a document and write it to the passed response writer.
-func WriteResource(res Responder, status int, resource *Resource, links *DocumentLinks, included ...*Resource) error {
+func WriteResource(res http.ResponseWriter, status int, resource *Resource, links *DocumentLinks, included ...*Resource) error {
 	// TODO: Validate resource?
 
 	// get document from pool
@@ -103,7 +104,7 @@ func WriteResource(res Responder, status int, resource *Resource, links *Documen
 
 // WriteResources will wrap the passed resources, links and included resources
 // in a document and write it to the passed response writer.
-func WriteResources(res Responder, status int, resources []*Resource, links *DocumentLinks, included ...*Resource) error {
+func WriteResources(res http.ResponseWriter, status int, resources []*Resource, links *DocumentLinks, included ...*Resource) error {
 	// get document from pool
 	doc := getResponseDocumentFromPool()
 

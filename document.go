@@ -3,6 +3,7 @@ package jsonapi
 import (
 	"encoding/json"
 	"io"
+	"net/http"
 )
 
 // DocumentLinks are a set of links related to a documents primary data.
@@ -64,9 +65,9 @@ func ParseDocument(r io.Reader) (*Document, error) {
 
 // WriteResponse will write the the status and supplied document to the passed
 // response writer.
-func WriteResponse(res Responder, status int, doc *Document) error {
+func WriteResponse(res http.ResponseWriter, status int, doc *Document) error {
 	// set content type
-	res.Set("Content-Type", MediaType)
+	res.Header().Set("Content-Type", MediaType)
 
 	// write status
 	res.WriteHeader(status)

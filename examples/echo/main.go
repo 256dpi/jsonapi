@@ -6,9 +6,8 @@ import (
 	"strconv"
 
 	"github.com/gonfire/jsonapi"
-	"github.com/gonfire/jsonapi/adapter"
 	"github.com/labstack/echo"
-	"github.com/labstack/echo/engine/fasthttp"
+	"github.com/labstack/echo/engine/standard"
 	"github.com/labstack/echo/middleware"
 )
 
@@ -34,13 +33,13 @@ func main() {
 	router.PATCH("/api/posts/:id", updatePost)
 	router.DELETE("/api/posts/:id", deletePost)
 
-	router.Run(fasthttp.New("0.0.0.0:4000"))
+	router.Run(standard.New("0.0.0.0:4000"))
 }
 
 func entryPoint(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		r := adapter.BridgeRequest(ctx.Request())
-		w := adapter.BridgeResponse(ctx.Response())
+		r := ctx.Request().(*standard.Request).Request
+		w := ctx.Response().(*standard.Response).ResponseWriter
 
 		req, err := jsonapi.ParseRequest(r, "/api/")
 		if err != nil {
@@ -65,6 +64,7 @@ func entryPoint(next echo.HandlerFunc) echo.HandlerFunc {
 
 func listPosts(ctx echo.Context) error {
 	req := ctx.Get("req").(*jsonapi.Request)
+	w := ctx.Response().(*standard.Response).ResponseWriter
 
 	list := make([]*jsonapi.Resource, 0, len(store))
 	for _, post := range store {
@@ -74,8 +74,6 @@ func listPosts(ctx echo.Context) error {
 			Attributes: jsonapi.StructToMap(post, req.Fields["posts"]),
 		})
 	}
-
-	w := adapter.BridgeResponse(ctx.Response())
 
 	return jsonapi.WriteResources(w, http.StatusOK, list, &jsonapi.DocumentLinks{
 		Self: "/api/posts",
@@ -144,8 +142,7 @@ func deletePost(ctx echo.Context) error {
 
 func writePost(ctx echo.Context, status int, post *postModel) error {
 	req := ctx.Get("req").(*jsonapi.Request)
-
-	w := adapter.BridgeResponse(ctx.Response())
+	w := ctx.Response().(*standard.Response).ResponseWriter
 
 	return jsonapi.WriteResource(w, status, &jsonapi.Resource{
 		Type:       "posts",
