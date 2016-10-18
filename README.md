@@ -6,7 +6,7 @@
 [![Release](https://img.shields.io/github/release/gonfire/jsonapi.svg)](https://github.com/gonfire/jsonapi/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gonfire/jsonapi)](http://goreportcard.com/report/gonfire/jsonapi)
 
-**An extensible JSON API library for Go.**
+**A fundamental and extendable JSON API library for Go.**
 
 Package [`jsonapi`](http://godoc.org/github.com/gonfire/jsonapi) provides structures and functions to implement [JSON API](http://jsonapi.org) compatible APIs. The library can be used with any framework and is built on top of the standard Go http library.
 
