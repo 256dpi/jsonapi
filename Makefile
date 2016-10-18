@@ -6,19 +6,16 @@ test:
 vet:
 	go vet .
 	go vet ./examples/native
-	go vet ./examples/echo
 	go vet ./examples/client
 
 fmt:
 	go fmt .
 	go fmt ./examples/native
-	go fmt ./examples/echo
 	go fmt ./examples/client
 
 lint:
 	golint .
 	golint ./examples/native
-	golint ./examples/echo
 	golint ./examples/client
 
 profile-mem:

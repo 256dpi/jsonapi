@@ -14,9 +14,8 @@ Package [`jsonapi`](http://godoc.org/github.com/gonfire/jsonapi) provides struct
 
 The following examples show the usage of this package:
 
-- The [native](https://github.com/gonfire/jsonapi/blob/master/examples/native/main.go) example implements a basic API using the standard HTTP package.
-- The [echo](https://github.com/gonfire/jsonapi/blob/master/examples/echo/main.go) example implements a basic API using the echo framework.
-- The [client](https://github.com/gonfire/jsonapi/blob/master/examples/client/main.go) example uses the client to query the example APIs.
+- The [server](https://github.com/gonfire/jsonapi/blob/master/examples/native/main.go) example implements a basic API server using the standard HTTP package
+- The [client](https://github.com/gonfire/jsonapi/blob/master/examples/client/main.go) example uses the client to query the example API.
 
 # Installation
 

@@ -1,4 +1,4 @@
-// This example implements a basic API using the standard HTTP package.
+// This example implements a basic API server using the standard HTTP package.
 package main
 
 import (
