@@ -10,14 +10,14 @@
 
 Package [`jsonapi`](http://godoc.org/github.com/gonfire/jsonapi) provides structures and functions to implement [JSON API](http://jsonapi.org) compatible APIs. The library can be used with any framework and is built on top of the standard Go http library.
 
-# Examples
+## Examples
 
 The following examples show the usage of this package:
 
 - The [server](https://github.com/gonfire/jsonapi/blob/master/examples/native/main.go) example implements a basic API server using the standard HTTP package
 - The [client](https://github.com/gonfire/jsonapi/blob/master/examples/client/main.go) example uses the client to query the example API.
 
-# Installation
+## Installation
 
 Get the package using the go tool:
 
@@ -25,7 +25,7 @@ Get the package using the go tool:
 $ go get -u github.com/gonfire/jsonapi
 ```
 
-# License
+## License
 
 The MIT License (MIT)
 
