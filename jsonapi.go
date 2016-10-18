@@ -1,7 +1,6 @@
-// Package jsonapi provides structures and methods to implement JSON API
-// compatible APIs. Most methods are tailored to be used together with the
-// echo framework, yet all of them also have a native counterpart in the compat
-// sub package that allows implementing APIs using the standard HTTP library.
+// Package jsonapi provides structures and functions to implement JSON API
+// compatible APIs. The library can be used with any framework and is built on
+// top of the standard Go http library.
 package jsonapi
 
 import (
