@@ -5,17 +5,17 @@ test:
 
 vet:
 	go vet .
-	go vet ./examples/native
+	go vet ./examples/server
 	go vet ./examples/client
 
 fmt:
 	go fmt .
-	go fmt ./examples/native
+	go fmt ./examples/server
 	go fmt ./examples/client
 
 lint:
 	golint .
-	golint ./examples/native
+	golint ./examples/server
 	golint ./examples/client
 
 profile-mem:
