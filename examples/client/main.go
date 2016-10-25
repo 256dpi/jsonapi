@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/gonfire/jsonapi"
-	"github.com/kr/pretty"
 )
 
 var c = jsonapi.NewClient("http://0.0.0.0:4000/api")
@@ -18,24 +17,24 @@ type postModel struct {
 func main() {
 	fmt.Println("==> Listing existing posts")
 	posts := listPosts()
-	pretty.Println(posts)
+	fmt.Printf("%+v\n", posts)
 
 	fmt.Println("==> Creating a new post")
 	post := createPost("Hello world!")
-	pretty.Println(post)
+	fmt.Printf("%+v\n", post)
 
 	fmt.Println("==> Listing newly created posts")
 	posts = listPosts()
-	pretty.Println(posts)
+	fmt.Printf("%+v\n", posts)
 
 	fmt.Println("==> Updating created post")
 	post.Title = "Amazing stuff!"
 	post = updatePost(post)
-	pretty.Println(post)
+	fmt.Printf("%+v\n", post)
 
 	fmt.Println("==> Finding updated post")
 	post = findPost(post.ID)
-	pretty.Println(post)
+	fmt.Printf("%+v\n", post)
 
 	fmt.Println("==> Deleting updated post")
 	deletePost(post.ID)
@@ -43,7 +42,7 @@ func main() {
 
 	fmt.Println("==> Listing posts again")
 	posts = listPosts()
-	pretty.Println(posts)
+	fmt.Printf("%+v\n", posts)
 }
 
 func listPosts() []postModel {
