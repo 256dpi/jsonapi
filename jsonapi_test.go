@@ -13,9 +13,11 @@ func TestStructToMap(t *testing.T) {
 
 	test.Foo = "foo"
 
+	m, err := StructToMap(&test, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, Map{
 		"Foo": "foo",
-	}, StructToMap(&test, nil))
+	}, m)
 }
 
 func TestStructToMapWithTag(t *testing.T) {
@@ -25,9 +27,11 @@ func TestStructToMapWithTag(t *testing.T) {
 
 	test.Foo = "foo"
 
+	m, err := StructToMap(&test, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, Map{
 		"bar": "foo",
-	}, StructToMap(&test, nil))
+	}, m)
 }
 
 func TestStructToMapOmitEmpty(t *testing.T) {
@@ -35,7 +39,27 @@ func TestStructToMapOmitEmpty(t *testing.T) {
 		Foo string `json:",omitempty"`
 	}
 
-	assert.Equal(t, Map{}, StructToMap(&test, nil))
+	m, err := StructToMap(&test, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, Map{}, m)
+}
+
+func TestStructToMapInvalidStruct(t *testing.T) {
+	var test struct {
+		Foo func()
+	}
+
+	m, err := StructToMap(&test, nil)
+	assert.Error(t, err)
+	assert.Nil(t, m)
+}
+
+func TestStructToMapInvalidStruct2(t *testing.T) {
+	test := "foo"
+
+	m, err := StructToMap(&test, nil)
+	assert.Error(t, err)
+	assert.Nil(t, m)
 }
 
 func TestStructToMapFiltering(t *testing.T) {
@@ -45,10 +69,15 @@ func TestStructToMapFiltering(t *testing.T) {
 
 	test.Foo = "foo"
 
-	assert.Equal(t, Map{}, StructToMap(&test, []string{"baz"}))
+	m, err := StructToMap(&test, []string{"baz"})
+	assert.NoError(t, err)
+	assert.Equal(t, Map{}, m)
+
+	m, err = StructToMap(&test, []string{"bar"})
+	assert.NoError(t, err)
 	assert.Equal(t, Map{
 		"bar": "foo",
-	}, StructToMap(&test, []string{"bar"}))
+	}, m)
 }
 
 func TestMapAssignInvalidTarget(t *testing.T) {
@@ -104,4 +133,46 @@ func TestMapAssignInvalidType(t *testing.T) {
 	err := m.Assign(&test)
 	assert.Error(t, err)
 	assert.Equal(t, "", test.Foo)
+}
+
+func TestMapAssignInvalidMap(t *testing.T) {
+	var test struct {
+		Foo string
+	}
+
+	m := Map{"foo": func() {}}
+
+	err := m.Assign(&test)
+	assert.Error(t, err)
+	assert.Equal(t, "", test.Foo)
+}
+
+func BenchmarkStructToMap(b *testing.B) {
+	var test struct {
+		Foo string
+	}
+
+	test.Foo = "foo"
+
+	for i := 0; i < b.N; i++ {
+		_, err := StructToMap(&test, nil)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func BenchmarkMapAssign(b *testing.B) {
+	var test struct {
+		Foo string
+	}
+
+	m := Map{"foo": "foo"}
+
+	for i := 0; i < b.N; i++ {
+		err := m.Assign(&test)
+		if err != nil {
+			panic(err)
+		}
+	}
 }

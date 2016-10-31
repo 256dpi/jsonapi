@@ -75,10 +75,15 @@ func entryPoint(w http.ResponseWriter, r *http.Request) {
 func listPosts(req *jsonapi.Request, w http.ResponseWriter) error {
 	list := make([]*jsonapi.Resource, 0, len(store))
 	for _, post := range store {
+		m, err := jsonapi.StructToMap(post, req.Fields["posts"])
+		if err != nil {
+			return err
+		}
+
 		list = append(list, &jsonapi.Resource{
 			Type:       "posts",
 			ID:         post.ID,
-			Attributes: jsonapi.StructToMap(post, req.Fields["posts"]),
+			Attributes: m,
 		})
 	}
 
@@ -139,10 +144,15 @@ func deletePost(req *jsonapi.Request, w http.ResponseWriter) error {
 }
 
 func writePost(req *jsonapi.Request, w http.ResponseWriter, status int, post *postModel) error {
+	m, err := jsonapi.StructToMap(post, req.Fields["posts"])
+	if err != nil {
+		return err
+	}
+
 	return jsonapi.WriteResource(w, status, &jsonapi.Resource{
 		Type:       "posts",
 		ID:         post.ID,
-		Attributes: jsonapi.StructToMap(post, req.Fields["posts"]),
+		Attributes: m,
 	}, &jsonapi.DocumentLinks{
 		Self: "/api/posts/" + post.ID,
 	})

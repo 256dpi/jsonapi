@@ -3,10 +3,7 @@
 // top of the standard Go http library.
 package jsonapi
 
-import (
-	"github.com/fatih/structs"
-	"github.com/mitchellh/mapstructure"
-)
+import "encoding/json"
 
 // MediaType is the official JSON API media type that should be used by
 // all requests and responses.
@@ -18,20 +15,29 @@ type Map map[string]interface{}
 // StructToMap will assign the fields of the source struct to a new map and
 // additionally filter the map to only include the fields specified.
 //
-// Note: The "json" tag will be respected to write proper field names.
+// Note: The "json" tag will be respected to write proper field names. If no
+// fields to filter are specified, not filtering will be applied.
 //
-// Note: If no fields to filter are specified, not filtering will be applied.
-func StructToMap(source interface{}, fields []string) Map {
-	// prepare structs helper
-	s := structs.New(source)
-	s.TagName = "json"
+// Warning: The function does actually convert the struct to json and then
+// convert that json to a map. High performance applications might want to use
+// a custom implementation that is much faster.
+func StructToMap(source interface{}, fields []string) (Map, error) {
+	// marshal struct as json
+	buf, err := json.Marshal(source)
+	if err != nil {
+		return nil, err
+	}
 
-	// create map
-	m := Map(s.Map())
+	// unmarshal json to map
+	var m Map
+	err = json.Unmarshal(buf, &m)
+	if err != nil {
+		return nil, err
+	}
 
-	// return map directly of no fields are specified
+	// return map directly if no fields are specified
 	if len(fields) == 0 {
-		return m
+		return m, nil
 	}
 
 	// filter map
@@ -51,30 +57,27 @@ func StructToMap(source interface{}, fields []string) Map {
 		}
 	}
 
-	return m
+	return m, nil
 }
 
 // Assign will assign the values in the map to the target struct.
 //
 // Note: The "json" tag will be respected to match field names.
+//
+// Warning: The function does actually convert the map to json and then assign
+// that json to the struct. High performance applications might want to use a
+// custom implementation that is much faster.
 func (m Map) Assign(target interface{}) error {
-	// prepare decoder config
-	cfg := &mapstructure.DecoderConfig{
-		ZeroFields: true,
-		Result:     target,
-		TagName:    "json",
-	}
-
-	// create decoder
-	decoder, err := mapstructure.NewDecoder(cfg)
+	// marshal map to json
+	buf, err := json.Marshal(m)
 	if err != nil {
 		return err
 	}
 
-	// run decoder
-	err = decoder.Decode(m)
+	// unmarshal json to struct
+	err = json.Unmarshal(buf, target)
 	if err != nil {
-		return BadRequest(err.Error())
+		return err
 	}
 
 	return nil
