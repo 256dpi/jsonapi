@@ -123,9 +123,9 @@ type Request struct {
 // url is invalid.
 //
 // Note: The returned error can directly be written using WriteError.
-func ParseRequest(req *http.Request, prefix string) (*Request, error) {
+func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 	// get method
-	method := req.Method
+	method := r.Method
 
 	// map method to action
 	if method != "GET" && method != "POST" && method != "PATCH" && method != "DELETE" {
@@ -133,24 +133,24 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	// allocate new request
-	r := &Request{
+	jr := &Request{
 		Prefix: strings.Trim(prefix, "/"),
 	}
 
 	// check content type header
-	contentType := req.Header.Get("Content-Type")
+	contentType := r.Header.Get("Content-Type")
 	if contentType != "" && contentType != MediaType {
 		return nil, BadRequest("Invalid content type header")
 	}
 
 	// check accept header
-	accept := req.Header.Get("Accept")
+	accept := r.Header.Get("Accept")
 	if accept != "" && accept != "*/*" && accept != "application/*" && accept != MediaType {
 		return nil, ErrorFromStatus(http.StatusNotAcceptable, "Invalid accept header")
 	}
 
 	// de-prefix and trim path
-	url := strings.TrimPrefix(strings.Trim(req.URL.Path, "/"), r.Prefix+"/")
+	url := strings.TrimPrefix(strings.Trim(r.URL.Path, "/"), jr.Prefix+"/")
 
 	// split path
 	segments := strings.Split(url, "/")
@@ -166,29 +166,29 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	}
 
 	// set resource
-	r.ResourceType = segments[0]
+	jr.ResourceType = segments[0]
 	level := 1
 
 	// set resource id
 	if len(segments) > 1 {
-		r.ResourceID = segments[1]
+		jr.ResourceID = segments[1]
 		level = 2
 	}
 
 	// set related resource
 	if len(segments) == 3 && segments[2] != "relationships" {
-		r.RelatedResource = segments[2]
+		jr.RelatedResource = segments[2]
 		level = 3
 	}
 
 	// set relationship
 	if len(segments) == 4 && segments[2] == "relationships" {
-		r.Relationship = segments[3]
+		jr.Relationship = segments[3]
 		level = 4
 	}
 
 	// final check
-	if len(segments) > 2 && (r.RelatedResource == "" && r.Relationship == "") {
+	if len(segments) > 2 && (jr.RelatedResource == "" && jr.Relationship == "") {
 		return nil, BadRequest("Invalid URL relationship format")
 	}
 
@@ -197,52 +197,52 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 	case "GET":
 		switch level {
 		case 1:
-			r.Intent = ListResources
+			jr.Intent = ListResources
 		case 2:
-			r.Intent = FindResource
+			jr.Intent = FindResource
 		case 3:
-			r.Intent = GetRelatedResources
+			jr.Intent = GetRelatedResources
 		case 4:
-			r.Intent = GetRelationship
+			jr.Intent = GetRelationship
 		}
 	case "POST":
 		switch level {
 		case 1:
-			r.Intent = CreateResource
+			jr.Intent = CreateResource
 		case 4:
-			r.Intent = AppendToRelationship
+			jr.Intent = AppendToRelationship
 		}
 	case "PATCH":
 		switch level {
 		case 2:
-			r.Intent = UpdateResource
+			jr.Intent = UpdateResource
 		case 4:
-			r.Intent = SetRelationship
+			jr.Intent = SetRelationship
 		}
 	case "DELETE":
 		switch level {
 		case 2:
-			r.Intent = DeleteResource
+			jr.Intent = DeleteResource
 		case 4:
-			r.Intent = RemoveFromRelationship
+			jr.Intent = RemoveFromRelationship
 		}
 	}
 
 	// check intent
-	if r.Intent == 0 {
+	if jr.Intent == 0 {
 		return nil, BadRequest("The URL and method combination is invalid")
 	}
 
 	// check if request should come with a document and has content type set
-	if r.Intent.DocumentExpected() && contentType == "" {
+	if jr.Intent.DocumentExpected() && contentType == "" {
 		return nil, BadRequest("Missing content type header")
 	}
 
-	for key, values := range req.URL.Query() {
+	for key, values := range r.URL.Query() {
 		// set included resources
 		if key == "include" {
 			for _, v := range values {
-				r.Include = append(r.Include, strings.Split(v, ",")...)
+				jr.Include = append(jr.Include, strings.Split(v, ",")...)
 			}
 
 			continue
@@ -251,7 +251,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 		// set sorting
 		if key == "sort" {
 			for _, v := range values {
-				r.Sorting = append(r.Sorting, strings.Split(v, ",")...)
+				jr.Sorting = append(jr.Sorting, strings.Split(v, ",")...)
 			}
 
 			continue
@@ -268,7 +268,7 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 				return nil, BadRequestParam("Not a number", "page[number]")
 			}
 
-			r.PageNumber = n
+			jr.PageNumber = n
 			continue
 		}
 
@@ -283,48 +283,48 @@ func ParseRequest(req *http.Request, prefix string) (*Request, error) {
 				return nil, BadRequestParam("Not a number", "page[size]")
 			}
 
-			r.PageSize = n
+			jr.PageSize = n
 			continue
 		}
 
 		// set sparse fields
 		if strings.HasPrefix(key, "fields[") && strings.HasSuffix(key, "]") {
-			if r.Fields == nil {
-				r.Fields = make(map[string][]string)
+			if jr.Fields == nil {
+				jr.Fields = make(map[string][]string)
 			}
 
 			typ := key[7 : len(key)-1]
 
 			for _, v := range values {
-				r.Fields[typ] = append(r.Fields[typ], strings.Split(v, ",")...)
+				jr.Fields[typ] = append(jr.Fields[typ], strings.Split(v, ",")...)
 			}
 		}
 
 		// set filters
 		if strings.HasPrefix(key, "filter[") && strings.HasSuffix(key, "]") {
-			if r.Filters == nil {
-				r.Filters = make(map[string][]string)
+			if jr.Filters == nil {
+				jr.Filters = make(map[string][]string)
 			}
 
 			typ := key[7 : len(key)-1]
 
 			for _, v := range values {
-				r.Filters[typ] = append(r.Filters[typ], strings.Split(v, ",")...)
+				jr.Filters[typ] = append(jr.Filters[typ], strings.Split(v, ",")...)
 			}
 		}
 	}
 
 	// check page size
-	if r.PageNumber > 0 && r.PageSize <= 0 {
+	if jr.PageNumber > 0 && jr.PageSize <= 0 {
 		return nil, BadRequestParam("Missing page size", "page[number]")
 	}
 
 	// check page number
-	if r.PageSize > 0 && r.PageNumber <= 0 {
+	if jr.PageSize > 0 && jr.PageNumber <= 0 {
 		return nil, BadRequestParam("Missing page number", "page[size]")
 	}
 
-	return r, nil
+	return jr, nil
 }
 
 // Self will generate the "self" URL for this request.

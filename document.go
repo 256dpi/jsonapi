@@ -65,13 +65,13 @@ func ParseDocument(r io.Reader) (*Document, error) {
 
 // WriteResponse will write the the status and supplied document to the passed
 // response writer.
-func WriteResponse(res http.ResponseWriter, status int, doc *Document) error {
+func WriteResponse(w http.ResponseWriter, status int, doc *Document) error {
 	// set content type
-	res.Header().Set("Content-Type", MediaType)
+	w.Header().Set("Content-Type", MediaType)
 
 	// write status
-	res.WriteHeader(status)
+	w.WriteHeader(status)
 
 	// write document
-	return json.NewEncoder(res).Encode(doc)
+	return json.NewEncoder(w).Encode(doc)
 }
