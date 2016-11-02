@@ -81,7 +81,10 @@ func (r *HybridResource) UnmarshalJSON(doc []byte) error {
 // WriteResource will wrap the passed resource, links and included resources in
 // a document and write it to the passed response writer.
 func WriteResource(w http.ResponseWriter, status int, resource *Resource, links *DocumentLinks, included ...*Resource) error {
-	// TODO: Validate resource?
+	// validate resource
+	if resource.ID == "" || resource.Type == "" {
+		return errors.New("Expected resource to have at least an id and type")
+	}
 
 	// get document from pool
 	doc := getResponseDocument()
@@ -100,6 +103,13 @@ func WriteResource(w http.ResponseWriter, status int, resource *Resource, links 
 // WriteResources will wrap the passed resources, links and included resources
 // in a document and write it to the passed response writer.
 func WriteResources(w http.ResponseWriter, status int, resources []*Resource, links *DocumentLinks, included ...*Resource) error {
+	// validate resources
+	for _, resource := range resources {
+		if resource.ID == "" || resource.Type == "" {
+			return errors.New("Expected resource to have at least an id and type")
+		}
+	}
+
 	// get document from pool
 	doc := getResponseDocument()
 
