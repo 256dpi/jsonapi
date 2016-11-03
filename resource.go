@@ -81,8 +81,6 @@ func (r *HybridResource) UnmarshalJSON(doc []byte) error {
 // WriteResource will wrap the passed resource, links and included resources in
 // a document and write it to the passed response writer.
 func WriteResource(w http.ResponseWriter, status int, resource *Resource, links *DocumentLinks, included ...*Resource) error {
-	// TODO: Validate resource?
-
 	// get document from pool
 	doc := getResponseDocument()
 

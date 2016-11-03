@@ -8,8 +8,6 @@ import (
 )
 
 func TestWriteResourceEmpty(t *testing.T) {
-	// TODO: Should this raise an error?
-
 	res := newTestResponseRecorder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{}, nil)
@@ -44,8 +42,6 @@ func TestWriteResource(t *testing.T) {
 }
 
 func TestWriteResourcesEmpty(t *testing.T) {
-	// TODO: Should this raise an error?
-
 	res := newTestResponseRecorder()
 
 	err := WriteResources(res, http.StatusOK, []*Resource{{}}, nil)
