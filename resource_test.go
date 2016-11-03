@@ -8,10 +8,17 @@ import (
 )
 
 func TestWriteResourceEmpty(t *testing.T) {
+	// TODO: Should this raise an error?
+
 	res := newTestResponseRecorder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{}, nil)
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{
+		"data": {
+			"type": ""
+		}
+	}`, res.Body.String())
 }
 
 func TestWriteResource(t *testing.T) {
@@ -37,10 +44,19 @@ func TestWriteResource(t *testing.T) {
 }
 
 func TestWriteResourcesEmpty(t *testing.T) {
+	// TODO: Should this raise an error?
+
 	res := newTestResponseRecorder()
 
 	err := WriteResources(res, http.StatusOK, []*Resource{{}}, nil)
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{
+		"data": [
+			{
+				"type": ""
+			}
+		]
+	}`, res.Body.String())
 }
 
 func TestWriteResources(t *testing.T) {
