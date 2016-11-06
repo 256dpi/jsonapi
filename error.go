@@ -209,7 +209,7 @@ func BadRequestParam(detail, param string) *Error {
 func BadRequestPointer(detail, pointer string) *Error {
 	err := ErrorFromStatus(http.StatusBadRequest, detail)
 	err.Source = &ErrorSource{
-		Parameter: pointer,
+		Pointer: pointer,
 	}
 
 	return err
