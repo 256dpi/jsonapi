@@ -118,17 +118,18 @@ func TestParseRequestIntent(t *testing.T) {
 		url    string
 		intent Intent
 		doc    bool
+		base   string
 	}{
-		{"GET", "/posts", ListResources, false},
-		{"GET", "/posts/1", FindResource, false},
-		{"POST", "/posts", CreateResource, true},
-		{"PATCH", "/posts/1", UpdateResource, true},
-		{"DELETE", "/posts/1", DeleteResource, false},
-		{"GET", "/posts/1/author", GetRelatedResources, false},
-		{"GET", "/posts/1/relationships/author", GetRelationship, false},
-		{"PATCH", "/posts/1/relationships/author", SetRelationship, true},
-		{"POST", "/posts/1/relationships/comments", AppendToRelationship, true},
-		{"DELETE", "/posts/1/relationships/comments", RemoveFromRelationship, true},
+		{"GET", "/posts", ListResources, false, "/posts"},
+		{"GET", "/posts/1", FindResource, false, "/posts/1"},
+		{"POST", "/posts", CreateResource, true, "/posts"},
+		{"PATCH", "/posts/1", UpdateResource, true, "/posts/1"},
+		{"DELETE", "/posts/1", DeleteResource, false, "/posts/1"},
+		{"GET", "/posts/1/author", GetRelatedResources, false, "/posts/1"},
+		{"GET", "/posts/1/relationships/author", GetRelationship, false, "/posts/1"},
+		{"PATCH", "/posts/1/relationships/author", SetRelationship, true, "/posts/1"},
+		{"POST", "/posts/1/relationships/comments", AppendToRelationship, true, "/posts/1"},
+		{"DELETE", "/posts/1/relationships/comments", RemoveFromRelationship, true, "/posts/1"},
 	}
 
 	for _, entry := range list {
@@ -140,6 +141,7 @@ func TestParseRequestIntent(t *testing.T) {
 		assert.Equal(t, entry.intent, req.Intent)
 		assert.Equal(t, entry.doc, req.Intent.DocumentExpected())
 		assert.Equal(t, entry.url, req.Self())
+		assert.Equal(t, entry.base, req.Base())
 		assert.Equal(t, entry.method, req.Intent.RequestMethod())
 	}
 }

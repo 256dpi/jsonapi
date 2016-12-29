@@ -327,8 +327,9 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 	return jr, nil
 }
 
-// Self will generate the "self" URL for this request.
-func (r *Request) Self() string {
+// Base will generate the base URL for this request, which includes the type and
+// id if present.
+func (r *Request) Base() string {
 	segments := []string{r.Prefix, r.ResourceType}
 
 	// add id if available
@@ -336,11 +337,24 @@ func (r *Request) Self() string {
 		segments = append(segments, r.ResourceID)
 	}
 
-	// add related resource or relationship
-	if r.RelatedResource != "" {
-		segments = append(segments, r.RelatedResource)
-	} else if r.Relationship != "" {
-		segments = append(segments, "relationships", r.Relationship)
+	return strings.Join(segments, "/")
+}
+
+// Self will generate the "self" URL for this request, which includes all path
+// elements if available.
+func (r *Request) Self() string {
+	segments := []string{r.Prefix, r.ResourceType}
+
+	// add id if available
+	if r.ResourceID != "" {
+		segments = append(segments, r.ResourceID)
+
+		// add related resource or relationship
+		if r.RelatedResource != "" {
+			segments = append(segments, r.RelatedResource)
+		} else if r.Relationship != "" {
+			segments = append(segments, "relationships", r.Relationship)
+		}
 	}
 
 	return strings.Join(segments, "/")
