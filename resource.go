@@ -36,6 +36,9 @@ type Resource struct {
 	ID string `json:"id,omitempty"`
 
 	// An attributes map representing some of the resource's data.
+	//
+	// Note: Numbers are left as strings to avoid issues with mismatching types
+	// when they are later assigned to a struct.
 	Attributes Map `json:"attributes,omitempty"`
 
 	// A relationships object describing relationships between the resource and
@@ -43,6 +46,9 @@ type Resource struct {
 	Relationships map[string]*Document `json:"relationships,omitempty"`
 
 	// Non-standard meta-information about the resource.
+	//
+	// Note: Numbers are left as strings to avoid issues with mismatching types
+	// when they are later assigned to a struct.
 	Meta Map `json:"meta,omitempty"`
 }
 
@@ -67,12 +73,16 @@ func (r *HybridResource) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON detects if the passed JSON is a single object or a list.
 func (r *HybridResource) UnmarshalJSON(doc []byte) error {
+	// prepare decoder
+	dec := json.NewDecoder(bytes.NewReader(doc))
+	dec.UseNumber()
+
 	if bytes.HasPrefix(doc, objectSuffix) {
-		return json.Unmarshal(doc, &r.One)
+		return dec.Decode(&r.One)
 	}
 
 	if bytes.HasPrefix(doc, arraySuffix) {
-		return json.Unmarshal(doc, &r.Many)
+		return dec.Decode(&r.Many)
 	}
 
 	return errors.New("Expected data to be an object or array")

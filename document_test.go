@@ -128,6 +128,30 @@ func TestParseDocumentDocumentWithRelationships(t *testing.T) {
 	}, doc)
 }
 
+func TestParseDocumentWithBigNumbers(t *testing.T) {
+	type test struct {
+		Num int64
+	}
+
+	doc, err := ParseDocument(stringReader(`{
+  		"data": {
+    		"type": "foo",
+    		"id": "1",
+    		"attributes": {
+    			"Num": 4699539
+    		},
+    		"relationships": {}
+		}
+	}`))
+	assert.NoError(t, err)
+	assert.NotNil(t, doc.Data.One.Attributes)
+
+	m := &test{}
+
+	err = doc.Data.One.Attributes.Assign(m)
+	assert.NoError(t, err)
+}
+
 func TestWriteResponseSingleDocument(t *testing.T) {
 	res := newTestResponseRecorder()
 

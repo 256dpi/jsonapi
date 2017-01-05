@@ -38,6 +38,9 @@ type Document struct {
 	Errors []*Error `json:"errors,omitempty"`
 
 	// Non-standard meta-information about the document.
+	//
+	// Note: Numbers are left as strings to avoid issues with mismatching types
+	// when they are later assigned to a struct.
 	Meta Map `json:"meta,omitempty"`
 }
 
@@ -49,8 +52,12 @@ func ParseDocument(r io.Reader) (*Document, error) {
 	// prepare document
 	var doc Document
 
+	// prepare decoder
+	dec := json.NewDecoder(r)
+	dec.UseNumber()
+
 	// decode body
-	err := json.NewDecoder(r).Decode(&doc)
+	err := dec.Decode(&doc)
 	if err != nil {
 		return nil, BadRequest(err.Error())
 	}

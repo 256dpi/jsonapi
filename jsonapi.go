@@ -3,13 +3,19 @@
 // top of the standard Go http library.
 package jsonapi
 
-import "encoding/json"
+import (
+	"bytes"
+	"encoding/json"
+)
 
 // MediaType is the official JSON API media type that should be used by
 // all requests and responses.
 const MediaType = "application/vnd.api+json"
 
 // Map is a general purpose map of string keys and arbitrary values.
+//
+// Note: All methods in this package will leave numbers as strings to avoid
+// issues with mismatching types when they are later assigned to a struct.
 type Map map[string]interface{}
 
 // StructToMap will assign the fields of the source struct to a new map and
@@ -17,6 +23,9 @@ type Map map[string]interface{}
 //
 // Note: The "json" tag will be respected to write proper field names. If no
 // fields to filter are specified, not filtering will be applied.
+//
+// Note: Numbers are left as strings to avoid issues with mismatching types
+// when they are later assigned to a struct again.
 //
 // Warning: The function does actually convert the struct to json and then
 // convert that json to a map. High performance applications might want to use
@@ -28,9 +37,13 @@ func StructToMap(source interface{}, fields []string) (Map, error) {
 		return nil, err
 	}
 
+	// prepare decoder
+	dec := json.NewDecoder(bytes.NewReader(buf))
+	dec.UseNumber()
+
 	// unmarshal json to map
 	var m Map
-	err = json.Unmarshal(buf, &m)
+	err = dec.Decode(&m)
 	if err != nil {
 		return nil, err
 	}

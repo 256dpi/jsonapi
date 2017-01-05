@@ -47,6 +47,9 @@ type Error struct {
 	Source *ErrorSource `json:"source,omitempty"`
 
 	// Non-standard meta-information about the error.
+	//
+	// Note: Numbers are left as strings to avoid issues with mismatching types
+	// when they are later assigned to a struct.
 	Meta Map `json:"meta,omitempty"`
 }
 

@@ -1,6 +1,8 @@
 package jsonapi
 
 import (
+	"math"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -145,6 +147,37 @@ func TestMapAssignInvalidMap(t *testing.T) {
 	err := m.Assign(&test)
 	assert.Error(t, err)
 	assert.Equal(t, "", test.Foo)
+}
+
+func TestBigNumberConversion(t *testing.T) {
+	type test struct {
+		Int8    int8
+		Int64   int64
+		UInt8   uint8
+		UInt64  uint64
+		Float32 float32
+		Float64 float64
+	}
+
+	i := &test{
+		Int8:    math.MaxInt8,
+		Int64:   math.MaxInt64,
+		UInt8:   math.MaxUint8,
+		UInt64:  math.MaxUint64,
+		Float32: math.MaxFloat32,
+		Float64: math.MaxFloat64,
+	}
+
+	m, err := StructToMap(i, nil)
+	assert.NoError(t, err)
+	assert.NotNil(t, m)
+
+	ii := &test{}
+
+	err = m.Assign(ii)
+	assert.NoError(t, err)
+
+	assert.True(t, reflect.DeepEqual(i, ii))
 }
 
 func BenchmarkStructToMap(b *testing.B) {
