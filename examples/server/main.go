@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gonfire/jsonapi"
+	"github.com/256dpi/jsonapi"
 )
 
 var counter = 1

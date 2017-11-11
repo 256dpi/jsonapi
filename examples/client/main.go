@@ -4,7 +4,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/gonfire/jsonapi"
+	"github.com/256dpi/jsonapi"
 )
 
 var c = jsonapi.NewClient("http://0.0.0.0:4000/api")
