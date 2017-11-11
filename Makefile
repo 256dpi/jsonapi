@@ -1,24 +1,16 @@
 all: fmt vet lint test
 
 vet:
-	go vet .
-	go vet ./examples/server
-	go vet ./examples/client
+	go vet ./...
 
 fmt:
-	go fmt .
-	go fmt ./examples/server
-	go fmt ./examples/client
+	go fmt ./...
 
 lint:
-	golint .
-	golint ./examples/server
-	golint ./examples/client
+	golint ./...
 
 test:
-	go test -cover .
-	go test -cover ./examples/server
-	go test -cover ./examples/client
+	go test ./...
 
 profile-mem:
 	mkdir -p ./bench
