@@ -112,10 +112,10 @@ type Request struct {
 	// details have been provided. These values are read from the "page[number]",
 	// "page[size]", "page[offset]" and "page[limit]" query parameters. These
 	// parameters do not belong to the standard, but are recommended.
-	PageNumber int
-	PageSize   int
-	PageOffset int
-	PageLimit  int
+	PageNumber uint64
+	PageSize   uint64
+	PageOffset uint64
+	PageLimit  uint64
 
 	// The sorting that has been requested. This is read from the "sort" query
 	// parameter.
@@ -274,7 +274,7 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 				return nil, BadRequestParam("More than one value", "page[number]")
 			}
 
-			n, err := strconv.Atoi(values[0])
+			n, err := strconv.ParseUint(values[0], 10, 0)
 			if err != nil {
 				return nil, BadRequestParam("Not a number", "page[number]")
 			}
@@ -289,7 +289,7 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 				return nil, BadRequestParam("More than one value", "page[size]")
 			}
 
-			n, err := strconv.Atoi(values[0])
+			n, err := strconv.ParseUint(values[0], 10, 0)
 			if err != nil {
 				return nil, BadRequestParam("Not a number", "page[size]")
 			}
@@ -304,7 +304,7 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 				return nil, BadRequestParam("More than one value", "page[offset]")
 			}
 
-			n, err := strconv.Atoi(values[0])
+			n, err := strconv.ParseUint(values[0], 10, 0)
 			if err != nil {
 				return nil, BadRequestParam("Not a number", "page[offset]")
 			}
@@ -319,7 +319,7 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 				return nil, BadRequestParam("More than one value", "page[limit]")
 			}
 
-			n, err := strconv.Atoi(values[0])
+			n, err := strconv.ParseUint(values[0], 10, 0)
 			if err != nil {
 				return nil, BadRequestParam("Not a number", "page[limit]")
 			}
