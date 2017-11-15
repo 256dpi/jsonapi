@@ -104,21 +104,30 @@ type Request struct {
 	RelatedResource string
 	Relationship    string
 
-	// The requested resources to be included in the response.
+	// The requested resources to be included in the response. This is read
+	// from the "include" query parameter.
 	Include []string
 
 	// The pagination details of the request. Zero values mean no pagination
-	// details have been provided.
+	// details have been provided. These values are read from the "page[number]",
+	// "page[size]", "page[offset]" and "page[limit]" query parameters. These
+	// parameters do not belong to the standard, but are recommended.
 	PageNumber int
 	PageSize   int
+	PageOffset int
+	PageLimit  int
 
-	// The sorting that has been requested.
+	// The sorting that has been requested. This is read from the "sort" query
+	// parameter.
 	Sorting []string
 
-	// The sparse fields that have been requested.
+	// The sparse fields that have been requested. This is read from the "fields"
+	// query parameter.
 	Fields map[string][]string
 
-	// The filtering that has been requested.
+	// The filtering that has been requested. This is read from the "filter"
+	// query parameter. This parameter does not belong to the standard, but is
+	// recommended.
 	Filters map[string][]string
 }
 
@@ -259,8 +268,6 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 			continue
 		}
 
-		// TODO: Also support page[offset] and page[limit]?
-
 		// set page number
 		if key == "page[number]" {
 			if len(values) != 1 {
@@ -288,6 +295,36 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 			}
 
 			jr.PageSize = n
+			continue
+		}
+
+		// set page offset
+		if key == "page[offset]" {
+			if len(values) != 1 {
+				return nil, BadRequestParam("More than one value", "page[offset]")
+			}
+
+			n, err := strconv.Atoi(values[0])
+			if err != nil {
+				return nil, BadRequestParam("Not a number", "page[offset]")
+			}
+
+			jr.PageOffset = n
+			continue
+		}
+
+		// set page limit
+		if key == "page[limit]" {
+			if len(values) != 1 {
+				return nil, BadRequestParam("More than one value", "page[limit]")
+			}
+
+			n, err := strconv.Atoi(values[0])
+			if err != nil {
+				return nil, BadRequestParam("Not a number", "page[limit]")
+			}
+
+			jr.PageLimit = n
 			continue
 		}
 

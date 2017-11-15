@@ -225,7 +225,7 @@ func TestParseRequestSorting(t *testing.T) {
 }
 
 func TestParseRequestPage(t *testing.T) {
-	r := newTestRequest("GET", "foo?page[number]=1&page[size]=2")
+	r := newTestRequest("GET", "foo?page[number]=1&page[size]=2&page[offset]=3&page[limit]=4")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -234,6 +234,8 @@ func TestParseRequestPage(t *testing.T) {
 		ResourceType: "foo",
 		PageNumber:   1,
 		PageSize:     2,
+		PageOffset:   3,
+		PageLimit:    4,
 	}, req)
 }
 
