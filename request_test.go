@@ -35,7 +35,6 @@ func TestParseRequestError(t *testing.T) {
 		newTestRequest("GET", "foo?page[offset]=bar"),
 		newTestRequest("GET", "foo?page[limit]=bar"),
 		newTestRequest("GET", "foo?page[offset]=1"),
-		newTestRequest("GET", "foo?page[limit]=1"),
 		newTestRequest("GET", "foo?page[offset]=bar&page[offset]=baz"),
 		newTestRequest("GET", "foo?page[limit]=bar&page[limit]=baz"),
 		newTestRequest("PATCH", "foo"),
@@ -230,8 +229,8 @@ func TestParseRequestSorting(t *testing.T) {
 	}, req)
 }
 
-func TestParseRequestPage(t *testing.T) {
-	r := newTestRequest("GET", "foo?page[number]=1&page[size]=2&page[offset]=3&page[limit]=4")
+func TestParseRequestPagedPagination(t *testing.T) {
+	r := newTestRequest("GET", "foo?page[number]=1&page[size]=5")
 
 	req, err := ParseRequest(r, "")
 	assert.NoError(t, err)
@@ -239,9 +238,33 @@ func TestParseRequestPage(t *testing.T) {
 		Intent:       ListResources,
 		ResourceType: "foo",
 		PageNumber:   1,
-		PageSize:     2,
-		PageOffset:   3,
-		PageLimit:    4,
+		PageSize:     5,
+	}, req)
+}
+
+func TestParseRequestOffsetPagination(t *testing.T) {
+	r := newTestRequest("GET", "foo?page[offset]=10&page[limit]=5")
+
+	req, err := ParseRequest(r, "")
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Intent:       ListResources,
+		ResourceType: "foo",
+		PageOffset:   10,
+		PageLimit:    5,
+	}, req)
+}
+
+func TestParseRequestOffsetPaginationWithZeroOffset(t *testing.T) {
+	r := newTestRequest("GET", "foo?page[offset]=0&page[limit]=5")
+
+	req, err := ParseRequest(r, "")
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Intent:       ListResources,
+		ResourceType: "foo",
+		PageOffset:   0,
+		PageLimit:    5,
 	}, req)
 }
 

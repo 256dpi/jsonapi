@@ -355,24 +355,19 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 		}
 	}
 
-	// check page size
+	// check that page number is set if page size is set
 	if jr.PageNumber > 0 && jr.PageSize <= 0 {
 		return nil, BadRequestParam("Missing page size", "page[number]")
 	}
 
-	// check page number
+	// check that page size is set if page number is set
 	if jr.PageSize > 0 && jr.PageNumber <= 0 {
 		return nil, BadRequestParam("Missing page number", "page[size]")
 	}
 
-	// check page offset
+	// check that page limit is set if page offset is set
 	if jr.PageOffset > 0 && jr.PageLimit <= 0 {
 		return nil, BadRequestParam("Missing page limit", "page[limit]")
-	}
-
-	// check page limit
-	if jr.PageLimit > 0 && jr.PageOffset <= 0 {
-		return nil, BadRequestParam("Missing page offset", "page[offset]")
 	}
 
 	return jr, nil
