@@ -175,7 +175,7 @@ func TestWriteResponseSingleDocument(t *testing.T) {
 func BenchmarkParseDocument(b *testing.B) {
 	reader := stringReader(`{
 		"links": {
-			"self": "http://0.0.0.0:1234/api/foo/1"
+			"self": "/api/foo/1"
 		},
 		"data": {
 			"type": "foo",
@@ -202,7 +202,7 @@ func BenchmarkParseDocument(b *testing.B) {
 func BenchmarkWriteResponse(b *testing.B) {
 	doc := &Document{
 		Links: &DocumentLinks{
-			Self: "http://0.0.0.0:1234/api/foo/1",
+			Self: "/api/foo/1",
 		},
 		Data: &HybridResource{
 			One: &Resource{

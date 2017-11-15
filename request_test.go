@@ -112,7 +112,7 @@ func TestParseRequestRelationship(t *testing.T) {
 	}, req)
 }
 
-func TestParseRequestIntent(t *testing.T) {
+func TestParseRequest(t *testing.T) {
 	list := []struct {
 		method string
 		url    string
@@ -138,11 +138,45 @@ func TestParseRequestIntent(t *testing.T) {
 
 		req, err := ParseRequest(r, "")
 		assert.NoError(t, err)
+		assert.Equal(t, entry.method, req.Intent.RequestMethod())
+		assert.Equal(t, entry.url, req.Self())
 		assert.Equal(t, entry.intent, req.Intent)
 		assert.Equal(t, entry.doc, req.Intent.DocumentExpected())
-		assert.Equal(t, entry.url, req.Self())
 		assert.Equal(t, entry.base, req.Base())
+	}
+}
+
+func TestParseRequestWithPrefix(t *testing.T) {
+	list := []struct {
+		method string
+		url    string
+		intent Intent
+		doc    bool
+		base   string
+	}{
+		{"GET", "/api/posts", ListResources, false, "/api/posts"},
+		{"GET", "/api/posts/1", FindResource, false, "/api/posts/1"},
+		{"POST", "/api/posts", CreateResource, true, "/api/posts"},
+		{"PATCH", "/api/posts/1", UpdateResource, true, "/api/posts/1"},
+		{"DELETE", "/api/posts/1", DeleteResource, false, "/api/posts/1"},
+		{"GET", "/api/posts/1/author", GetRelatedResources, false, "/api/posts/1"},
+		{"GET", "/api/posts/1/relationships/author", GetRelationship, false, "/api/posts/1"},
+		{"PATCH", "/api/posts/1/relationships/author", SetRelationship, true, "/api/posts/1"},
+		{"POST", "/api/posts/1/relationships/comments", AppendToRelationship, true, "/api/posts/1"},
+		{"DELETE", "/api/posts/1/relationships/comments", RemoveFromRelationship, true, "/api/posts/1"},
+	}
+
+	for _, entry := range list {
+		r := newTestRequest(entry.method, entry.url)
+		r.Header.Set("Content-Type", MediaType)
+
+		req, err := ParseRequest(r, "api")
+		assert.NoError(t, err)
 		assert.Equal(t, entry.method, req.Intent.RequestMethod())
+		assert.Equal(t, entry.url, req.Self())
+		assert.Equal(t, entry.intent, req.Intent)
+		assert.Equal(t, entry.doc, req.Intent.DocumentExpected())
+		assert.Equal(t, entry.base, req.Base())
 	}
 }
 

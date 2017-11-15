@@ -93,8 +93,12 @@ type Request struct {
 	// The parsed JSON API intent of the request.
 	Intent Intent
 
-	// The fragments parsed from the URL of the request.
-	Prefix          string
+	// The prefix of the endpoint e.g. "api". It should not contain any prefix
+	// or suffix slashes.
+	Prefix string
+
+	// The fragments parsed from the URL of the request. The fragments should not
+	// contain any prefix or suffix slashes.
 	ResourceType    string
 	ResourceID      string
 	RelatedResource string
@@ -111,7 +115,7 @@ type Request struct {
 	// The sorting that has been requested.
 	Sorting []string
 
-	// The sparse fieldsets that have been requested.
+	// The sparse fields that have been requested.
 	Fields map[string][]string
 
 	// The filtering that has been requested.
@@ -120,9 +124,7 @@ type Request struct {
 
 // ParseRequest will parse the passed request and return a new Request with the
 // parsed data. It will return an error if the content type, request method or
-// url is invalid.
-//
-// Note: The returned error can directly be written using WriteError.
+// url is invalid. Any returned error can directly be written using WriteError.
 func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 	// get method
 	method := r.Method
@@ -150,10 +152,10 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 	}
 
 	// de-prefix and trim path
-	url := strings.TrimPrefix(strings.Trim(r.URL.Path, "/"), jr.Prefix+"/")
+	location := strings.TrimPrefix(strings.Trim(r.URL.Path, "/"), jr.Prefix+"/")
 
 	// split path
-	segments := strings.Split(url, "/")
+	segments := strings.Split(location, "/")
 	if len(segments) == 0 || len(segments) > 4 {
 		return nil, BadRequest("Invalid URL segment count")
 	}
@@ -257,6 +259,8 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 			continue
 		}
 
+		// TODO: Also support page[offset] and page[limit]?
+
 		// set page number
 		if key == "page[number]" {
 			if len(values) != 1 {
@@ -330,20 +334,38 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 // Base will generate the base URL for this request, which includes the type and
 // id if present.
 func (r *Request) Base() string {
-	segments := []string{r.Prefix, r.ResourceType}
+	// prepare segments
+	var segments []string
+
+	// add prefix if set
+	if r.Prefix != "" {
+		segments = append(segments, r.Prefix)
+	}
+
+	// add resource type
+	segments = append(segments, r.ResourceType)
 
 	// add id if available
 	if r.ResourceID != "" {
 		segments = append(segments, r.ResourceID)
 	}
 
-	return strings.Join(segments, "/")
+	return "/" + strings.Join(segments, "/")
 }
 
 // Self will generate the "self" URL for this request, which includes all path
 // elements if available.
 func (r *Request) Self() string {
-	segments := []string{r.Prefix, r.ResourceType}
+	// prepare segments
+	var segments []string
+
+	// add prefix if set
+	if r.Prefix != "" {
+		segments = append(segments, r.Prefix)
+	}
+
+	// add resource type
+	segments = append(segments, r.ResourceType)
 
 	// add id if available
 	if r.ResourceID != "" {
@@ -357,5 +379,5 @@ func (r *Request) Self() string {
 		}
 	}
 
-	return strings.Join(segments, "/")
+	return "/" + strings.Join(segments, "/")
 }

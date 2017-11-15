@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 // Client is a very basic client implementation that simplifies interacting with
@@ -19,7 +20,7 @@ type Client struct {
 // NewClient creates and returns a new client.
 func NewClient(baseURL string) *Client {
 	return &Client{
-		BaseURL: baseURL,
+		BaseURL: strings.TrimRight(baseURL, "/"),
 		Client:  &http.Client{},
 	}
 }
