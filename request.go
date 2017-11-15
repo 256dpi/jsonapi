@@ -365,6 +365,16 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 		return nil, BadRequestParam("Missing page number", "page[size]")
 	}
 
+	// check page offset
+	if jr.PageOffset > 0 && jr.PageLimit <= 0 {
+		return nil, BadRequestParam("Missing page limit", "page[limit]")
+	}
+
+	// check page limit
+	if jr.PageLimit > 0 && jr.PageOffset <= 0 {
+		return nil, BadRequestParam("Missing page offset", "page[offset]")
+	}
+
 	return jr, nil
 }
 

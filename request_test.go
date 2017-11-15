@@ -32,6 +32,12 @@ func TestParseRequestError(t *testing.T) {
 		newTestRequest("GET", "foo?page[size]=1"),
 		newTestRequest("GET", "foo?page[number]=bar&page[number]=baz"),
 		newTestRequest("GET", "foo?page[size]=bar&page[size]=baz"),
+		newTestRequest("GET", "foo?page[offset]=bar"),
+		newTestRequest("GET", "foo?page[limit]=bar"),
+		newTestRequest("GET", "foo?page[offset]=1"),
+		newTestRequest("GET", "foo?page[limit]=1"),
+		newTestRequest("GET", "foo?page[offset]=bar&page[offset]=baz"),
+		newTestRequest("GET", "foo?page[limit]=bar&page[limit]=baz"),
 		newTestRequest("PATCH", "foo"),
 	}
 
