@@ -165,7 +165,7 @@ type Parser struct {
 
 	// A list of valid resource actions and the allowed methods.
 	//
-	// Note: Make sure the actions do not contain "relationships" or used
+	// Note: Make sure the actions do not contain "relationships" or use
 	// related resource types.
 	ResourceActions map[string][]string
 }
