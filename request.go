@@ -54,6 +54,20 @@ const (
 	// RemoveFromRelationship is a variation of the following request:
 	// DELETE /posts/1/relationships/comments
 	RemoveFromRelationship
+
+	// CollectionAction is a variation of the following requests:
+	// GET /posts/top-titles
+	// POST /posts/lock
+	// PATCH /posts/settings
+	// DELETE /posts/cache
+	CollectionAction
+
+	// ResourceAction is a variation of the following requests:
+	// GET /posts/1/meta-data
+	// POST /posts/1/publish
+	// PATCH /posts/1/settings
+	// DELETE /posts/1/history
+	ResourceAction
 )
 
 // DocumentExpected returns whether a request using this intent is expected to
@@ -99,10 +113,12 @@ type Request struct {
 
 	// The fragments parsed from the URL of the request. The fragments should not
 	// contain any prefix or suffix slashes.
-	ResourceType    string
-	ResourceID      string
-	RelatedResource string
-	Relationship    string
+	ResourceType     string
+	ResourceID       string
+	RelatedResource  string
+	Relationship     string
+	CollectionAction string
+	ResourceAction   string
 
 	// The requested resources to be included in the response. This is read
 	// from the "include" query parameter.
@@ -131,10 +147,33 @@ type Request struct {
 	Filters map[string][]string
 }
 
+// ParseRequest is a short-hand for Parser.ParseRequest and will be removed in
+// future releases.
+func ParseRequest(r *http.Request, prefix string) (*Request, error) {
+	return (&Parser{Prefix: prefix}).ParseRequest(r)
+}
+
+// A Parser is used to parse incoming requests.
+type Parser struct {
+	// Prefix is the expected prefix of the endpoint.
+	Prefix string
+
+	// A list of valid collection actions and the allowed methods.
+	//
+	// Note: Make sure the actions do not conflict with resource ids.
+	CollectionActions map[string][]string
+
+	// A list of valid resource actions and the allowed methods.
+	//
+	// Note: Make sure the actions do not contain "relationships" or used
+	// related resource types.
+	ResourceActions map[string][]string
+}
+
 // ParseRequest will parse the passed request and return a new Request with the
 // parsed data. It will return an error if the content type, request method or
 // url is invalid. Any returned error can directly be written using WriteError.
-func ParseRequest(r *http.Request, prefix string) (*Request, error) {
+func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 	// get method
 	method := r.Method
 
@@ -145,7 +184,7 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 
 	// allocate new request
 	jr := &Request{
-		Prefix: strings.Trim(prefix, "/"),
+		Prefix: strings.Trim(p.Prefix, "/"),
 	}
 
 	// check content type header
@@ -180,10 +219,36 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 	jr.ResourceType = segments[0]
 	level := 1
 
+	// return early if a collection action is provided
+	if len(segments) == 2 {
+		if action, ok := p.CollectionActions[segments[1]]; ok {
+			for _, m := range action {
+				if method == m {
+					jr.Intent = CollectionAction
+					jr.CollectionAction = segments[1]
+					return jr, nil
+				}
+			}
+		}
+	}
+
 	// set resource id
 	if len(segments) > 1 {
 		jr.ResourceID = segments[1]
 		level = 2
+	}
+
+	// return early if a resource action is provided
+	if len(segments) == 3 {
+		if action, ok := p.ResourceActions[segments[2]]; ok {
+			for _, m := range action {
+				if method == m {
+					jr.Intent = ResourceAction
+					jr.ResourceAction = segments[2]
+					return jr, nil
+				}
+			}
+		}
 	}
 
 	// set related resource
@@ -418,7 +483,14 @@ func (r *Request) Self() string {
 			segments = append(segments, r.RelatedResource)
 		} else if r.Relationship != "" {
 			segments = append(segments, "relationships", r.Relationship)
+		} else if r.ResourceAction != "" {
+			segments = append(segments, r.ResourceAction)
 		}
+	}
+
+	// add collection action if available
+	if r.CollectionAction != "" {
+		segments = append(segments, r.CollectionAction)
 	}
 
 	return "/" + strings.Join(segments, "/")

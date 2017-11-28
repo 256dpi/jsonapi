@@ -10,6 +10,18 @@
 
 Package [`jsonapi`](http://godoc.org/github.com/256dpi/jsonapi) provides structures and functions to implement [JSON API](http://jsonapi.org) compatible APIs. The library can be used with any framework and is built on top of the standard Go http library.
 
+## Extensions
+
+### Custom Actions
+
+The package supports the non-standard but widely adopted "custom actions" extension to support the following patterns:
+
+```
+GET /posts/highlighted
+DELETE /posts/cache
+POST /posts/1/publish
+DELETE /posts/1/history
+```
 
 ## Examples
 

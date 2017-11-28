@@ -185,6 +185,41 @@ func TestParseRequestWithPrefix(t *testing.T) {
 	}
 }
 
+func TestParseRequestActions(t *testing.T) {
+	list := []struct {
+		method string
+		url    string
+		intent Intent
+		base   string
+	}{
+		{"GET", "/posts/foo", CollectionAction, "/posts"},
+		{"PATCH", "/posts/foo", CollectionAction, "/posts"},
+		{"POST", "/posts/1/foo", ResourceAction, "/posts/1"},
+		{"DELETE", "/posts/1/foo", ResourceAction, "/posts/1"},
+	}
+
+	parser := &Parser{
+		CollectionActions: map[string][]string{
+			"foo": {"GET", "PATCH"},
+		},
+		ResourceActions: map[string][]string{
+			"foo": {"POST", "DELETE"},
+		},
+	}
+
+	for _, entry := range list {
+		r := newTestRequest(entry.method, entry.url)
+		r.Header.Set("Content-Type", MediaType)
+
+		req, err := parser.ParseRequest(r)
+		assert.NoError(t, err)
+		assert.Empty(t, req.Intent.RequestMethod())
+		assert.Equal(t, entry.url, req.Self())
+		assert.Equal(t, entry.intent, req.Intent)
+		assert.Equal(t, entry.base, req.Base())
+	}
+}
+
 func TestParseRequestInclude(t *testing.T) {
 	r1 := newTestRequest("GET", "foo?include=bar,baz")
 
