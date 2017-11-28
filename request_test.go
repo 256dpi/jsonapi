@@ -25,7 +25,7 @@ func TestParseRequestError(t *testing.T) {
 		newTestRequest("POST", ""),
 		newTestRequest("GET", "/"),
 		newTestRequest("GET", "foo/bar/baz/qux"),
-		newTestRequest("GET", "foo/bar/baz/qux/quux"),
+		newTestRequest("GET", "foo/bar/baz/qux/qux"),
 		newTestRequest("GET", "foo?page[number]=bar"),
 		newTestRequest("GET", "foo?page[size]=bar"),
 		newTestRequest("GET", "foo?page[number]=1"),
