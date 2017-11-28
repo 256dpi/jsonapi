@@ -10,12 +10,10 @@
 
 Package [`jsonapi`](http://godoc.org/github.com/256dpi/jsonapi) provides structures and functions to implement [JSON API](http://jsonapi.org) compatible APIs. The library can be used with any framework and is built on top of the standard Go http library.
 
+
 ## Examples
 
-The following examples show the usage of this package:
-
-- The [server](https://github.com/256dpi/jsonapi/blob/master/examples/server/main.go) example implements a basic API server using the standard HTTP package.
-- The [client](https://github.com/256dpi/jsonapi/blob/master/examples/client/main.go) example uses the client to query the example API.
+The [server](https://github.com/256dpi/jsonapi/blob/master/examples/main.go) example implements a basic API server using the standard HTTP package.
 
 ## Installation
 
