@@ -85,7 +85,7 @@ func (r *HybridResource) UnmarshalJSON(doc []byte) error {
 		return dec.Decode(&r.Many)
 	}
 
-	return errors.New("Expected data to be an object or array")
+	return errors.New("expected data to be an object or array")
 }
 
 // WriteResource will wrap the passed resource, links and included resources in
