@@ -156,7 +156,7 @@ func ParseRequest(r *http.Request, prefix string) (*Request, error) {
 
 	// check accept header
 	accept := r.Header.Get("Accept")
-	if accept != "" && accept != "*/*" && accept != "application/*" && accept != MediaType {
+	if accept != "" && accept != "*/*" && accept != "application/*" && accept != "application/json" && accept != MediaType {
 		return nil, ErrorFromStatus(http.StatusNotAcceptable, "Invalid accept header")
 	}
 
