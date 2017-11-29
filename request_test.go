@@ -8,10 +8,10 @@ import (
 )
 
 func TestParseRequestError(t *testing.T) {
-	invalidAccept := newTestRequest("GET", "")
+	invalidAccept := newTestRequest("GET", "posts")
 	invalidAccept.Header.Set("Accept", "foo")
 
-	invalidContentType := newTestRequest("GET", "")
+	invalidContentType := newTestRequest("GET", "posts")
 	invalidContentType.Header.Set("Content-Type", "foo")
 
 	missingContentType := newTestRequest("POST", "foo")
