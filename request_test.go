@@ -335,6 +335,45 @@ func TestZeroIntentRequestMethod(t *testing.T) {
 	assert.Empty(t, Intent(0).RequestMethod())
 }
 
+func TestCollectionActionsAcceptHeader(t *testing.T) {
+	validAccept := newTestRequest("POST", "posts/foo")
+	validAccept.Header.Set("Content-Type", "application/octet-stream")
+	validAccept.Header.Set("Accept", "application/octet-stream")
+
+	parser := Parser{
+		CollectionActions: map[string][]string{
+			"foo": {"POST"},
+		},
+	}
+	req, err := parser.ParseRequest(validAccept)
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Intent:           CollectionAction,
+		ResourceType:     "posts",
+		CollectionAction: "foo",
+	}, req)
+}
+
+func TestResourceActionsAcceptHeader(t *testing.T) {
+	validAccept := newTestRequest("POST", "posts/1/foo")
+	validAccept.Header.Set("Content-Type", "application/octet-stream")
+	validAccept.Header.Set("Accept", "application/octet-stream")
+
+	parser := Parser{
+		ResourceActions: map[string][]string{
+			"foo": {"POST"},
+		},
+	}
+	req, err := parser.ParseRequest(validAccept)
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Intent:         ResourceAction,
+		ResourceType:   "posts",
+		ResourceID:     "1",
+		ResourceAction: "foo",
+	}, req)
+}
+
 func BenchmarkParseRequest(b *testing.B) {
 	r := newTestRequest("GET", "foo/1")
 

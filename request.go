@@ -187,18 +187,6 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		Prefix: strings.Trim(p.Prefix, "/"),
 	}
 
-	// check content type header
-	contentType := r.Header.Get("Content-Type")
-	if contentType != "" && contentType != MediaType {
-		return nil, BadRequest("Invalid content type header")
-	}
-
-	// check accept header
-	accept := r.Header.Get("Accept")
-	if accept != "" && accept != "*/*" && accept != "application/*" && accept != "application/json" && accept != MediaType {
-		return nil, ErrorFromStatus(http.StatusNotAcceptable, "Invalid accept header")
-	}
-
 	// de-prefix and trim path
 	location := strings.TrimPrefix(strings.Trim(r.URL.Path, "/"), jr.Prefix+"/")
 
@@ -309,8 +297,23 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		return nil, BadRequest("The URL and method combination is invalid")
 	}
 
+	// check headers for standard requests
+	if jr.Intent != CollectionAction && jr.Intent != ResourceAction {
+		// check content type header
+		contentType := r.Header.Get("Content-Type")
+		if contentType != "" && contentType != MediaType {
+			return nil, BadRequest("Invalid content type header")
+		}
+
+		// check accept header
+		accept := r.Header.Get("Accept")
+		if accept != "" && accept != "*/*" && accept != "application/*" && accept != "application/json" && accept != MediaType {
+			return nil, ErrorFromStatus(http.StatusNotAcceptable, "Invalid accept header")
+		}
+	}
+
 	// check if request should come with a document and has content type set
-	if jr.Intent.DocumentExpected() && contentType == "" {
+	if jr.Intent.DocumentExpected() && r.Header.Get("Content-Type") == "" {
 		return nil, BadRequest("Missing content type header")
 	}
 
