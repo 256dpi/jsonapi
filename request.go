@@ -160,7 +160,7 @@ type Parser struct {
 
 	// A list of valid collection actions and the allowed methods.
 	//
-	// Note: Make sure the actions do not conflict with resource ids.
+	// Note: Make sure the actions do not conflict with the resource id format.
 	CollectionActions map[string][]string
 
 	// A list of valid resource actions and the allowed methods.
