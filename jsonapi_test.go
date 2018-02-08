@@ -71,7 +71,13 @@ func TestStructToMapFiltering(t *testing.T) {
 
 	test.Foo = "foo"
 
-	m, err := StructToMap(&test, []string{"baz"})
+	m, err := StructToMap(&test, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, Map{
+		"bar": "foo",
+	}, m)
+
+	m, err = StructToMap(&test, []string{"baz"})
 	assert.NoError(t, err)
 	assert.Equal(t, Map{}, m)
 
@@ -80,6 +86,10 @@ func TestStructToMapFiltering(t *testing.T) {
 	assert.Equal(t, Map{
 		"bar": "foo",
 	}, m)
+
+	m, err = StructToMap(&test, []string{})
+	assert.NoError(t, err)
+	assert.Equal(t, Map{}, m)
 }
 
 func TestMapAssignInvalidTarget(t *testing.T) {

@@ -21,8 +21,8 @@ type Map map[string]interface{}
 // StructToMap will assign the fields of the source struct to a new map and
 // additionally filter the map to only include the fields specified.
 //
-// Note: The "json" tag will be respected to write proper field names. If no
-// fields to filter are specified, not filtering will be applied.
+// Note: The "json" tag will be respected to write proper field names. No
+// filtering will be applied if fields is nil.
 //
 // Note: Numbers are left as strings to avoid issues with mismatching types
 // when they are later assigned to a struct again.
@@ -49,7 +49,7 @@ func StructToMap(source interface{}, fields []string) (Map, error) {
 	}
 
 	// return map directly if no fields are specified
-	if len(fields) == 0 {
+	if fields == nil {
 		return m, nil
 	}
 
