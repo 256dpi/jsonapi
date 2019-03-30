@@ -8,8 +8,8 @@ import (
 	"sync"
 )
 
-var objectSuffix = []byte("{")
-var arraySuffix = []byte("[")
+var objectPrefix = []byte("{")
+var arrayPrefix = []byte("[")
 
 var responseDocumentPool = sync.Pool{
 	New: func() interface{} {
@@ -77,11 +77,11 @@ func (r *HybridResource) UnmarshalJSON(doc []byte) error {
 	dec := json.NewDecoder(bytes.NewReader(doc))
 	dec.UseNumber()
 
-	if bytes.HasPrefix(doc, objectSuffix) {
+	if bytes.HasPrefix(doc, objectPrefix) {
 		return dec.Decode(&r.One)
 	}
 
-	if bytes.HasPrefix(doc, arraySuffix) {
+	if bytes.HasPrefix(doc, arrayPrefix) {
 		return dec.Decode(&r.Many)
 	}
 
