@@ -28,7 +28,7 @@ func TestWriteError(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
-	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
+	assert.Equal(t, MediaType, res.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "404",
@@ -44,7 +44,7 @@ func TestWriteErrorEmpty(t *testing.T) {
 	err := WriteError(res, &Error{})
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
+	assert.Equal(t, MediaType, res.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500"
@@ -61,7 +61,7 @@ func TestWriteErrorMissingStatus(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
+	assert.Equal(t, MediaType, res.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
@@ -77,7 +77,7 @@ func TestWriteErrorNonError(t *testing.T) {
 	err := WriteError(res, errors.New("invalid"))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
+	assert.Equal(t, MediaType, res.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
@@ -92,7 +92,7 @@ func TestWriteErrorNil(t *testing.T) {
 	err := WriteError(res, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
+	assert.Equal(t, MediaType, res.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
@@ -107,7 +107,7 @@ func TestWriteErrorListNone(t *testing.T) {
 	err := WriteErrorList(res)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
+	assert.Equal(t, MediaType, res.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
@@ -122,7 +122,7 @@ func TestWriteErrorListInvalid(t *testing.T) {
 	err := WriteErrorList(res, &Error{})
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
+	assert.Equal(t, MediaType, res.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500"
@@ -160,7 +160,7 @@ func TestWriteErrorListSettleOn400(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
+	assert.Equal(t, MediaType, res.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "401"
@@ -180,7 +180,7 @@ func TestWriteErrorListSettleOn500(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
+	assert.Equal(t, MediaType, res.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "501"
