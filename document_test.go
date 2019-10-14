@@ -1,12 +1,17 @@
 package jsonapi
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func stringReader(str string) *bytes.Reader {
+	return bytes.NewReader([]byte(str))
+}
 
 func TestParseDocumentInvalidInput(t *testing.T) {
 	readers := []io.Reader{
@@ -195,7 +200,10 @@ func BenchmarkParseDocument(b *testing.B) {
 			panic(err)
 		}
 
-		reader.Seek(0, io.SeekStart)
+		_, err = reader.Seek(0, io.SeekStart)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
