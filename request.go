@@ -145,6 +145,9 @@ type Request struct {
 	// query parameter. This parameter does not belong to the standard, but is
 	// recommended.
 	Filters map[string][]string
+
+	// Original references the original request.
+	Original *http.Request
 }
 
 // ParseRequest is a short-hand for Parser.ParseRequest and will be removed in
@@ -184,7 +187,8 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 
 	// allocate new request
 	jr := &Request{
-		Prefix: strings.Trim(p.Prefix, "/"),
+		Prefix:   strings.Trim(p.Prefix, "/"),
+		Original: r,
 	}
 
 	// de-prefix and trim path

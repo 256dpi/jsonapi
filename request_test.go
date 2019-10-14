@@ -146,6 +146,7 @@ func TestParseRequestResource(t *testing.T) {
 	assert.Equal(t, &Request{
 		Intent:       ListResources,
 		ResourceType: "foo",
+		Original:     r,
 	}, req)
 }
 
@@ -158,6 +159,7 @@ func TestParseRequestResourceID(t *testing.T) {
 		Intent:       FindResource,
 		ResourceType: "foo",
 		ResourceID:   "1",
+		Original:     r,
 	}, req)
 }
 
@@ -171,6 +173,7 @@ func TestParseRequestRelatedResource(t *testing.T) {
 		ResourceType:    "foo",
 		ResourceID:      "1",
 		RelatedResource: "bar",
+		Original:        r,
 	}, req)
 }
 
@@ -184,6 +187,7 @@ func TestParseRequestRelationship(t *testing.T) {
 		ResourceType: "foo",
 		ResourceID:   "1",
 		Relationship: "bar",
+		Original:     r,
 	}, req)
 }
 
@@ -299,6 +303,7 @@ func TestParseRequestInclude(t *testing.T) {
 		Intent:       ListResources,
 		ResourceType: "foo",
 		Include:      []string{"bar", "baz"},
+		Original:     r1,
 	}, req)
 
 	r2 := newTestRequest("GET", "foo?include=bar&include=baz,qux")
@@ -309,6 +314,7 @@ func TestParseRequestInclude(t *testing.T) {
 		Intent:       ListResources,
 		ResourceType: "foo",
 		Include:      []string{"bar", "baz", "qux"},
+		Original:     r2,
 	}, req)
 }
 
@@ -321,6 +327,7 @@ func TestParseRequestSorting(t *testing.T) {
 		Intent:       ListResources,
 		ResourceType: "foo",
 		Sorting:      []string{"bar", "baz"},
+		Original:     r1,
 	}, req)
 
 	r2 := newTestRequest("GET", "foo?sort=bar&sort=baz,qux")
@@ -331,6 +338,7 @@ func TestParseRequestSorting(t *testing.T) {
 		Intent:       ListResources,
 		ResourceType: "foo",
 		Sorting:      []string{"bar", "baz", "qux"},
+		Original:     r2,
 	}, req)
 }
 
@@ -344,6 +352,7 @@ func TestParseRequestPagedPagination(t *testing.T) {
 		ResourceType: "foo",
 		PageNumber:   1,
 		PageSize:     5,
+		Original:     r,
 	}, req)
 }
 
@@ -357,6 +366,7 @@ func TestParseRequestOffsetPagination(t *testing.T) {
 		ResourceType: "foo",
 		PageOffset:   10,
 		PageLimit:    5,
+		Original:     r,
 	}, req)
 }
 
@@ -370,6 +380,7 @@ func TestParseRequestOffsetPaginationWithZeroOffset(t *testing.T) {
 		ResourceType: "foo",
 		PageOffset:   0,
 		PageLimit:    5,
+		Original:     r,
 	}, req)
 }
 
@@ -384,6 +395,7 @@ func TestParseRequestFields(t *testing.T) {
 		Fields: map[string][]string{
 			"foo": {"bar", "baz"},
 		},
+		Original: r,
 	}, req)
 }
 
@@ -398,6 +410,7 @@ func TestParseRequestFilters(t *testing.T) {
 		Filters: map[string][]string{
 			"foo": {"bar", "baz"},
 		},
+		Original: r,
 	}, req)
 }
 
@@ -406,41 +419,43 @@ func TestZeroIntentRequestMethod(t *testing.T) {
 }
 
 func TestCollectionActionsAcceptHeader(t *testing.T) {
-	validAccept := newTestRequest("POST", "posts/foo")
-	validAccept.Header.Set("Content-Type", "application/octet-stream")
-	validAccept.Header.Set("Accept", "application/octet-stream")
+	r := newTestRequest("POST", "posts/foo")
+	r.Header.Set("Content-Type", "application/octet-stream")
+	r.Header.Set("Accept", "application/octet-stream")
 
 	parser := Parser{
 		CollectionActions: map[string][]string{
 			"foo": {"POST"},
 		},
 	}
-	req, err := parser.ParseRequest(validAccept)
+	req, err := parser.ParseRequest(r)
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Intent:           CollectionAction,
 		ResourceType:     "posts",
 		CollectionAction: "foo",
+		Original:         r,
 	}, req)
 }
 
 func TestResourceActionsAcceptHeader(t *testing.T) {
-	validAccept := newTestRequest("POST", "posts/1/foo")
-	validAccept.Header.Set("Content-Type", "application/octet-stream")
-	validAccept.Header.Set("Accept", "application/octet-stream")
+	r := newTestRequest("POST", "posts/1/foo")
+	r.Header.Set("Content-Type", "application/octet-stream")
+	r.Header.Set("Accept", "application/octet-stream")
 
 	parser := Parser{
 		ResourceActions: map[string][]string{
 			"foo": {"POST"},
 		},
 	}
-	req, err := parser.ParseRequest(validAccept)
+	req, err := parser.ParseRequest(r)
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Intent:         ResourceAction,
 		ResourceType:   "posts",
 		ResourceID:     "1",
 		ResourceAction: "foo",
+		Original:       r,
 	}, req)
 }
 
