@@ -134,18 +134,18 @@ func TestWriteErrorListSame(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	err := WriteErrorList(res, &Error{
-		Status: http.StatusMethodNotAllowed,
+		Status: http.StatusNotFound,
 	}, &Error{
-		Status: http.StatusMethodNotAllowed,
+		Status: http.StatusNotFound,
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, http.StatusMethodNotAllowed, res.Result().StatusCode)
-	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
+	assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
+	assert.Equal(t, MediaType, res.Header().Get("Content-Type"))
 	assert.JSONEq(t, `{
 		"errors": [{
-			"status": "405"
+			"status": "404"
 		}, {
-			"status": "405"
+			"status": "404"
 		}]
 	}`, res.Body.String())
 }
