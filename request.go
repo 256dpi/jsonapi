@@ -179,7 +179,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 
 	// map method to action
 	if method != "GET" && method != "POST" && method != "PATCH" && method != "DELETE" {
-		return nil, BadRequest("Unsupported method")
+		return nil, BadRequest("unsupported method")
 	}
 
 	// allocate new request
@@ -193,13 +193,13 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 	// split path
 	segments := strings.Split(location, "/")
 	if len(segments) == 0 || len(segments) > 4 {
-		return nil, BadRequest("Invalid URL segment count")
+		return nil, BadRequest("invalid URL segment count")
 	}
 
 	// check for invalid segments
 	for _, s := range segments {
 		if s == "" {
-			return nil, BadRequest("Found empty URL segments")
+			return nil, BadRequest("found empty URL segments")
 		}
 	}
 
@@ -253,7 +253,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 
 	// final check
 	if len(segments) > 2 && (jr.RelatedResource == "" && jr.Relationship == "") {
-		return nil, BadRequest("Invalid URL relationship format")
+		return nil, BadRequest("invalid URL relationship format")
 	}
 
 	// calculate intent
@@ -294,7 +294,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 
 	// check intent
 	if jr.Intent == 0 {
-		return nil, BadRequest("The URL and method combination is invalid")
+		return nil, BadRequest("the URL and method combination is invalid")
 	}
 
 	// check headers for standard requests
@@ -302,19 +302,19 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// check content type header
 		contentType := r.Header.Get("Content-Type")
 		if contentType != "" && contentType != MediaType {
-			return nil, BadRequest("Invalid content type header")
+			return nil, BadRequest("invalid content type header")
 		}
 
 		// check accept header
 		accept := r.Header.Get("Accept")
 		if accept != "" && accept != "*/*" && accept != "application/*" && accept != "application/json" && accept != MediaType {
-			return nil, ErrorFromStatus(http.StatusNotAcceptable, "Invalid accept header")
+			return nil, ErrorFromStatus(http.StatusNotAcceptable, "invalid accept header")
 		}
 	}
 
 	// check if request should come with a document and has content type set
 	if jr.Intent.DocumentExpected() && r.Header.Get("Content-Type") == "" {
-		return nil, BadRequest("Missing content type header")
+		return nil, BadRequest("missing content type header")
 	}
 
 	for key, values := range r.URL.Query() {
@@ -339,12 +339,12 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// set page number
 		if key == "page[number]" {
 			if len(values) != 1 {
-				return nil, BadRequestParam("More than one value", "page[number]")
+				return nil, BadRequestParam("more than one page number", "page[number]")
 			}
 
 			n, err := strconv.ParseUint(values[0], 10, 0)
 			if err != nil {
-				return nil, BadRequestParam("Not a number", "page[number]")
+				return nil, BadRequestParam("invalid page number", "page[number]")
 			}
 
 			jr.PageNumber = n
@@ -354,12 +354,12 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// set page size
 		if key == "page[size]" {
 			if len(values) != 1 {
-				return nil, BadRequestParam("More than one value", "page[size]")
+				return nil, BadRequestParam("more than one page size", "page[size]")
 			}
 
 			n, err := strconv.ParseUint(values[0], 10, 0)
 			if err != nil {
-				return nil, BadRequestParam("Not a number", "page[size]")
+				return nil, BadRequestParam("invalid page size", "page[size]")
 			}
 
 			jr.PageSize = n
@@ -369,12 +369,12 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// set page offset
 		if key == "page[offset]" {
 			if len(values) != 1 {
-				return nil, BadRequestParam("More than one value", "page[offset]")
+				return nil, BadRequestParam("more than one page offset", "page[offset]")
 			}
 
 			n, err := strconv.ParseUint(values[0], 10, 0)
 			if err != nil {
-				return nil, BadRequestParam("Not a number", "page[offset]")
+				return nil, BadRequestParam("invalid page offset", "page[offset]")
 			}
 
 			jr.PageOffset = n
@@ -384,12 +384,12 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// set page limit
 		if key == "page[limit]" {
 			if len(values) != 1 {
-				return nil, BadRequestParam("More than one value", "page[limit]")
+				return nil, BadRequestParam("more than one page limit", "page[limit]")
 			}
 
 			n, err := strconv.ParseUint(values[0], 10, 0)
 			if err != nil {
-				return nil, BadRequestParam("Not a number", "page[limit]")
+				return nil, BadRequestParam("invalid page limit", "page[limit]")
 			}
 
 			jr.PageLimit = n
@@ -425,17 +425,17 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 
 	// check that page number is set if page size is set
 	if jr.PageNumber > 0 && jr.PageSize <= 0 {
-		return nil, BadRequestParam("Missing page size", "page[number]")
+		return nil, BadRequestParam("missing page size", "page[number]")
 	}
 
 	// check that page size is set if page number is set
 	if jr.PageSize > 0 && jr.PageNumber <= 0 {
-		return nil, BadRequestParam("Missing page number", "page[size]")
+		return nil, BadRequestParam("missing page number", "page[size]")
 	}
 
 	// check that page limit is set if page offset is set
 	if jr.PageOffset > 0 && jr.PageLimit <= 0 {
-		return nil, BadRequestParam("Missing page limit", "page[limit]")
+		return nil, BadRequestParam("missing page limit", "page[limit]")
 	}
 
 	return jr, nil

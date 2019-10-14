@@ -3,6 +3,7 @@ package jsonapi
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 )
 
@@ -183,7 +184,7 @@ func ErrorFromStatus(status int, detail string) *Error {
 
 	return &Error{
 		Status: status,
-		Title:  str,
+		Title:  strings.ToLower(str),
 		Detail: detail,
 	}
 }

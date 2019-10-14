@@ -11,10 +11,10 @@ import (
 func TestError(t *testing.T) {
 	var err error = &Error{
 		Status: http.StatusNotFound,
-		Title:  "Resource Not Found",
-		Detail: "The requested resource cannot be found",
+		Title:  "resource not found",
+		Detail: "the requested resource cannot be found",
 	}
-	assert.Equal(t, "Resource Not Found: The requested resource cannot be found", err.Error())
+	assert.Equal(t, "resource not found: the requested resource cannot be found", err.Error())
 }
 
 func TestWriteError(t *testing.T) {
@@ -22,8 +22,8 @@ func TestWriteError(t *testing.T) {
 
 	WriteError(res, &Error{
 		Status: http.StatusNotFound,
-		Title:  "Resource Not Found",
-		Detail: "The requested resource cannot be found",
+		Title:  "resource not found",
+		Detail: "the requested resource cannot be found",
 	})
 
 	assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
@@ -31,8 +31,8 @@ func TestWriteError(t *testing.T) {
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "404",
-			"title": "Resource Not Found",
-			"detail": "The requested resource cannot be found"
+			"title": "resource not found",
+			"detail": "the requested resource cannot be found"
 		}]
 	}`, res.Body.String())
 }
@@ -55,8 +55,8 @@ func TestWriteErrorMissingStatus(t *testing.T) {
 	res := newTestResponseRecorder()
 
 	WriteError(res, &Error{
-		Title:  "Resource Not Found",
-		Detail: "The requested resource cannot be found",
+		Title:  "resource not found",
+		Detail: "the requested resource cannot be found",
 	})
 
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
@@ -64,8 +64,8 @@ func TestWriteErrorMissingStatus(t *testing.T) {
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
-			"title": "Resource Not Found",
-			"detail": "The requested resource cannot be found"
+			"title": "resource not found",
+			"detail": "the requested resource cannot be found"
 		}]
 	}`, res.Body.String())
 }
@@ -80,7 +80,7 @@ func TestWriteErrorNonError(t *testing.T) {
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
-			"title": "Internal Server Error"
+			"title": "internal server error"
 		}]
 	}`, res.Body.String())
 }
@@ -95,7 +95,7 @@ func TestWriteErrorNil(t *testing.T) {
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
-			"title": "Internal Server Error"
+			"title": "internal server error"
 		}]
 	}`, res.Body.String())
 }
@@ -110,7 +110,7 @@ func TestWriteErrorListNone(t *testing.T) {
 	assert.JSONEq(t, `{
 		"errors": [{
 			"status": "500",
-			"title": "Internal Server Error"
+			"title": "internal server error"
 		}]
 	}`, res.Body.String())
 }
@@ -205,7 +205,7 @@ func TestErrorGenerators(t *testing.T) {
 
 func BenchmarkWriteError(b *testing.B) {
 	err := &Error{
-		Title:  "Internal Server Error",
+		Title:  "internal server error",
 		Status: http.StatusInternalServerError,
 	}
 
@@ -223,7 +223,7 @@ func BenchmarkWriteError(b *testing.B) {
 
 func BenchmarkWriteErrorList(b *testing.B) {
 	err := &Error{
-		Title:  "Internal Server Error",
+		Title:  "internal server error",
 		Status: http.StatusInternalServerError,
 	}
 

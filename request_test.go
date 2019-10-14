@@ -14,35 +14,96 @@ func TestParseRequestError(t *testing.T) {
 	invalidContentType := newTestRequest("GET", "posts")
 	invalidContentType.Header.Set("Content-Type", "foo")
 
-	missingContentType := newTestRequest("POST", "foo")
-
-	list := []*http.Request{
-		invalidAccept,
-		invalidContentType,
-		missingContentType,
-		newTestRequest("PUT", ""),
-		newTestRequest("GET", ""),
-		newTestRequest("POST", ""),
-		newTestRequest("GET", "/"),
-		newTestRequest("GET", "foo/bar/baz/qux"),
-		newTestRequest("GET", "foo/bar/baz/qux/qux"),
-		newTestRequest("GET", "foo?page[number]=bar"),
-		newTestRequest("GET", "foo?page[size]=bar"),
-		newTestRequest("GET", "foo?page[number]=1"),
-		newTestRequest("GET", "foo?page[size]=1"),
-		newTestRequest("GET", "foo?page[number]=bar&page[number]=baz"),
-		newTestRequest("GET", "foo?page[size]=bar&page[size]=baz"),
-		newTestRequest("GET", "foo?page[offset]=bar"),
-		newTestRequest("GET", "foo?page[limit]=bar"),
-		newTestRequest("GET", "foo?page[offset]=1"),
-		newTestRequest("GET", "foo?page[offset]=bar&page[offset]=baz"),
-		newTestRequest("GET", "foo?page[limit]=bar&page[limit]=baz"),
-		newTestRequest("PATCH", "foo"),
+	list := []struct {
+		r *http.Request
+		e string
+	}{
+		{
+			r: newTestRequest("HEAD", ""),
+			e: "bad request: unsupported method",
+		},
+		{
+			r: newTestRequest("GET", "a/b/c/d/e"),
+			e: "bad request: invalid URL segment count",
+		},
+		{
+			r: newTestRequest("GET", "a///d"),
+			e: "bad request: found empty URL segments",
+		},
+		{
+			r: newTestRequest("GET", ""),
+			e: "bad request: found empty URL segments",
+		},
+		{
+			r: newTestRequest("GET", "a/b/c/d"),
+			e: "bad request: invalid URL relationship format",
+		},
+		{
+			r: newTestRequest("POST", "a/b"),
+			e: "bad request: the URL and method combination is invalid",
+		},
+		{
+			r: invalidContentType,
+			e: "bad request: invalid content type header",
+		},
+		{
+			r: invalidAccept,
+			e: "not acceptable: invalid accept header",
+		},
+		{
+			r: newTestRequest("POST", "foo"),
+			e: "bad request: missing content type header",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[number]=bar"),
+			e: "bad request: invalid page number",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[size]=bar"),
+			e: "bad request: invalid page size",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[number]=bar&page[number]=baz"),
+			e: "bad request: more than one page number",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[size]=bar&page[size]=baz"),
+			e: "bad request: more than one page size",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[offset]=bar"),
+			e: "bad request: invalid page offset",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[limit]=bar"),
+			e: "bad request: invalid page limit",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[offset]=bar&page[offset]=baz"),
+			e: "bad request: more than one page offset",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[limit]=bar&page[limit]=baz"),
+			e: "bad request: more than one page limit",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[number]=1"),
+			e: "bad request: missing page size",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[size]=1"),
+			e: "bad request: missing page number",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[offset]=1"),
+			e: "bad request: missing page limit",
+		},
 	}
 
-	for _, r := range list {
-		req, err := ParseRequest(r, "")
+	for _, i := range list {
+		req, err := ParseRequest(i.r, "")
 		assert.Error(t, err)
+		assert.Equal(t, i.e, err.Error())
 		assert.Nil(t, req)
 	}
 }
