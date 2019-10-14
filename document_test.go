@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -158,7 +159,7 @@ func TestParseDocumentWithBigNumbers(t *testing.T) {
 }
 
 func TestWriteResponseSingleDocument(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	err := WriteResponse(res, http.StatusOK, &Document{
 		Data: &HybridResource{
@@ -227,7 +228,7 @@ func BenchmarkWriteResponse(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := newTestResponseRecorder()
+		res := httptest.NewRecorder()
 
 		err := WriteResponse(res, http.StatusOK, doc)
 		if err != nil {

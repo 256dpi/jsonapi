@@ -3,6 +3,7 @@ package jsonapi
 import (
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ func TestError(t *testing.T) {
 }
 
 func TestWriteError(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	WriteError(res, &Error{
 		Status: http.StatusNotFound,
@@ -38,7 +39,7 @@ func TestWriteError(t *testing.T) {
 }
 
 func TestWriteErrorEmpty(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	WriteError(res, &Error{})
 
@@ -52,7 +53,7 @@ func TestWriteErrorEmpty(t *testing.T) {
 }
 
 func TestWriteErrorMissingStatus(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	WriteError(res, &Error{
 		Title:  "resource not found",
@@ -71,7 +72,7 @@ func TestWriteErrorMissingStatus(t *testing.T) {
 }
 
 func TestWriteErrorNonError(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	WriteError(res, errors.New("invalid"))
 
@@ -86,7 +87,7 @@ func TestWriteErrorNonError(t *testing.T) {
 }
 
 func TestWriteErrorNil(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	WriteError(res, nil)
 
@@ -101,7 +102,7 @@ func TestWriteErrorNil(t *testing.T) {
 }
 
 func TestWriteErrorListNone(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	WriteErrorList(res)
 
@@ -116,7 +117,7 @@ func TestWriteErrorListNone(t *testing.T) {
 }
 
 func TestWriteErrorListInvalid(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	WriteErrorList(res, &Error{})
 
@@ -130,7 +131,7 @@ func TestWriteErrorListInvalid(t *testing.T) {
 }
 
 func TestWriteErrorListSame(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	WriteErrorList(res, &Error{
 		Status: http.StatusMethodNotAllowed,
@@ -150,7 +151,7 @@ func TestWriteErrorListSame(t *testing.T) {
 }
 
 func TestWriteErrorListSettleOn400(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	WriteErrorList(res, &Error{
 		Status: http.StatusUnauthorized,
@@ -170,7 +171,7 @@ func TestWriteErrorListSettleOn400(t *testing.T) {
 }
 
 func TestWriteErrorListSettleOn500(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	WriteErrorList(res, &Error{
 		Status: http.StatusNotImplemented,
@@ -212,7 +213,7 @@ func BenchmarkWriteError(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := newTestResponseRecorder()
+		res := httptest.NewRecorder()
 
 		err := WriteError(res, err)
 		if err != nil {
@@ -230,7 +231,7 @@ func BenchmarkWriteErrorList(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := newTestResponseRecorder()
+		res := httptest.NewRecorder()
 
 		err := WriteErrorList(res, err, err)
 		if err != nil {

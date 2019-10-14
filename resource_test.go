@@ -2,13 +2,14 @@ package jsonapi
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestWriteResourceEmpty(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{}, nil)
 	assert.NoError(t, err)
@@ -20,7 +21,7 @@ func TestWriteResourceEmpty(t *testing.T) {
 }
 
 func TestWriteResource(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{
 		Type: "foo",
@@ -42,7 +43,7 @@ func TestWriteResource(t *testing.T) {
 }
 
 func TestWriteResourcesEmpty(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	err := WriteResources(res, http.StatusOK, []*Resource{{}}, nil)
 	assert.NoError(t, err)
@@ -56,7 +57,7 @@ func TestWriteResourcesEmpty(t *testing.T) {
 }
 
 func TestWriteResources(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	err := WriteResources(res, http.StatusOK, []*Resource{
 		{
@@ -96,7 +97,7 @@ func TestWriteResources(t *testing.T) {
 }
 
 func TestWriteResourceRelationship(t *testing.T) {
-	res := newTestResponseRecorder()
+	res := httptest.NewRecorder()
 
 	err := WriteResource(res, http.StatusOK, &Resource{
 		Type: "foo",
@@ -142,7 +143,7 @@ func BenchmarkWriteResource(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := newTestResponseRecorder()
+		res := httptest.NewRecorder()
 
 		err := WriteResource(res, http.StatusOK, resource, nil)
 		if err != nil {
@@ -174,7 +175,7 @@ func BenchmarkWriteResources(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		res := newTestResponseRecorder()
+		res := httptest.NewRecorder()
 
 		err := WriteResources(res, http.StatusOK, resources, nil)
 		if err != nil {

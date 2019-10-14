@@ -7,6 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func newTestRequest(method, path string) *http.Request {
+	r, err := http.NewRequest(method, path, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	return r
+}
+
 func TestParseRequestError(t *testing.T) {
 	invalidAccept := newTestRequest("GET", "posts")
 	invalidAccept.Header.Set("Accept", "foo")
