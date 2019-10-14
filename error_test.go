@@ -21,12 +21,12 @@ func TestError(t *testing.T) {
 func TestWriteError(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	WriteError(res, &Error{
+	err := WriteError(res, &Error{
 		Status: http.StatusNotFound,
 		Title:  "resource not found",
 		Detail: "the requested resource cannot be found",
 	})
-
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
 	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
@@ -41,8 +41,8 @@ func TestWriteError(t *testing.T) {
 func TestWriteErrorEmpty(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	WriteError(res, &Error{})
-
+	err := WriteError(res, &Error{})
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
@@ -55,11 +55,11 @@ func TestWriteErrorEmpty(t *testing.T) {
 func TestWriteErrorMissingStatus(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	WriteError(res, &Error{
+	err := WriteError(res, &Error{
 		Title:  "resource not found",
 		Detail: "the requested resource cannot be found",
 	})
-
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
@@ -74,8 +74,8 @@ func TestWriteErrorMissingStatus(t *testing.T) {
 func TestWriteErrorNonError(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	WriteError(res, errors.New("invalid"))
-
+	err := WriteError(res, errors.New("invalid"))
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
@@ -89,8 +89,8 @@ func TestWriteErrorNonError(t *testing.T) {
 func TestWriteErrorNil(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	WriteError(res, nil)
-
+	err := WriteError(res, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
@@ -104,8 +104,8 @@ func TestWriteErrorNil(t *testing.T) {
 func TestWriteErrorListNone(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	WriteErrorList(res)
-
+	err := WriteErrorList(res)
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
@@ -119,8 +119,8 @@ func TestWriteErrorListNone(t *testing.T) {
 func TestWriteErrorListInvalid(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	WriteErrorList(res, &Error{})
-
+	err := WriteErrorList(res, &Error{})
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
@@ -133,12 +133,12 @@ func TestWriteErrorListInvalid(t *testing.T) {
 func TestWriteErrorListSame(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	WriteErrorList(res, &Error{
+	err := WriteErrorList(res, &Error{
 		Status: http.StatusMethodNotAllowed,
 	}, &Error{
 		Status: http.StatusMethodNotAllowed,
 	})
-
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusMethodNotAllowed, res.Result().StatusCode)
 	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
@@ -153,12 +153,12 @@ func TestWriteErrorListSame(t *testing.T) {
 func TestWriteErrorListSettleOn400(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	WriteErrorList(res, &Error{
+	err := WriteErrorList(res, &Error{
 		Status: http.StatusUnauthorized,
 	}, &Error{
 		Status: http.StatusForbidden,
 	})
-
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
@@ -173,12 +173,12 @@ func TestWriteErrorListSettleOn400(t *testing.T) {
 func TestWriteErrorListSettleOn500(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	WriteErrorList(res, &Error{
+	err := WriteErrorList(res, &Error{
 		Status: http.StatusNotImplemented,
 	}, &Error{
 		Status: http.StatusBadGateway,
 	})
-
+	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, MediaType, res.HeaderMap.Get("Content-Type"))
 	assert.JSONEq(t, `{
