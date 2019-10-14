@@ -441,7 +441,10 @@ func BenchmarkParseRequest(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		ParseRequest(r, "")
+		_, err := ParseRequest(r, "")
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -451,6 +454,9 @@ func BenchmarkParseRequestFilterAndSort(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		ParseRequest(r, "")
+		_, err := ParseRequest(r, "")
+		if err != nil {
+			panic(err)
+		}
 	}
 }
