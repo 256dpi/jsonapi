@@ -4,22 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 )
-
-var singleErrorDocumentPool = sync.Pool{
-	New: func() interface{} {
-		return &Document{
-			Errors: make([]*Error, 1),
-		}
-	},
-}
-
-var multiErrorDocumentPool = sync.Pool{
-	New: func() interface{} {
-		return &Document{}
-	},
-}
 
 // Error objects provide additional information about problems encountered while
 // performing an operation.
@@ -96,19 +81,9 @@ func WriteError(w http.ResponseWriter, err error) error {
 		anError.Status = http.StatusInternalServerError
 	}
 
-	// get document from pool
-	doc := singleErrorDocumentPool.Get().(*Document)
-
-	// put document back when finished
-	defer func() {
-		doc.Errors[0] = nil
-		singleErrorDocumentPool.Put(doc)
-	}()
-
-	// set error
-	doc.Errors[0] = anError
-
-	return WriteResponse(w, anError.Status, doc)
+	return WriteResponse(w, anError.Status, &Document{
+		Errors: []*Error{anError},
+	})
 }
 
 // WriteErrorList will write the passed errors to the the response writer.
@@ -152,19 +127,9 @@ func WriteErrorList(w http.ResponseWriter, errors ...*Error) error {
 		commonStatus = 400
 	}
 
-	// get document from pool
-	doc := multiErrorDocumentPool.Get().(*Document)
-
-	// put document back when finished
-	defer func() {
-		doc.Errors = nil
-		multiErrorDocumentPool.Put(doc)
-	}()
-
-	// set errors
-	doc.Errors = errors
-
-	return WriteResponse(w, commonStatus, doc)
+	return WriteResponse(w, commonStatus, &Document{
+		Errors: errors,
+	})
 }
 
 // ErrorFromStatus will return an error that has been derived from the passed

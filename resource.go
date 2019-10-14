@@ -5,19 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"sync"
 )
 
 var objectPrefix = []byte("{")
 var arrayPrefix = []byte("[")
-
-var responseDocumentPool = sync.Pool{
-	New: func() interface{} {
-		return &Document{
-			Data: &HybridResource{},
-		}
-	},
-}
 
 // A Resource is carried by a document and provides the basic structure for
 // JSON API resource objects and resource identifier objects.
@@ -91,55 +82,23 @@ func (r *HybridResource) UnmarshalJSON(doc []byte) error {
 // WriteResource will wrap the passed resource, links and included resources in
 // a document and write it to the passed response writer.
 func WriteResource(w http.ResponseWriter, status int, resource *Resource, links *DocumentLinks, included ...*Resource) error {
-	// get document from pool
-	doc := getResponseDocument()
-
-	// put document back when finished
-	defer freeResponseDocument(doc)
-
-	// set data
-	doc.Data.One = resource
-	doc.Links = links
-	doc.Included = included
-
-	return WriteResponse(w, status, doc)
+	return WriteResponse(w, status, &Document{
+		Data: &HybridResource{
+			One: resource,
+		},
+		Links:    links,
+		Included: included,
+	})
 }
 
 // WriteResources will wrap the passed resources, links and included resources
 // in a document and write it to the passed response writer.
 func WriteResources(w http.ResponseWriter, status int, resources []*Resource, links *DocumentLinks, included ...*Resource) error {
-	// get document from pool
-	doc := getResponseDocument()
-
-	// put document back when finished
-	defer freeResponseDocument(doc)
-
-	// set data
-	doc.Data.Many = resources
-	doc.Links = links
-	doc.Included = included
-
-	return WriteResponse(w, status, doc)
-}
-
-func getResponseDocument() *Document {
-	// get document from pool
-	doc := responseDocumentPool.Get().(*Document)
-
-	// reset document
-	doc.Data.One = nil
-	doc.Data.Many = nil
-	doc.Included = nil
-	doc.Links = nil
-	doc.Errors = nil
-	doc.Meta = nil
-
-	return doc
-}
-
-func freeResponseDocument(doc *Document) {
-	doc.Data.Many = nil
-	doc.Links = nil
-	doc.Included = nil
-	responseDocumentPool.Put(doc)
+	return WriteResponse(w, status, &Document{
+		Data: &HybridResource{
+			Many: resources,
+		},
+		Links:    links,
+		Included: included,
+	})
 }
