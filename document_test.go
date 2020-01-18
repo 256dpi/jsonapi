@@ -1,31 +1,27 @@
 package jsonapi
 
 import (
-	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func stringReader(str string) *bytes.Reader {
-	return bytes.NewReader([]byte(str))
-}
-
 func TestParseDocumentInvalidInput(t *testing.T) {
 	readers := []io.Reader{
-		stringReader(``),
-		stringReader(`1`),
-		stringReader(`"foo"`),
-		stringReader(`true`),
-		stringReader(`[]`),
-		stringReader(`{
+		strings.NewReader(``),
+		strings.NewReader(`1`),
+		strings.NewReader(`"foo"`),
+		strings.NewReader(`true`),
+		strings.NewReader(`[]`),
+		strings.NewReader(`{
 			"data": "foo"
 		}`),
-		stringReader(`{
+		strings.NewReader(`{
 			"data": {
 				"type": "foo",
 				"id": "1",
@@ -44,7 +40,7 @@ func TestParseDocumentInvalidInput(t *testing.T) {
 }
 
 func TestParseDocumentDocumentWithErrors(t *testing.T) {
-	doc, err := ParseDocument(stringReader(`{
+	doc, err := ParseDocument(strings.NewReader(`{
 		"errors": [{
 			"status": "404"
 		}]
@@ -57,7 +53,7 @@ func TestParseDocumentDocumentWithErrors(t *testing.T) {
 }
 
 func TestParseDocument(t *testing.T) {
-	doc, err := ParseDocument(stringReader(`{
+	doc, err := ParseDocument(strings.NewReader(`{
   		"data": {
     		"type": "foo",
     		"id": "1",
@@ -79,7 +75,7 @@ func TestParseDocument(t *testing.T) {
 }
 
 func TestParseDocumentWithManyResources(t *testing.T) {
-	doc, err := ParseDocument(stringReader(`{
+	doc, err := ParseDocument(strings.NewReader(`{
   		"data": [
   			{
 				"type": "foo",
@@ -105,7 +101,7 @@ func TestParseDocumentWithManyResources(t *testing.T) {
 }
 
 func TestParseDocumentDocumentWithRelationships(t *testing.T) {
-	doc, err := ParseDocument(stringReader(`{
+	doc, err := ParseDocument(strings.NewReader(`{
   		"data": {
     		"type": "foo",
     		"id": "1",
@@ -143,7 +139,7 @@ func TestParseDocumentWithBigNumbers(t *testing.T) {
 		Num int64 `json:"num"`
 	}
 
-	doc, err := ParseDocument(stringReader(`{
+	doc, err := ParseDocument(strings.NewReader(`{
   		"data": {
     		"type": "foo",
     		"id": "1",
@@ -193,7 +189,7 @@ func TestWriteResponseSingleDocument(t *testing.T) {
 }
 
 func BenchmarkParseDocument(b *testing.B) {
-	reader := stringReader(`{
+	reader := strings.NewReader(`{
 		"links": {
 			"self": "/api/foo/1"
 		},
