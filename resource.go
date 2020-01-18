@@ -68,10 +68,12 @@ func (r *HybridResource) UnmarshalJSON(doc []byte) error {
 	dec := json.NewDecoder(bytes.NewReader(doc))
 	dec.UseNumber()
 
+	// check if object
 	if bytes.HasPrefix(doc, objectPrefix) {
 		return dec.Decode(&r.One)
 	}
 
+	// check if array
 	if bytes.HasPrefix(doc, arrayPrefix) {
 		return dec.Decode(&r.Many)
 	}

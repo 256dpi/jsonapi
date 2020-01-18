@@ -316,7 +316,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		}
 	}
 
-	// check if request should come with a document and has content type set
+	// check if request should come with a document and has no content type set
 	if jr.Intent.DocumentExpected() && r.Header.Get("Content-Type") == "" {
 		return nil, BadRequest("missing content type header")
 	}

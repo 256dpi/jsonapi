@@ -2,6 +2,7 @@ package jsonapi
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -50,6 +51,9 @@ func TestParseDocumentDocumentWithErrors(t *testing.T) {
 	}`))
 	assert.Error(t, err)
 	assert.Nil(t, doc)
+	assert.Equal(t, &Error{
+		Status: http.StatusNotFound,
+	}, err)
 }
 
 func TestParseDocument(t *testing.T) {
@@ -136,7 +140,7 @@ func TestParseDocumentDocumentWithRelationships(t *testing.T) {
 
 func TestParseDocumentWithBigNumbers(t *testing.T) {
 	type test struct {
-		Num int64
+		Num int64 `json:"num"`
 	}
 
 	doc, err := ParseDocument(stringReader(`{
@@ -144,16 +148,26 @@ func TestParseDocumentWithBigNumbers(t *testing.T) {
     		"type": "foo",
     		"id": "1",
     		"attributes": {
-    			"Num": 4699539
+    			"num": 4699539
     		},
     		"relationships": {}
 		}
 	}`))
 	assert.NoError(t, err)
-	assert.NotNil(t, doc.Data.One.Attributes)
+	assert.Equal(t, &Document{
+		Data: &HybridResource{
+			One: &Resource{
+				Type: "foo",
+				ID:   "1",
+				Attributes: map[string]interface{}{
+					"num": json.Number("4699539"),
+				},
+				Relationships: map[string]*Document{},
+			},
+		},
+	}, doc)
 
 	m := &test{}
-
 	err = doc.Data.One.Attributes.Assign(m)
 	assert.NoError(t, err)
 }
