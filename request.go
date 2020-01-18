@@ -145,9 +145,6 @@ type Request struct {
 	// query parameter. This parameter does not belong to the standard, but is
 	// recommended.
 	Filters map[string][]string
-
-	// Original references the original request.
-	Original *http.Request
 }
 
 // ParseRequest is a short-hand for Parser.ParseRequest and will be removed in
@@ -186,13 +183,12 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 	}
 
 	// allocate new request
-	jr := &Request{
-		Prefix:   strings.Trim(p.Prefix, "/"),
-		Original: r,
+	req := &Request{
+		Prefix: strings.Trim(p.Prefix, "/"),
 	}
 
 	// de-prefix and trim path
-	location := strings.TrimPrefix(strings.Trim(r.URL.Path, "/"), jr.Prefix+"/")
+	location := strings.TrimPrefix(strings.Trim(r.URL.Path, "/"), req.Prefix+"/")
 
 	// split path
 	segments := strings.Split(location, "/")
@@ -208,7 +204,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 	}
 
 	// set resource
-	jr.ResourceType = segments[0]
+	req.ResourceType = segments[0]
 	level := 1
 
 	// return early if a collection action is provided
@@ -216,9 +212,9 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		if action, ok := p.CollectionActions[segments[1]]; ok {
 			for _, m := range action {
 				if method == m {
-					jr.Intent = CollectionAction
-					jr.CollectionAction = segments[1]
-					return jr, nil
+					req.Intent = CollectionAction
+					req.CollectionAction = segments[1]
+					return req, nil
 				}
 			}
 		}
@@ -226,7 +222,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 
 	// set resource id
 	if len(segments) > 1 {
-		jr.ResourceID = segments[1]
+		req.ResourceID = segments[1]
 		level = 2
 	}
 
@@ -235,9 +231,9 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		if action, ok := p.ResourceActions[segments[2]]; ok {
 			for _, m := range action {
 				if method == m {
-					jr.Intent = ResourceAction
-					jr.ResourceAction = segments[2]
-					return jr, nil
+					req.Intent = ResourceAction
+					req.ResourceAction = segments[2]
+					return req, nil
 				}
 			}
 		}
@@ -245,18 +241,18 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 
 	// set related resource
 	if len(segments) == 3 && segments[2] != "relationships" {
-		jr.RelatedResource = segments[2]
+		req.RelatedResource = segments[2]
 		level = 3
 	}
 
 	// set relationship
 	if len(segments) == 4 && segments[2] == "relationships" {
-		jr.Relationship = segments[3]
+		req.Relationship = segments[3]
 		level = 4
 	}
 
 	// final check
-	if len(segments) > 2 && (jr.RelatedResource == "" && jr.Relationship == "") {
+	if len(segments) > 2 && (req.RelatedResource == "" && req.Relationship == "") {
 		return nil, BadRequest("invalid URL relationship format")
 	}
 
@@ -265,44 +261,44 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 	case "GET":
 		switch level {
 		case 1:
-			jr.Intent = ListResources
+			req.Intent = ListResources
 		case 2:
-			jr.Intent = FindResource
+			req.Intent = FindResource
 		case 3:
-			jr.Intent = GetRelatedResources
+			req.Intent = GetRelatedResources
 		case 4:
-			jr.Intent = GetRelationship
+			req.Intent = GetRelationship
 		}
 	case "POST":
 		switch level {
 		case 1:
-			jr.Intent = CreateResource
+			req.Intent = CreateResource
 		case 4:
-			jr.Intent = AppendToRelationship
+			req.Intent = AppendToRelationship
 		}
 	case "PATCH":
 		switch level {
 		case 2:
-			jr.Intent = UpdateResource
+			req.Intent = UpdateResource
 		case 4:
-			jr.Intent = SetRelationship
+			req.Intent = SetRelationship
 		}
 	case "DELETE":
 		switch level {
 		case 2:
-			jr.Intent = DeleteResource
+			req.Intent = DeleteResource
 		case 4:
-			jr.Intent = RemoveFromRelationship
+			req.Intent = RemoveFromRelationship
 		}
 	}
 
 	// check intent
-	if jr.Intent == 0 {
+	if req.Intent == 0 {
 		return nil, BadRequest("the URL and method combination is invalid")
 	}
 
 	// check headers for standard requests
-	if jr.Intent != CollectionAction && jr.Intent != ResourceAction {
+	if req.Intent != CollectionAction && req.Intent != ResourceAction {
 		// check content type header
 		contentType := r.Header.Get("Content-Type")
 		if contentType != "" && contentType != MediaType {
@@ -317,7 +313,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 	}
 
 	// check if request should come with a document and has no content type set
-	if jr.Intent.DocumentExpected() && r.Header.Get("Content-Type") == "" {
+	if req.Intent.DocumentExpected() && r.Header.Get("Content-Type") == "" {
 		return nil, BadRequest("missing content type header")
 	}
 
@@ -325,7 +321,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// set included resources
 		if key == "include" {
 			for _, v := range values {
-				jr.Include = append(jr.Include, strings.Split(v, ",")...)
+				req.Include = append(req.Include, strings.Split(v, ",")...)
 			}
 
 			continue
@@ -334,7 +330,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// set sorting
 		if key == "sort" {
 			for _, v := range values {
-				jr.Sorting = append(jr.Sorting, strings.Split(v, ",")...)
+				req.Sorting = append(req.Sorting, strings.Split(v, ",")...)
 			}
 
 			continue
@@ -351,7 +347,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 				return nil, BadRequestParam("invalid page number", "page[number]")
 			}
 
-			jr.PageNumber = n
+			req.PageNumber = n
 			continue
 		}
 
@@ -366,7 +362,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 				return nil, BadRequestParam("invalid page size", "page[size]")
 			}
 
-			jr.PageSize = n
+			req.PageSize = n
 			continue
 		}
 
@@ -381,7 +377,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 				return nil, BadRequestParam("invalid page offset", "page[offset]")
 			}
 
-			jr.PageOffset = n
+			req.PageOffset = n
 			continue
 		}
 
@@ -396,53 +392,53 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 				return nil, BadRequestParam("invalid page limit", "page[limit]")
 			}
 
-			jr.PageLimit = n
+			req.PageLimit = n
 			continue
 		}
 
 		// set sparse fields
 		if strings.HasPrefix(key, "fields[") && strings.HasSuffix(key, "]") {
-			if jr.Fields == nil {
-				jr.Fields = make(map[string][]string)
+			if req.Fields == nil {
+				req.Fields = make(map[string][]string)
 			}
 
 			typ := key[7 : len(key)-1]
 
 			for _, v := range values {
-				jr.Fields[typ] = append(jr.Fields[typ], strings.Split(v, ",")...)
+				req.Fields[typ] = append(req.Fields[typ], strings.Split(v, ",")...)
 			}
 		}
 
 		// set filters
 		if strings.HasPrefix(key, "filter[") && strings.HasSuffix(key, "]") {
-			if jr.Filters == nil {
-				jr.Filters = make(map[string][]string)
+			if req.Filters == nil {
+				req.Filters = make(map[string][]string)
 			}
 
 			typ := key[7 : len(key)-1]
 
 			for _, v := range values {
-				jr.Filters[typ] = append(jr.Filters[typ], strings.Split(v, ",")...)
+				req.Filters[typ] = append(req.Filters[typ], strings.Split(v, ",")...)
 			}
 		}
 	}
 
 	// check that page number is set if page size is set
-	if jr.PageNumber > 0 && jr.PageSize <= 0 {
+	if req.PageNumber > 0 && req.PageSize <= 0 {
 		return nil, BadRequestParam("missing page size", "page[number]")
 	}
 
 	// check that page size is set if page number is set
-	if jr.PageSize > 0 && jr.PageNumber <= 0 {
+	if req.PageSize > 0 && req.PageNumber <= 0 {
 		return nil, BadRequestParam("missing page number", "page[size]")
 	}
 
 	// check that page limit is set if page offset is set
-	if jr.PageOffset > 0 && jr.PageLimit <= 0 {
+	if req.PageOffset > 0 && req.PageLimit <= 0 {
 		return nil, BadRequestParam("missing page limit", "page[limit]")
 	}
 
-	return jr, nil
+	return req, nil
 }
 
 // Base will generate the base URL for this request, which includes the type and
