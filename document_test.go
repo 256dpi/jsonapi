@@ -168,7 +168,7 @@ func TestParseDocumentWithBigNumbers(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestWriteResponseSingleDocument(t *testing.T) {
+func TestWriteResponseOneResource(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	err := WriteResponse(res, http.StatusOK, &Document{
@@ -185,6 +185,42 @@ func TestWriteResponseSingleDocument(t *testing.T) {
     		"type": "foo",
     		"id": "1"
 		}
+	}`, res.Body.String())
+}
+
+func TestWriteResponseManyResources(t *testing.T) {
+	res := httptest.NewRecorder()
+
+	err := WriteResponse(res, http.StatusOK, &Document{
+		Data: &HybridResource{
+			Many: []*Resource{
+				{
+					Type: "foo",
+					ID:   "1",
+				},
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{
+  		"data": [
+			{
+    			"type": "foo",
+    			"id": "1"
+			}
+		]
+	}`, res.Body.String())
+}
+
+func TestWriteResponseNoResources(t *testing.T) {
+	res := httptest.NewRecorder()
+
+	err := WriteResponse(res, http.StatusOK, &Document{
+		Data: &HybridResource{},
+	})
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{
+  		"data": null
 	}`, res.Body.String())
 }
 
