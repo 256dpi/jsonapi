@@ -128,10 +128,10 @@ type Request struct {
 	// details have been provided. These values are read from the "page[number]",
 	// "page[size]", "page[offset]" and "page[limit]" query parameters. These
 	// parameters do not belong to the standard, but are recommended.
-	PageNumber uint64
-	PageSize   uint64
-	PageOffset uint64
-	PageLimit  uint64
+	PageNumber int64
+	PageSize   int64
+	PageOffset int64
+	PageLimit  int64
 
 	// The sorting that has been requested. This is read from the "sort" query
 	// parameter.
@@ -342,7 +342,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 				return nil, BadRequestParam("more than one page number", "page[number]")
 			}
 
-			n, err := strconv.ParseUint(values[0], 10, 0)
+			n, err := strconv.ParseInt(values[0], 10, 0)
 			if err != nil {
 				return nil, BadRequestParam("invalid page number", "page[number]")
 			}
@@ -357,7 +357,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 				return nil, BadRequestParam("more than one page size", "page[size]")
 			}
 
-			n, err := strconv.ParseUint(values[0], 10, 0)
+			n, err := strconv.ParseInt(values[0], 10, 0)
 			if err != nil {
 				return nil, BadRequestParam("invalid page size", "page[size]")
 			}
@@ -372,7 +372,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 				return nil, BadRequestParam("more than one page offset", "page[offset]")
 			}
 
-			n, err := strconv.ParseUint(values[0], 10, 0)
+			n, err := strconv.ParseInt(values[0], 10, 0)
 			if err != nil {
 				return nil, BadRequestParam("invalid page offset", "page[offset]")
 			}
@@ -387,7 +387,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 				return nil, BadRequestParam("more than one page limit", "page[limit]")
 			}
 
-			n, err := strconv.ParseUint(values[0], 10, 0)
+			n, err := strconv.ParseInt(values[0], 10, 0)
 			if err != nil {
 				return nil, BadRequestParam("invalid page limit", "page[limit]")
 			}
