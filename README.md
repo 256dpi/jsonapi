@@ -25,7 +25,7 @@ DELETE /posts/1/history
 
 ## Examples
 
-The [server](https://github.com/256dpi/jsonapi/blob/master/examples/main.go) example implements a basic API server using the standard HTTP package.
+The testing [server](https://github.com/256dpi/jsonapi/blob/master/server.go) implements a basic API server using the standard HTTP package.
 
 ## Installation
 
