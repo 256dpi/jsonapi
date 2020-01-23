@@ -2,6 +2,7 @@ package jsonapi
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -497,4 +498,44 @@ func (r *Request) Self() string {
 	}
 
 	return "/" + strings.Join(segments, "/")
+}
+
+// Query will collect and return all query parameters from the request.
+func (r *Request) Query() url.Values {
+	// prepare values
+	values := url.Values{}
+
+	// add include
+	if len(r.Include) > 0 {
+		values.Set("include", strings.Join(r.Include, ","))
+	}
+
+	// add page number and size
+	if r.PageNumber > 0 && r.PageSize > 0 {
+		values.Set("page[number]", strconv.FormatInt(r.PageNumber, 10))
+		values.Set("page[size]", strconv.FormatInt(r.PageSize, 10))
+	}
+
+	// add page offset and limit
+	if r.PageOffset > 0 || r.PageLimit > 0 {
+		values.Set("page[offset]", strconv.FormatInt(r.PageOffset, 10))
+		values.Set("page[limit]", strconv.FormatInt(r.PageLimit, 10))
+	}
+
+	// add include
+	if len(r.Include) > 0 {
+		values.Set("sort", strings.Join(r.Sorting, ","))
+	}
+
+	// add fields
+	for name, fields := range r.Fields {
+		values.Set("fields["+name+"]", strings.Join(fields, ","))
+	}
+
+	// add filters
+	for name, filter := range r.Filters {
+		values.Set("filer["+name+"]", strings.Join(filter, ","))
+	}
+
+	return values
 }

@@ -2,6 +2,7 @@ package jsonapi
 
 import (
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -442,6 +443,38 @@ func TestResourceActionsAcceptHeader(t *testing.T) {
 		ResourceID:     "1",
 		ResourceAction: "foo",
 	}, req)
+}
+
+func TestRequestQuery(t *testing.T) {
+	req := Request{
+		Include:    []string{"foo", "bar"},
+		PageNumber: 1,
+		PageSize:   2,
+		PageOffset: 3,
+		PageLimit:  4,
+		Sorting:    []string{"foo", "-bar"},
+		Fields: map[string][]string{
+			"foo": {"f1", "f2"},
+			"bar": {"b1", "b2"},
+		},
+		Filters: map[string][]string{
+			"foo": {"f1", "f2"},
+			"bar": {"b1", "b2"},
+		},
+	}
+
+	assert.Equal(t, url.Values{
+		"include":      []string{"foo,bar"},
+		"page[number]": []string{"1"},
+		"page[size]":   []string{"2"},
+		"page[offset]": []string{"3"},
+		"page[limit]":  []string{"4"},
+		"sort":         []string{"foo,-bar"},
+		"fields[bar]":  []string{"b1,b2"},
+		"fields[foo]":  []string{"f1,f2"},
+		"filer[bar]":   []string{"b1,b2"},
+		"filer[foo]":   []string{"f1,f2"},
+	}, req.Query())
 }
 
 func BenchmarkParseRequest(b *testing.B) {
