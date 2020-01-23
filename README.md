@@ -32,7 +32,7 @@ The testing [server](https://github.com/256dpi/jsonapi/blob/master/server.go) im
 Get the package using the go tool:
 
 ```bash
-$ go get -u github.com/256dpi/jsonapi
+$ go get -u github.com/256dpi/jsonapi/v2
 ```
 
 ## License

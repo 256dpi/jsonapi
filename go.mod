@@ -1,4 +1,4 @@
-module github.com/256dpi/jsonapi
+module github.com/256dpi/jsonapi/v2
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
