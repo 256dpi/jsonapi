@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// TODO: Provide helpers to navigate paginated responses? Add an iterator for
+//  navigating the resources.
+
 // ClientConfig is used to configure a client.
 type ClientConfig struct {
 	BaseURI       string

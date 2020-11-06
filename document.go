@@ -49,6 +49,8 @@ type Document struct {
 // Note: If the read document contains errors the first Error will be returned
 // as an error.
 func ParseDocument(r io.Reader) (*Document, error) {
+	// TODO: Check document validity more in depth?
+
 	// prepare document
 	var doc Document
 
