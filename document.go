@@ -23,7 +23,7 @@ type DocumentLinks struct {
 //
 // See: http://jsonapi.org/format/#document-top-level.
 type Document struct {
-	// The documents's primary data in the form of a single resource or a list
+	// The documents primary data in the form of a single resource or a list
 	// of resources.
 	Data *HybridResource `json:"data,omitempty"`
 
