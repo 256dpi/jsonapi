@@ -3,6 +3,7 @@ package jsonapi
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -111,6 +112,29 @@ func (s *Server) listResources(req *Request, w http.ResponseWriter) error {
 		}
 	} else {
 		list = []*Resource{}
+	}
+
+	// sort list
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].ID < list[j].ID
+	})
+
+	// get offset and limit
+	offset := int(req.PageOffset)
+	limit := int(req.PageLimit)
+	if offset == 0 && req.PageNumber > 0 {
+		offset = int(req.PageNumber * req.PageSize)
+		limit = offset + int(req.PageSize)
+	}
+
+	// check offset and limit
+	if offset > 0 && (offset >= len(list) || limit > len(list)) {
+		return BadRequest("invalid pagination parameters")
+	}
+
+	// apply pagination
+	if offset > 0 {
+		list = list[offset:limit]
 	}
 
 	return WriteResources(w, http.StatusOK, list, &DocumentLinks{

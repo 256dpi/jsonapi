@@ -6,20 +6,22 @@ import (
 	"time"
 )
 
-func withServer(cb func(base string, server *Server)) {
-	serverConfig := ServerConfig{}
-
-	srv := NewServer(serverConfig)
+func withServer(cb func(client *Client, server *Server)) {
+	server := NewServer(ServerConfig{})
 
 	lst, err := net.Listen("tcp", "0.0.0.0:1337")
 	if err != nil {
 		panic(err)
 	}
 
-	s := &http.Server{Handler: srv}
+	s := &http.Server{Handler: server}
 	go s.Serve(lst)
 
-	cb("http://0.0.0.0:1337", srv)
+	client := NewClient(ClientConfig{
+		BaseURI: "http://0.0.0.0:1337",
+	})
+
+	cb(client, server)
 
 	_ = s.Close()
 	_ = lst.Close()

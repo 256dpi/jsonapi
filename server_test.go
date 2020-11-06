@@ -2,19 +2,16 @@ package jsonapi
 
 import (
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestServer(t *testing.T) {
-	withServer(func(base string, server *Server) {
-		c := NewClient(ClientConfig{
-			BaseURI: base,
-		})
-
+func TestServerCRUD(t *testing.T) {
+	withServer(func(client *Client, server *Server) {
 		// list
-		doc, err := c.List("foo")
+		doc, err := client.List("foo")
 		assert.NoError(t, err)
 		assert.Equal(t, &Document{
 			Data: &HybridResource{
@@ -26,7 +23,7 @@ func TestServer(t *testing.T) {
 		}, doc)
 
 		// find
-		doc, err = c.Find("foo", "bar")
+		doc, err = client.Find("foo", "bar")
 		assert.Error(t, err)
 		assert.NotNil(t, doc)
 		assert.Equal(t, &Error{
@@ -36,7 +33,7 @@ func TestServer(t *testing.T) {
 		}, err)
 
 		// create
-		doc, err = c.Create(&Resource{
+		doc, err = client.Create(&Resource{
 			Type: "foo",
 			ID:   "bar",
 			Attributes: Map{
@@ -60,7 +57,7 @@ func TestServer(t *testing.T) {
 		}, doc)
 
 		// list
-		doc, err = c.List("foo")
+		doc, err = client.List("foo")
 		assert.NoError(t, err)
 		assert.Equal(t, &Document{
 			Data: &HybridResource{
@@ -80,7 +77,7 @@ func TestServer(t *testing.T) {
 		}, doc)
 
 		// find
-		doc, err = c.Find("foo", "bar")
+		doc, err = client.Find("foo", "bar")
 		assert.NoError(t, err)
 		assert.Equal(t, &Document{
 			Data: &HybridResource{
@@ -98,7 +95,7 @@ func TestServer(t *testing.T) {
 		}, doc)
 
 		// update
-		doc, err = c.Update(&Resource{
+		doc, err = client.Update(&Resource{
 			Type: "foo",
 			ID:   "bar",
 			Attributes: Map{
@@ -122,7 +119,7 @@ func TestServer(t *testing.T) {
 		}, doc)
 
 		// list
-		doc, err = c.List("foo")
+		doc, err = client.List("foo")
 		assert.NoError(t, err)
 		assert.Equal(t, &Document{
 			Data: &HybridResource{
@@ -142,7 +139,7 @@ func TestServer(t *testing.T) {
 		}, doc)
 
 		// find
-		doc, err = c.Find("foo", "bar")
+		doc, err = client.Find("foo", "bar")
 		assert.NoError(t, err)
 		assert.Equal(t, &Document{
 			Data: &HybridResource{
@@ -160,11 +157,11 @@ func TestServer(t *testing.T) {
 		}, doc)
 
 		// delete
-		err = c.Delete("foo", "bar")
+		err = client.Delete("foo", "bar")
 		assert.NoError(t, err)
 
 		// list
-		doc, err = c.List("foo")
+		doc, err = client.List("foo")
 		assert.NoError(t, err)
 		assert.Equal(t, &Document{
 			Data: &HybridResource{
@@ -176,7 +173,7 @@ func TestServer(t *testing.T) {
 		}, doc)
 
 		// find
-		doc, err = c.Find("foo", "bar")
+		doc, err = client.Find("foo", "bar")
 		assert.Error(t, err)
 		assert.NotNil(t, doc)
 		assert.Equal(t, &Error{
@@ -184,5 +181,72 @@ func TestServer(t *testing.T) {
 			Title:  "not found",
 			Detail: "unknown resource",
 		}, err)
+	})
+}
+
+func TestServerPagination(t *testing.T) {
+	withServer(func(client *Client, server *Server) {
+		server.Data["foo"] = map[string]*Resource{}
+		for i := 0; i < 5; i++ {
+			id := strconv.Itoa(i)
+			server.Data["foo"][id] = &Resource{
+				Type: "foo",
+				ID:   id,
+			}
+		}
+
+		// all
+		doc, err := client.List("foo")
+		assert.NoError(t, err)
+		assert.Equal(t, &Document{
+			Data: &HybridResource{
+				Many: []*Resource{
+					{Type: "foo", ID: "0"},
+					{Type: "foo", ID: "1"},
+					{Type: "foo", ID: "2"},
+					{Type: "foo", ID: "3"},
+					{Type: "foo", ID: "4"},
+				},
+			},
+			Links: &DocumentLinks{
+				Self: "/foo",
+			},
+		}, doc)
+
+		// number and size
+		doc, err = client.List("foo", Request{
+			PageNumber: 1,
+			PageSize:   2,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, &Document{
+			Data: &HybridResource{
+				Many: []*Resource{
+					{Type: "foo", ID: "2"},
+					{Type: "foo", ID: "3"},
+				},
+			},
+			Links: &DocumentLinks{
+				Self: "/foo",
+			},
+		}, doc)
+
+		// offset and limit
+		doc, err = client.List("foo", Request{
+			PageOffset: 3,
+			PageLimit:  5,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, &Document{
+			Data: &HybridResource{
+				Many: []*Resource{
+					{Type: "foo", ID: "3"},
+					{Type: "foo", ID: "4"},
+				},
+			},
+			Links: &DocumentLinks{
+				Self: "/foo",
+			},
+		}, doc)
 	})
 }
