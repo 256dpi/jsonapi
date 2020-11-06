@@ -55,9 +55,8 @@ func StructToMap(source interface{}, fields []string) (Map, error) {
 
 	// filter map
 	for key := range m {
-		ok := false
-
 		// check if field is present
+		ok := false
 		for _, field := range fields {
 			if field == key {
 				ok = true

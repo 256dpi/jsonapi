@@ -318,6 +318,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		return nil, BadRequest("missing content type header")
 	}
 
+	// handle query parameters
 	for key, values := range r.URL.Query() {
 		// set included resources
 		if key == "include" {
