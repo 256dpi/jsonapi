@@ -454,12 +454,12 @@ func TestRequestQuery(t *testing.T) {
 		PageLimit:  4,
 		Sorting:    []string{"foo", "-bar"},
 		Fields: map[string][]string{
-			"foo": {"f1", "f2"},
-			"bar": {"b1", "b2"},
+			"foo": {"f5", "f6"},
+			"bar": {"b7", "b8"},
 		},
 		Filters: map[string][]string{
-			"foo": {"f1", "f2"},
-			"bar": {"b1", "b2"},
+			"foo": {"f9", "f10"},
+			"bar": {"b11", "b12"},
 		},
 	}
 
@@ -470,10 +470,10 @@ func TestRequestQuery(t *testing.T) {
 		"page[offset]": []string{"3"},
 		"page[limit]":  []string{"4"},
 		"sort":         []string{"foo,-bar"},
-		"fields[bar]":  []string{"b1,b2"},
-		"fields[foo]":  []string{"f1,f2"},
-		"filer[bar]":   []string{"b1,b2"},
-		"filer[foo]":   []string{"f1,f2"},
+		"fields[foo]":  []string{"f5,f6"},
+		"fields[bar]":  []string{"b7,b8"},
+		"filter[foo]":  []string{"f9,f10"},
+		"filter[bar]":  []string{"b11,b12"},
 	}, req.Query())
 }
 

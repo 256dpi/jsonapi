@@ -479,11 +479,11 @@ func (r *Request) Self() string {
 	// add resource type
 	segments = append(segments, r.ResourceType)
 
-	// add id if available
+	// add resource id if available
 	if r.ResourceID != "" {
 		segments = append(segments, r.ResourceID)
 
-		// add related resource or relationship
+		// add related resource, relationship or resource action
 		if r.RelatedResource != "" {
 			segments = append(segments, r.RelatedResource)
 		} else if r.Relationship != "" {
@@ -523,8 +523,8 @@ func (r *Request) Query() url.Values {
 		values.Set("page[limit]", strconv.FormatInt(r.PageLimit, 10))
 	}
 
-	// add include
-	if len(r.Include) > 0 {
+	// add sorting
+	if len(r.Sorting) > 0 {
 		values.Set("sort", strings.Join(r.Sorting, ","))
 	}
 
@@ -535,7 +535,7 @@ func (r *Request) Query() url.Values {
 
 	// add filters
 	for name, filter := range r.Filters {
-		values.Set("filer["+name+"]", strings.Join(filter, ","))
+		values.Set("filter["+name+"]", strings.Join(filter, ","))
 	}
 
 	return values
