@@ -443,8 +443,8 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 	return req, nil
 }
 
-// Base will generate the base URL for this request, which includes the type and
-// id if present.
+// Base will generate the base path for this request, which includes the type
+// and id if present.
 func (r *Request) Base() string {
 	// prepare segments
 	var segments []string
@@ -465,9 +465,9 @@ func (r *Request) Base() string {
 	return "/" + strings.Join(segments, "/")
 }
 
-// Self will generate the "self" URL for this request, which includes all path
+// Path will generate the path for this request, which includes all path
 // elements if available.
-func (r *Request) Self() string {
+func (r *Request) Path() string {
 	// prepare segments
 	var segments []string
 
@@ -539,4 +539,19 @@ func (r *Request) Query() url.Values {
 	}
 
 	return values
+}
+
+// Self will generate the "self" URL for this request, which includes all path
+// elements and query parameters if available.
+func (r *Request) Self() string {
+	// get path and query
+	path := r.Path()
+	query, _ := url.QueryUnescape(r.Query().Encode())
+
+	// apply query if present
+	if query != "" {
+		path += "?" + query
+	}
+
+	return path
 }

@@ -111,12 +111,6 @@ func (c *Client) Do(req Request, doc *Document) (*Document, error) {
 	// prepare url
 	url := c.config.BaseURI + req.Self()
 
-	// add query params if available
-	query := req.Query()
-	if len(query) > 0 {
-		url += "?" + query.Encode()
-	}
-
 	// prepare body
 	var body io.Reader
 	if doc != nil {

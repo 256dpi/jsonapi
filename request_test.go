@@ -445,6 +445,28 @@ func TestResourceActionsAcceptHeader(t *testing.T) {
 	}, req)
 }
 
+func TestRequestSelf(t *testing.T) {
+	req := Request{
+		Intent:       ListResources,
+		ResourceType: "posts",
+		Include:      []string{"foo", "bar"},
+		PageNumber:   1,
+		PageSize:     2,
+		PageOffset:   3,
+		PageLimit:    4,
+		Sorting:      []string{"foo", "-bar"},
+		Fields: map[string][]string{
+			"foo": {"f1", "f2"},
+			"bar": {"b1", "b2"},
+		},
+		Filters: map[string][]string{
+			"foo": {"f1", "f2"},
+			"bar": {"b1", "b2"},
+		},
+	}
+	assert.Equal(t, "/posts?fields[bar]=b1,b2&fields[foo]=f1,f2&filter[bar]=b1,b2&filter[foo]=f1,f2&include=foo,bar&page[limit]=4&page[number]=1&page[offset]=3&page[size]=2&sort=foo,-bar", req.Self())
+}
+
 func TestRequestQuery(t *testing.T) {
 	req := Request{
 		Include:    []string{"foo", "bar"},
