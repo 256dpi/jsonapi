@@ -3,6 +3,7 @@ package jsonapi
 import (
 	"net/http"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -464,7 +465,19 @@ func TestRequestSelf(t *testing.T) {
 			"bar": {"b1", "b2"},
 		},
 	}
-	assert.Equal(t, "/posts?fields[bar]=b1,b2&fields[foo]=f1,f2&filter[bar]=b1,b2&filter[foo]=f1,f2&include=foo,bar&page[limit]=4&page[number]=1&page[offset]=3&page[size]=2&sort=foo,-bar", req.Self())
+	assert.Equal(t, strings.Join([]string{
+		"/posts",
+		"?fields[bar]=b1,b2",
+		"&fields[foo]=f1,f2",
+		"&filter[bar]=b1,b2",
+		"&filter[foo]=f1,f2",
+		"&include=foo,bar",
+		"&page[limit]=4",
+		"&page[number]=1",
+		"&page[offset]=3",
+		"&page[size]=2",
+		"&sort=foo,-bar",
+	}, ""), req.Self())
 }
 
 func TestRequestQuery(t *testing.T) {
