@@ -533,19 +533,19 @@ func (r *Request) Query() url.Values {
 		values.Set("include", strings.Join(r.Include, ","))
 	}
 
-	// add page number and size
-	if r.PageNumber > 0 && r.PageSize > 0 {
+	// add pagination
+	if r.PageNumber != 0 {
 		values.Set("page[number]", strconv.FormatInt(r.PageNumber, 10))
+	}
+	if r.PageSize != 0 {
 		values.Set("page[size]", strconv.FormatInt(r.PageSize, 10))
 	}
-
-	// add page offset and limit
-	if r.PageOffset > 0 || r.PageLimit > 0 {
+	if r.PageOffset != 0 {
 		values.Set("page[offset]", strconv.FormatInt(r.PageOffset, 10))
+	}
+	if r.PageLimit != 0 {
 		values.Set("page[limit]", strconv.FormatInt(r.PageLimit, 10))
 	}
-
-	// add page before and after
 	if r.PageBefore != "" {
 		values.Set("page[before]", r.PageBefore)
 	}
