@@ -591,6 +591,46 @@ func (r *Request) Self() string {
 func (r Request) Merge(reqs ...Request) Request {
 	// merge requests
 	for _, rq := range reqs {
+		// check intent
+		if rq.Intent != 0 {
+			r.Intent = rq.Intent
+		}
+
+		// check prefix
+		if rq.Prefix != "" {
+			r.Prefix = rq.Prefix
+		}
+
+		// check resource type
+		if rq.ResourceType != "" {
+			r.ResourceType = rq.ResourceType
+		}
+
+		// check resource id
+		if rq.ResourceID != "" {
+			r.ResourceID = rq.ResourceID
+		}
+
+		// check related resource
+		if rq.RelatedResource != "" {
+			r.RelatedResource = rq.RelatedResource
+		}
+
+		// check relationship
+		if rq.Relationship != "" {
+			r.Relationship = rq.Relationship
+		}
+
+		// check collection action
+		if rq.CollectionAction != "" {
+			r.CollectionAction = rq.CollectionAction
+		}
+
+		// check resource action
+		if rq.ResourceAction != "" {
+			r.ResourceAction = rq.ResourceAction
+		}
+
 		// check include
 		if len(rq.Include) != 0 {
 			r.Include = append(r.Include, rq.Include...)
