@@ -168,6 +168,20 @@ func TestParseDocumentWithBigNumbers(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestParseDocumentNullLink(t *testing.T) {
+	doc, err := ParseDocument(strings.NewReader(`{
+  		"links": {
+			"self": null
+		}
+	}`))
+	assert.NoError(t, err)
+	assert.Equal(t, &Document{
+		Links: &DocumentLinks{
+			Self: NullLink,
+		},
+	}, doc)
+}
+
 func TestWriteResponseOneResource(t *testing.T) {
 	res := httptest.NewRecorder()
 
@@ -221,6 +235,22 @@ func TestWriteResponseNoResources(t *testing.T) {
 	assert.NoError(t, err)
 	assert.JSONEq(t, `{
   		"data": null
+	}`, res.Body.String())
+}
+
+func TestWriteResponseNullLink(t *testing.T) {
+	res := httptest.NewRecorder()
+
+	err := WriteResponse(res, http.StatusOK, &Document{
+		Links: &DocumentLinks{
+			Self: NullLink,
+		},
+	})
+	assert.NoError(t, err)
+	assert.JSONEq(t, `{
+  		"links": {
+			"self": null
+		}
 	}`, res.Body.String())
 }
 

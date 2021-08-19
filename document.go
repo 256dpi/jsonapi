@@ -1,21 +1,56 @@
 package jsonapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
 )
 
+// NullLink can be used as a link to encode it as a null value.
+const NullLink = "NULL"
+
+var nullBytes = []byte("null")
+
+// Link is document link that also can be null by setting NullLink.
+type Link string
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (l *Link) UnmarshalJSON(data []byte) error {
+	// handle null
+	if bytes.Compare(data, nullBytes) == 0 {
+		*l = NullLink
+		return nil
+	}
+
+	// handle string
+	var str string
+	err := json.Unmarshal(data, &str)
+	*l = Link(str)
+
+	return err
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (l Link) MarshalJSON() ([]byte, error) {
+	// handle null
+	if l == NullLink {
+		return nullBytes, nil
+	}
+
+	return json.Marshal(string(l))
+}
+
 // DocumentLinks are a set of links related to a documents primary data.
 //
 // See: http://jsonapi.org/format/#document-links.
 type DocumentLinks struct {
-	Self     string `json:"self,omitempty"`
-	Related  string `json:"related,omitempty"`
-	First    string `json:"first,omitempty"`
-	Previous string `json:"prev,omitempty"`
-	Next     string `json:"next,omitempty"`
-	Last     string `json:"last,omitempty"`
+	Self     Link `json:"self,omitempty"`
+	Related  Link `json:"related,omitempty"`
+	First    Link `json:"first,omitempty"`
+	Previous Link `json:"prev,omitempty"`
+	Next     Link `json:"next,omitempty"`
+	Last     Link `json:"last,omitempty"`
 }
 
 // A Document is the root structure of every JSON API response. It is also used

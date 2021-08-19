@@ -138,7 +138,7 @@ func (s *Server) listResources(req *Request, w http.ResponseWriter) error {
 	}
 
 	return WriteResources(w, http.StatusOK, list, &DocumentLinks{
-		Self: req.Self(),
+		Self: Link(req.Self()),
 	})
 }
 
@@ -156,7 +156,7 @@ func (s *Server) findResources(req *Request, w http.ResponseWriter) error {
 	}
 
 	return WriteResource(w, http.StatusOK, res, &DocumentLinks{
-		Self: req.Self(),
+		Self: Link(req.Self()),
 	})
 }
 
@@ -202,7 +202,7 @@ func (s *Server) createResource(req *Request, doc *Document, w http.ResponseWrit
 	req.ResourceID = res.ID
 
 	return WriteResource(w, http.StatusOK, res, &DocumentLinks{
-		Self: req.Self(),
+		Self: Link(req.Self()),
 	})
 }
 
@@ -243,7 +243,7 @@ func (s *Server) updateResource(req *Request, doc *Document, w http.ResponseWrit
 	coll[req.ResourceID] = res
 
 	return WriteResource(w, http.StatusOK, res, &DocumentLinks{
-		Self: req.Self(),
+		Self: Link(req.Self()),
 	})
 }
 
@@ -269,8 +269,8 @@ func (s *Server) deleteResource(req *Request, w http.ResponseWriter) error {
 func (s *Server) linkRelationships(res *Resource) {
 	for name, doc := range res.Relationships {
 		doc.Links = &DocumentLinks{
-			Self:    fmt.Sprintf("%s/%s/%s/relationships/%s", s.Config.Prefix, res.Type, res.ID, name),
-			Related: fmt.Sprintf("%s/%s/%s/%s", s.Config.Prefix, res.Type, res.ID, name),
+			Self:    Link(fmt.Sprintf("%s/%s/%s/relationships/%s", s.Config.Prefix, res.Type, res.ID, name)),
+			Related: Link(fmt.Sprintf("%s/%s/%s/%s", s.Config.Prefix, res.Type, res.ID, name)),
 		}
 	}
 }
