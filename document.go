@@ -72,7 +72,7 @@ func ParseDocument(r io.Reader) (*Document, error) {
 	return &doc, nil
 }
 
-// WriteResponse will write the the status and supplied document to the passed
+// WriteResponse will write the status and supplied document to the passed
 // response writer.
 func WriteResponse(w http.ResponseWriter, status int, doc *Document) error {
 	// set content type

@@ -131,8 +131,8 @@ func TestParseRequestPrefix(t *testing.T) {
 		"/baz/foo/bar/": "baz/foo/",
 	}
 
-	for url, prefix := range list {
-		r := newTestRequest("GET", url)
+	for path, prefix := range list {
+		r := newTestRequest("GET", path)
 
 		req, err := ParseRequest(r, prefix)
 		assert.NoError(t, err)

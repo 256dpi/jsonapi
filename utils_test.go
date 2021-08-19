@@ -1,30 +1,34 @@
 package jsonapi
 
 import (
+	"errors"
 	"net"
 	"net/http"
-	"time"
 )
 
 func withServer(cb func(client *Client, server *Server)) {
 	server := NewServer(ServerConfig{})
 
-	lst, err := net.Listen("tcp", "0.0.0.0:1337")
+	socket, err := net.Listen("tcp", "0.0.0.0:0")
 	if err != nil {
 		panic(err)
 	}
 
-	s := &http.Server{Handler: server}
-	go s.Serve(lst)
+	go func() {
+		err = http.Serve(socket, server)
+		if !errors.Is(err, net.ErrClosed) {
+			panic(err)
+		}
+	}()
 
 	client := NewClient(ClientConfig{
-		BaseURI: "http://0.0.0.0:1337",
+		BaseURI: "http://" + socket.Addr().String(),
 	})
 
 	cb(client, server)
 
-	_ = s.Close()
-	_ = lst.Close()
-
-	time.Sleep(time.Millisecond)
+	err = socket.Close()
+	if err != nil {
+		panic(err)
+	}
 }

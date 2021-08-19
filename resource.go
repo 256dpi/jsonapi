@@ -46,10 +46,10 @@ type Resource struct {
 // HybridResource is a transparent type that enables concrete marshalling and
 // unmarshalling of a single resource value or a list of resources.
 type HybridResource struct {
-	// A single Resource.
+	// A single resource.
 	One *Resource
 
-	// A list of Resources.
+	// A list of resources.
 	Many []*Resource
 }
 

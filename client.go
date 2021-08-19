@@ -144,7 +144,9 @@ func (c *Client) Do(req Request, doc *Document) (*Document, error) {
 	}
 
 	// ensure body is closed
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 
 	// allow other status codes for some requests
 	switch req.Intent {

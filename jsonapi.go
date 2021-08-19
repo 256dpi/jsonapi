@@ -63,7 +63,7 @@ func StructToMap(source interface{}, fields []string) (Map, error) {
 			}
 		}
 
-		// otherwise remove field
+		// otherwise, remove field
 		if !ok {
 			delete(m, key)
 		}

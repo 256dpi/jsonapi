@@ -86,8 +86,8 @@ func WriteError(w http.ResponseWriter, err error) error {
 	})
 }
 
-// WriteErrorList will write the passed errors to the the response writer.
-// The function will calculate a common status code for all the errors.
+// WriteErrorList will write the passed errors to the response writer. The
+// function will calculate a common status code for all the errors.
 //
 // Does a passed Error have an invalid or zero status code it will be corrected
 // to the Internal Server Error status code.
