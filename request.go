@@ -585,3 +585,70 @@ func (r *Request) Self() string {
 
 	return path
 }
+
+// Merge will merge the provided requests with the receiver and return a new
+// request.
+func (r Request) Merge(reqs ...Request) Request {
+	// merge requests
+	for _, rq := range reqs {
+		// check include
+		if len(rq.Include) != 0 {
+			r.Include = append(r.Include, rq.Include...)
+		}
+
+		// check pagination
+		if rq.PageNumber != 0 {
+			r.PageNumber = rq.PageNumber
+		}
+		if rq.PageSize != 0 {
+			r.PageSize = rq.PageSize
+		}
+		if rq.PageOffset != 0 {
+			r.PageOffset = rq.PageOffset
+		}
+		if rq.PageLimit != 0 {
+			r.PageLimit = rq.PageLimit
+		}
+		if rq.PageBefore != "" {
+			r.PageBefore = rq.PageBefore
+		}
+		if rq.PageAfter != "" {
+			r.PageAfter = rq.PageAfter
+		}
+
+		// check sorting
+		if len(rq.Sorting) > 0 {
+			r.Sorting = append(r.Sorting, rq.Sorting...)
+		}
+
+		// check fields
+		if len(rq.Fields) > 0 {
+			if r.Fields == nil {
+				r.Fields = make(map[string][]string, len(rq.Fields))
+			}
+			for k, v := range rq.Fields {
+				if len(r.Fields[k]) > 0 {
+					r.Fields[k] = append(r.Fields[k], v...)
+				} else {
+					r.Fields[k] = v
+				}
+			}
+		}
+
+		// check filters
+		if len(rq.Filters) > 0 {
+			if r.Filters == nil {
+				r.Filters = make(map[string][]string, len(rq.Filters))
+			}
+			for k, v := range rq.Filters {
+				if len(r.Filters[k]) > 0 {
+					r.Filters[k] = append(r.Filters[k], v...)
+				} else {
+					r.Filters[k] = v
+				}
+			}
+		}
+	}
+
+	return r
+}

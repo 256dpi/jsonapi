@@ -552,6 +552,106 @@ func TestRequestQuery(t *testing.T) {
 	}, req.Query())
 }
 
+func TestRequestMerge(t *testing.T) {
+	assert.Equal(t, Request{}, Request{}.Merge(Request{}))
+
+	assert.Equal(t, Request{
+		Include:    []string{"foo", "bar"},
+		PageNumber: 1,
+		PageSize:   2,
+		PageOffset: 3,
+		PageLimit:  4, PageBefore: "BFR",
+		PageAfter: "AFR",
+		Sorting:   []string{"foo", "-bar"},
+		Fields: map[string][]string{
+			"foo": {"f5", "f6"},
+			"bar": {"b7", "b8"},
+		},
+		Filters: map[string][]string{
+			"foo": {"f9", "f10"},
+			"bar": {"b11", "b12"},
+		},
+	}, Request{
+		Include:    []string{"foo", "bar"},
+		PageNumber: 1,
+		PageSize:   2,
+		PageOffset: 3,
+		PageLimit:  4, PageBefore: "BFR",
+		PageAfter: "AFR",
+		Sorting:   []string{"foo", "-bar"},
+		Fields: map[string][]string{
+			"foo": {"f5", "f6"},
+			"bar": {"b7", "b8"},
+		},
+		Filters: map[string][]string{
+			"foo": {"f9", "f10"},
+			"bar": {"b11", "b12"},
+		},
+	}.Merge(Request{}))
+
+	assert.Equal(t, Request{
+		Include:    []string{"foo", "bar"},
+		PageNumber: 1,
+		PageSize:   2,
+		PageOffset: 3,
+		PageLimit:  4, PageBefore: "BFR",
+		PageAfter: "AFR",
+		Sorting:   []string{"foo", "-bar"},
+		Fields: map[string][]string{
+			"foo": {"f5", "f6"},
+			"bar": {"b7", "b8"},
+		},
+		Filters: map[string][]string{
+			"foo": {"f9", "f10"},
+			"bar": {"b11", "b12"},
+		},
+	}, Request{}.Merge(Request{
+		Include:    []string{"foo", "bar"},
+		PageNumber: 1,
+		PageSize:   2,
+		PageOffset: 3,
+		PageLimit:  4, PageBefore: "BFR",
+		PageAfter: "AFR",
+		Sorting:   []string{"foo", "-bar"},
+		Fields: map[string][]string{
+			"foo": {"f5", "f6"},
+			"bar": {"b7", "b8"},
+		},
+		Filters: map[string][]string{
+			"foo": {"f9", "f10"},
+			"bar": {"b11", "b12"},
+		},
+	}))
+
+	assert.Equal(t, Request{
+		Fields: map[string][]string{
+			"foo": {"bar", "baz"},
+		},
+	}, Request{
+		Fields: map[string][]string{
+			"foo": {"bar"},
+		},
+	}.Merge(Request{
+		Fields: map[string][]string{
+			"foo": {"baz"},
+		},
+	}))
+
+	assert.Equal(t, Request{
+		Filters: map[string][]string{
+			"foo": {"bar", "baz"},
+		},
+	}, Request{
+		Filters: map[string][]string{
+			"foo": {"bar"},
+		},
+	}.Merge(Request{
+		Filters: map[string][]string{
+			"foo": {"baz"},
+		},
+	}))
+}
+
 func BenchmarkParseRequest(b *testing.B) {
 	r := newTestRequest("GET", "foo/1")
 

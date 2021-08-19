@@ -50,20 +50,20 @@ func NewClientWithClient(config ClientConfig, client *http.Client) *Client {
 // List will list the specified resources. The additional requests are merged
 // with the base request.
 func (c *Client) List(typ string, reqs ...Request) (*Document, error) {
-	return c.Do(c.mergeRequests(Request{
+	return c.Do(Request{
 		Intent:       ListResources,
 		ResourceType: typ,
-	}, reqs), nil)
+	}.Merge(reqs...), nil)
 }
 
 // Find will find the specified resource. The additional requests are merged
 // // with the base request.
 func (c *Client) Find(typ, id string, reqs ...Request) (*Document, error) {
-	return c.Do(c.mergeRequests(Request{
+	return c.Do(Request{
 		Intent:       FindResource,
 		ResourceType: typ,
 		ResourceID:   id,
-	}, reqs), nil)
+	}.Merge(reqs...), nil)
 }
 
 // Create will create the specified resource.
@@ -179,63 +179,4 @@ func (c *Client) Do(req Request, doc *Document) (*Document, error) {
 	}
 
 	return &response, nil
-}
-
-func (c *Client) mergeRequests(req Request, reqs []Request) Request {
-	// merge all requests
-	for _, r := range reqs {
-		// check include
-		if len(r.Include) != 0 {
-			req.Include = append(req.Include, r.Include...)
-		}
-
-		// check pagination
-		if r.PageNumber > 0 {
-			req.PageNumber = r.PageNumber
-		}
-		if r.PageSize > 0 {
-			req.PageSize = r.PageSize
-		}
-		if r.PageOffset > 0 {
-			req.PageOffset = r.PageOffset
-		}
-		if r.PageLimit > 0 {
-			req.PageLimit = r.PageLimit
-		}
-		if r.PageBefore != "" {
-			req.PageBefore = r.PageBefore
-		}
-		if r.PageAfter != "" {
-			req.PageAfter = r.PageAfter
-		}
-
-		// check sorting
-		if len(r.Sorting) > 0 {
-			req.Sorting = append(req.Sorting, r.Sorting...)
-		}
-
-		// check fields
-		if len(r.Fields) > 0 {
-			for k, v := range r.Fields {
-				if len(req.Fields[k]) > 0 {
-					req.Fields[k] = append(req.Fields[k], v...)
-				} else {
-					req.Fields[k] = v
-				}
-			}
-		}
-
-		// check filters
-		if len(r.Filters) > 0 {
-			for k, v := range r.Filters {
-				if len(req.Filters[k]) > 0 {
-					req.Filters[k] = append(req.Filters[k], v...)
-				} else {
-					req.Filters[k] = v
-				}
-			}
-		}
-	}
-
-	return req
 }
