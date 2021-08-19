@@ -102,10 +102,6 @@ func TestParseRequestError(t *testing.T) {
 			e: "bad request: missing page size",
 		},
 		{
-			r: newTestRequest("GET", "foo?page[size]=1"),
-			e: "bad request: missing page number",
-		},
-		{
 			r: newTestRequest("GET", "foo?page[offset]=1"),
 			e: "bad request: missing page limit",
 		},

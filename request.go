@@ -409,6 +409,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 			for _, v := range values {
 				req.Fields[typ] = append(req.Fields[typ], strings.Split(v, ",")...)
 			}
+			continue
 		}
 
 		// set filters
@@ -422,17 +423,13 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 			for _, v := range values {
 				req.Filters[typ] = append(req.Filters[typ], strings.Split(v, ",")...)
 			}
+			continue
 		}
 	}
 
 	// check that page number is set if page size is set
 	if req.PageNumber > 0 && req.PageSize <= 0 {
 		return nil, BadRequestParam("missing page size", "page[number]")
-	}
-
-	// check that page size is set if page number is set
-	if req.PageSize > 0 && req.PageNumber <= 0 {
-		return nil, BadRequestParam("missing page number", "page[size]")
 	}
 
 	// check that page limit is set if page offset is set
