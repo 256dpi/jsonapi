@@ -202,6 +202,12 @@ func (c *Client) mergeRequests(req Request, reqs []Request) Request {
 		if r.PageLimit > 0 {
 			req.PageLimit = r.PageLimit
 		}
+		if r.PageBefore != "" {
+			req.PageBefore = r.PageBefore
+		}
+		if r.PageAfter != "" {
+			req.PageAfter = r.PageAfter
+		}
 
 		// check sorting
 		if len(r.Sorting) > 0 {

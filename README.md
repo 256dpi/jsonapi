@@ -21,6 +21,10 @@ POST /posts/1/publish
 DELETE /posts/1/history
 ```
 
+### Cursor Pagination
+
+The package supports the non-standard but documented ["cursor pagination"](https://jsonapi.org/profiles/ethanresnick/cursor-pagination) profile.
+
 ## Examples
 
 The testing [server](https://github.com/256dpi/jsonapi/blob/master/server.go) implements a basic API server using the standard HTTP package.

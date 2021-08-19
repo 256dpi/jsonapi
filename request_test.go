@@ -105,6 +105,14 @@ func TestParseRequestError(t *testing.T) {
 			r: newTestRequest("GET", "foo?page[offset]=1"),
 			e: "bad request: missing page limit",
 		},
+		{
+			r: newTestRequest("GET", "foo?page[before]=bar&page[before]=baz"),
+			e: "bad request: more than one page before",
+		},
+		{
+			r: newTestRequest("GET", "foo?page[after]=bar&page[after]=baz"),
+			e: "bad request: more than one page after",
+		},
 	}
 
 	for _, i := range list {
@@ -374,6 +382,32 @@ func TestParseRequestOffsetPaginationWithZeroOffset(t *testing.T) {
 	}, req)
 }
 
+func TestParseRequestCursorPaginationBefore(t *testing.T) {
+	r := newTestRequest("GET", "foo?page[before]=XXX&page[size]=5")
+
+	req, err := ParseRequest(r, "")
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Intent:       ListResources,
+		ResourceType: "foo",
+		PageBefore:   "XXX",
+		PageSize:     5,
+	}, req)
+}
+
+func TestParseRequestCursorPaginationAfter(t *testing.T) {
+	r := newTestRequest("GET", "foo?page[after]=XXX&page[size]=5")
+
+	req, err := ParseRequest(r, "")
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Intent:       ListResources,
+		ResourceType: "foo",
+		PageAfter:    "XXX",
+		PageSize:     5,
+	}, req)
+}
+
 func TestParseRequestFields(t *testing.T) {
 	r := newTestRequest("GET", "foo?fields[foo]=bar,baz")
 
@@ -454,6 +488,8 @@ func TestRequestSelf(t *testing.T) {
 		PageSize:     2,
 		PageOffset:   3,
 		PageLimit:    4,
+		PageBefore:   "BFR",
+		PageAfter:    "AFR",
 		Sorting:      []string{"foo", "-bar"},
 		Fields: map[string][]string{
 			"foo": {"f1", "f2"},
@@ -471,6 +507,8 @@ func TestRequestSelf(t *testing.T) {
 		"&filter[bar]=b1,b2",
 		"&filter[foo]=f1,f2",
 		"&include=foo,bar",
+		"&page[after]=AFR",
+		"&page[before]=BFR",
 		"&page[limit]=4",
 		"&page[number]=1",
 		"&page[offset]=3",
@@ -485,8 +523,9 @@ func TestRequestQuery(t *testing.T) {
 		PageNumber: 1,
 		PageSize:   2,
 		PageOffset: 3,
-		PageLimit:  4,
-		Sorting:    []string{"foo", "-bar"},
+		PageLimit:  4, PageBefore: "BFR",
+		PageAfter: "AFR",
+		Sorting:   []string{"foo", "-bar"},
 		Fields: map[string][]string{
 			"foo": {"f5", "f6"},
 			"bar": {"b7", "b8"},
@@ -503,6 +542,8 @@ func TestRequestQuery(t *testing.T) {
 		"page[size]":   []string{"2"},
 		"page[offset]": []string{"3"},
 		"page[limit]":  []string{"4"},
+		"page[after]":  []string{"AFR"},
+		"page[before]": []string{"BFR"},
 		"sort":         []string{"foo,-bar"},
 		"fields[foo]":  []string{"f5,f6"},
 		"fields[bar]":  []string{"b7,b8"},

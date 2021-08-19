@@ -127,12 +127,15 @@ type Request struct {
 
 	// The pagination details of the request. Zero values mean no pagination
 	// details have been provided. These values are read from the "page[number]",
-	// "page[size]", "page[offset]" and "page[limit]" query parameters. These
-	// parameters do not belong to the standard, but are recommended.
+	// "page[size]", "page[offset]", "page[limit]", "page[before]" and
+	// "page[after]" query parameters. These parameters do not belong to the
+	// standard, but are recommended.
 	PageNumber int64
 	PageSize   int64
 	PageOffset int64
 	PageLimit  int64
+	PageBefore string
+	PageAfter  string
 
 	// The sorting that has been requested. This is read from the "sort" query
 	// parameter.
@@ -398,6 +401,26 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 			continue
 		}
 
+		// set page before
+		if key == "page[before]" {
+			if len(values) != 1 {
+				return nil, BadRequestParam("more than one page before", "page[before]")
+			}
+
+			req.PageBefore = values[0]
+			continue
+		}
+
+		// set page after
+		if key == "page[after]" {
+			if len(values) != 1 {
+				return nil, BadRequestParam("more than one page after", "page[after]")
+			}
+
+			req.PageAfter = values[0]
+			continue
+		}
+
 		// set sparse fields
 		if strings.HasPrefix(key, "fields[") && strings.HasSuffix(key, "]") {
 			if req.Fields == nil {
@@ -427,7 +450,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		}
 	}
 
-	// check that page number is set if page size is set
+	// check that page size is set if page number is set
 	if req.PageNumber > 0 && req.PageSize <= 0 {
 		return nil, BadRequestParam("missing page size", "page[number]")
 	}
@@ -436,6 +459,8 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 	if req.PageOffset > 0 && req.PageLimit <= 0 {
 		return nil, BadRequestParam("missing page limit", "page[limit]")
 	}
+
+	// page before and after do not require page size
 
 	return req, nil
 }
@@ -518,6 +543,14 @@ func (r *Request) Query() url.Values {
 	if r.PageOffset > 0 || r.PageLimit > 0 {
 		values.Set("page[offset]", strconv.FormatInt(r.PageOffset, 10))
 		values.Set("page[limit]", strconv.FormatInt(r.PageLimit, 10))
+	}
+
+	// add page before and after
+	if r.PageBefore != "" {
+		values.Set("page[before]", r.PageBefore)
+	}
+	if r.PageAfter != "" {
+		values.Set("page[after]", r.PageAfter)
 	}
 
 	// add sorting
