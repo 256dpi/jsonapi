@@ -460,7 +460,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		return nil, BadRequestParam("missing page limit", "page[limit]")
 	}
 
-	// page before and after do not require page size
+	// the page before and page after params may not require page size
 
 	return req, nil
 }
