@@ -174,8 +174,8 @@ func (c *Client) Do(req Request, doc *Document) (*Document, error) {
 	}
 
 	// handle errors
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("missing error")
+	if res.StatusCode < 200 || res.StatusCode >= 300 {
+		return nil, fmt.Errorf("status code: %s", res.Status)
 	}
 
 	return &response, nil
