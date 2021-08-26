@@ -201,7 +201,7 @@ func (s *Server) createResource(req *Request, doc *Document, w http.ResponseWrit
 	// set id
 	req.ResourceID = res.ID
 
-	return WriteResource(w, http.StatusOK, res, &DocumentLinks{
+	return WriteResource(w, http.StatusCreated, res, &DocumentLinks{
 		Self: Link(req.Self()),
 	})
 }

@@ -173,9 +173,16 @@ func (c *Client) Do(req Request, doc *Document) (*Document, error) {
 		return &response, response.Errors[0]
 	}
 
-	// handle errors
-	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		return nil, fmt.Errorf("status code: %s", res.Status)
+	// check status code
+	switch req.Intent {
+	case CreateResource:
+		if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusCreated {
+			return nil, fmt.Errorf("unexpected status code: %s", res.Status)
+		}
+	default:
+		if res.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("unexpected status code: %s", res.Status)
+		}
 	}
 
 	return &response, nil
