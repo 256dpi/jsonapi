@@ -444,7 +444,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 			typ := key[7 : len(key)-1]
 
 			for _, v := range values {
-				req.Filters[typ] = append(req.Filters[typ], strings.Split(v, ",")...)
+				req.Filters[typ] = append(req.Filters[typ], v)
 			}
 			continue
 		}
@@ -565,7 +565,9 @@ func (r *Request) Query() url.Values {
 
 	// add filters
 	for name, filter := range r.Filters {
-		values.Set("filter["+name+"]", strings.Join(filter, ","))
+		for _, value := range filter {
+			values.Add("filter["+name+"]", value)
+		}
 	}
 
 	return values

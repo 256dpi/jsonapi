@@ -409,9 +409,21 @@ func TestParseRequestCursorPaginationAfter(t *testing.T) {
 }
 
 func TestParseRequestFields(t *testing.T) {
-	r := newTestRequest("GET", "foo?fields[foo]=bar,baz")
+	r1 := newTestRequest("GET", "foo?fields[foo]=bar,baz")
 
-	req, err := ParseRequest(r, "")
+	req, err := ParseRequest(r1, "")
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Intent:       ListResources,
+		ResourceType: "foo",
+		Fields: map[string][]string{
+			"foo": {"bar", "baz"},
+		},
+	}, req)
+
+	r2 := newTestRequest("GET", "foo?fields[foo]=bar&fields[foo]=baz")
+
+	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Intent:       ListResources,
@@ -423,9 +435,21 @@ func TestParseRequestFields(t *testing.T) {
 }
 
 func TestParseRequestFilters(t *testing.T) {
-	r := newTestRequest("GET", "foo?filter[foo]=bar,baz")
+	r1 := newTestRequest("GET", "foo?filter[foo]=bar,baz")
 
-	req, err := ParseRequest(r, "")
+	req, err := ParseRequest(r1, "")
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Intent:       ListResources,
+		ResourceType: "foo",
+		Filters: map[string][]string{
+			"foo": {"bar,baz"},
+		},
+	}, req)
+
+	r2 := newTestRequest("GET", "foo?filter[foo]=bar&filter[foo]=baz")
+
+	req, err = ParseRequest(r2, "")
 	assert.NoError(t, err)
 	assert.Equal(t, &Request{
 		Intent:       ListResources,
@@ -504,8 +528,10 @@ func TestRequestSelf(t *testing.T) {
 		"/posts",
 		"?fields[bar]=b1,b2",
 		"&fields[foo]=f1,f2",
-		"&filter[bar]=b1,b2",
-		"&filter[foo]=f1,f2",
+		"&filter[bar]=b1",
+		"&filter[bar]=b2",
+		"&filter[foo]=f1",
+		"&filter[foo]=f2",
 		"&include=foo,bar",
 		"&page[after]=AFR",
 		"&page[before]=BFR",
@@ -547,8 +573,8 @@ func TestRequestQuery(t *testing.T) {
 		"sort":         []string{"foo,-bar"},
 		"fields[foo]":  []string{"f5,f6"},
 		"fields[bar]":  []string{"b7,b8"},
-		"filter[foo]":  []string{"f9,f10"},
-		"filter[bar]":  []string{"b11,b12"},
+		"filter[foo]":  []string{"f9", "f10"},
+		"filter[bar]":  []string{"b11", "b12"},
 	}, req.Query())
 }
 
