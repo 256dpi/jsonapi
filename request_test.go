@@ -460,6 +460,18 @@ func TestParseRequestFilters(t *testing.T) {
 	}, req)
 }
 
+func TestParseRequestSearch(t *testing.T) {
+	r := newTestRequest("GET", "foo?search=foo+bar")
+
+	req, err := ParseRequest(r, "")
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Intent:       ListResources,
+		ResourceType: "foo",
+		Search:       "foo bar",
+	}, req)
+}
+
 func TestZeroIntentRequestMethod(t *testing.T) {
 	assert.Empty(t, Intent(0).RequestMethod())
 }
@@ -523,6 +535,7 @@ func TestRequestSelf(t *testing.T) {
 			"foo": {"f1", "f2"},
 			"bar": {"b1", "b2"},
 		},
+		Search: "hello world",
 	}
 	assert.Equal(t, strings.Join([]string{
 		"/posts",
@@ -539,6 +552,7 @@ func TestRequestSelf(t *testing.T) {
 		"&page[number]=1",
 		"&page[offset]=3",
 		"&page[size]=2",
+		"&search=hello world",
 		"&sort=foo,-bar",
 	}, ""), req.Self())
 }
@@ -560,6 +574,7 @@ func TestRequestQuery(t *testing.T) {
 			"foo": {"f9", "f10"},
 			"bar": {"b11", "b12"},
 		},
+		Search: "hello world",
 	}
 
 	assert.Equal(t, url.Values{
@@ -575,6 +590,7 @@ func TestRequestQuery(t *testing.T) {
 		"fields[bar]":  []string{"b7,b8"},
 		"filter[foo]":  []string{"f9", "f10"},
 		"filter[bar]":  []string{"b11", "b12"},
+		"search":       []string{"hello world"},
 	}, req.Query())
 }
 
@@ -605,6 +621,7 @@ func TestRequestMerge(t *testing.T) {
 			"foo": {"f9", "f10"},
 			"bar": {"b11", "b12"},
 		},
+		Search: "hello world",
 	}, Request{
 		Intent:           ListResources,
 		Prefix:           "pre",
@@ -629,6 +646,7 @@ func TestRequestMerge(t *testing.T) {
 			"foo": {"f9", "f10"},
 			"bar": {"b11", "b12"},
 		},
+		Search: "hello world",
 	}.Merge(Request{}))
 
 	assert.Equal(t, Request{
@@ -655,6 +673,7 @@ func TestRequestMerge(t *testing.T) {
 			"foo": {"f9", "f10"},
 			"bar": {"b11", "b12"},
 		},
+		Search: "hello world",
 	}, Request{}.Merge(Request{
 		Intent:           ListResources,
 		Prefix:           "pre",
@@ -679,6 +698,7 @@ func TestRequestMerge(t *testing.T) {
 			"foo": {"f9", "f10"},
 			"bar": {"b11", "b12"},
 		},
+		Search: "hello world",
 	}))
 
 	assert.Equal(t, Request{

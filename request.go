@@ -149,6 +149,10 @@ type Request struct {
 	// query parameter. This parameter does not belong to the standard, but is
 	// recommended.
 	Filters map[string][]string
+
+	// The search query that has been requested. This is read from the "search"
+	// query parameter. This parameter does not belong to the standard.
+	Search string
 }
 
 // ParseRequest is a short-hand for Parser.ParseRequest and will be removed in
@@ -448,6 +452,15 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 			}
 			continue
 		}
+
+		if key == "search" {
+			if len(values) != 1 {
+				return nil, BadRequestParam("more than one search parameter", "search")
+			}
+
+			req.Search = values[0]
+			continue
+		}
 	}
 
 	// check that page size is set if page number is set
@@ -570,6 +583,11 @@ func (r *Request) Query() url.Values {
 		}
 	}
 
+	// add search
+	if r.Search != "" {
+		values.Set("search", r.Search)
+	}
+
 	return values
 }
 
@@ -689,6 +707,11 @@ func (r Request) Merge(reqs ...Request) Request {
 					r.Filters[k] = v
 				}
 			}
+		}
+
+		// check search
+		if rq.Search != "" {
+			r.Search = rq.Search
 		}
 	}
 
