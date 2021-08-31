@@ -537,24 +537,23 @@ func TestRequestSelf(t *testing.T) {
 		},
 		Search: "hello world",
 	}
-	assert.Equal(t, strings.Join([]string{
-		"/posts",
-		"?fields[bar]=b1,b2",
-		"&fields[foo]=f1,f2",
-		"&filter[bar]=b1",
-		"&filter[bar]=b2",
-		"&filter[foo]=f1",
-		"&filter[foo]=f2",
-		"&include=foo,bar",
-		"&page[after]=AFR",
-		"&page[before]=BFR",
-		"&page[limit]=4",
-		"&page[number]=1",
-		"&page[offset]=3",
-		"&page[size]=2",
-		"&search=hello world",
-		"&sort=foo,-bar",
-	}, ""), req.Self())
+	assert.Equal(t, "/posts?" + strings.Join([]string{
+		"fields[bar]=b1,b2",
+		"fields[foo]=f1,f2",
+		"filter[bar]=b1",
+		"filter[bar]=b2",
+		"filter[foo]=f1",
+		"filter[foo]=f2",
+		"include=foo,bar",
+		"page[after]=AFR",
+		"page[before]=BFR",
+		"page[limit]=4",
+		"page[number]=1",
+		"page[offset]=3",
+		"page[size]=2",
+		"search=hello world",
+		"sort=foo,-bar",
+	}, "&"), unescape(req.Self()))
 }
 
 func TestRequestQuery(t *testing.T) {

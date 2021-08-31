@@ -227,7 +227,7 @@ func TestServerPagination(t *testing.T) {
 				},
 			},
 			Links: &DocumentLinks{
-				Self: "/foo?page[number]=1&page[size]=2",
+				Self: Link(escape("/foo?page[number]=1&page[size]=2")),
 			},
 		}, doc)
 
@@ -245,7 +245,7 @@ func TestServerPagination(t *testing.T) {
 				},
 			},
 			Links: &DocumentLinks{
-				Self: "/foo?page[limit]=5&page[offset]=3",
+				Self: Link(escape("/foo?page[limit]=5&page[offset]=3")),
 			},
 		}, doc)
 	})

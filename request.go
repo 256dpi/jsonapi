@@ -596,7 +596,7 @@ func (r *Request) Query() url.Values {
 func (r *Request) Self() string {
 	// get path and query
 	path := r.Path()
-	query, _ := url.QueryUnescape(r.Query().Encode())
+	query := r.Query().Encode()
 
 	// apply query if present
 	if query != "" {

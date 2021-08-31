@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 func withServer(cb func(client *Client, server *Server)) {
@@ -31,4 +33,17 @@ func withServer(cb func(client *Client, server *Server)) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func unescape(str string) string {
+	str, err := url.QueryUnescape(str)
+	if err != nil {
+		panic(err)
+	}
+	return str
+}
+
+func escape(str string) string {
+	str = strings.ReplaceAll(str, "[", "%5B")
+	return strings.ReplaceAll(str, "]", "%5D")
 }
