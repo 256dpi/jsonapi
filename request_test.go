@@ -113,6 +113,14 @@ func TestParseRequestError(t *testing.T) {
 			r: newTestRequest("GET", "foo?page[after]=bar&page[after]=baz"),
 			e: "bad request: more than one page after",
 		},
+		{
+			r: newTestRequest("GET", "foo?pagination=offset&pagination=cursor"),
+			e: "bad request: more than one pagination",
+		},
+		{
+			r: newTestRequest("GET", "foo?search=foo&search=bar"),
+			e: "bad request: more than one search",
+		},
 	}
 
 	for _, i := range list {
@@ -408,6 +416,18 @@ func TestParseRequestCursorPaginationAfter(t *testing.T) {
 	}, req)
 }
 
+func TestParseRequestPagination(t *testing.T) {
+	r := newTestRequest("GET", "foo?pagination=cursor")
+
+	req, err := ParseRequest(r, "")
+	assert.NoError(t, err)
+	assert.Equal(t, &Request{
+		Intent:       ListResources,
+		ResourceType: "foo",
+		Pagination:   "cursor",
+	}, req)
+}
+
 func TestParseRequestFields(t *testing.T) {
 	r1 := newTestRequest("GET", "foo?fields[foo]=bar,baz")
 
@@ -526,6 +546,7 @@ func TestRequestSelf(t *testing.T) {
 		PageLimit:    4,
 		PageBefore:   "BFR",
 		PageAfter:    "AFR",
+		Pagination:   "cursor",
 		Sorting:      []string{"foo", "-bar"},
 		Fields: map[string][]string{
 			"foo": {"f1", "f2"},
@@ -537,7 +558,7 @@ func TestRequestSelf(t *testing.T) {
 		},
 		Search: "hello world",
 	}
-	assert.Equal(t, "/posts?" + strings.Join([]string{
+	assert.Equal(t, "/posts?"+strings.Join([]string{
 		"fields[bar]=b1,b2",
 		"fields[foo]=f1,f2",
 		"filter[bar]=b1",
@@ -551,6 +572,7 @@ func TestRequestSelf(t *testing.T) {
 		"page[number]=1",
 		"page[offset]=3",
 		"page[size]=2",
+		"pagination=cursor",
 		"search=hello world",
 		"sort=foo,-bar",
 	}, "&"), unescape(req.Self()))
@@ -563,8 +585,9 @@ func TestRequestQuery(t *testing.T) {
 		PageSize:   2,
 		PageOffset: 3,
 		PageLimit:  4, PageBefore: "BFR",
-		PageAfter: "AFR",
-		Sorting:   []string{"foo", "-bar"},
+		PageAfter:  "AFR",
+		Pagination: "cursor",
+		Sorting:    []string{"foo", "-bar"},
 		Fields: map[string][]string{
 			"foo": {"f5", "f6"},
 			"bar": {"b7", "b8"},
@@ -584,6 +607,7 @@ func TestRequestQuery(t *testing.T) {
 		"page[limit]":  []string{"4"},
 		"page[after]":  []string{"AFR"},
 		"page[before]": []string{"BFR"},
+		"pagination":   []string{"cursor"},
 		"sort":         []string{"foo,-bar"},
 		"fields[foo]":  []string{"f5,f6"},
 		"fields[bar]":  []string{"b7,b8"},
@@ -610,8 +634,9 @@ func TestRequestMerge(t *testing.T) {
 		PageSize:         2,
 		PageOffset:       3,
 		PageLimit:        4, PageBefore: "BFR",
-		PageAfter: "AFR",
-		Sorting:   []string{"foo", "-bar"},
+		PageAfter:  "AFR",
+		Pagination: "offset",
+		Sorting:    []string{"foo", "-bar"},
 		Fields: map[string][]string{
 			"foo": {"f5", "f6"},
 			"bar": {"b7", "b8"},
@@ -635,8 +660,9 @@ func TestRequestMerge(t *testing.T) {
 		PageSize:         2,
 		PageOffset:       3,
 		PageLimit:        4, PageBefore: "BFR",
-		PageAfter: "AFR",
-		Sorting:   []string{"foo", "-bar"},
+		PageAfter:  "AFR",
+		Pagination: "offset",
+		Sorting:    []string{"foo", "-bar"},
 		Fields: map[string][]string{
 			"foo": {"f5", "f6"},
 			"bar": {"b7", "b8"},
@@ -662,8 +688,9 @@ func TestRequestMerge(t *testing.T) {
 		PageSize:         2,
 		PageOffset:       3,
 		PageLimit:        4, PageBefore: "BFR",
-		PageAfter: "AFR",
-		Sorting:   []string{"foo", "-bar"},
+		PageAfter:  "AFR",
+		Pagination: "cursor",
+		Sorting:    []string{"foo", "-bar"},
 		Fields: map[string][]string{
 			"foo": {"f5", "f6"},
 			"bar": {"b7", "b8"},
@@ -687,8 +714,9 @@ func TestRequestMerge(t *testing.T) {
 		PageSize:         2,
 		PageOffset:       3,
 		PageLimit:        4, PageBefore: "BFR",
-		PageAfter: "AFR",
-		Sorting:   []string{"foo", "-bar"},
+		PageAfter:  "AFR",
+		Pagination: "cursor",
+		Sorting:    []string{"foo", "-bar"},
 		Fields: map[string][]string{
 			"foo": {"f5", "f6"},
 			"bar": {"b7", "b8"},

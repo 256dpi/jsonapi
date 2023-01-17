@@ -137,6 +137,11 @@ type Request struct {
 	PageBefore string
 	PageAfter  string
 
+	// The pagination type that has been requested. This is read from the
+	// "pagination" query parameter. Possible values are "offset" or "cursor.
+	// This parameter does not belong to the standard.
+	Pagination string
+
 	// The sorting that has been requested. This is read from the "sort" query
 	// parameter.
 	Sorting []string
@@ -425,6 +430,16 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 			continue
 		}
 
+		// set pagination
+		if key == "pagination" {
+			if len(values) != 1 {
+				return nil, BadRequestParam("more than one pagination", "pagination")
+			}
+
+			req.Pagination = values[0]
+			continue
+		}
+
 		// set sparse fields
 		if strings.HasPrefix(key, "fields[") && strings.HasSuffix(key, "]") {
 			if req.Fields == nil {
@@ -455,7 +470,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 
 		if key == "search" {
 			if len(values) != 1 {
-				return nil, BadRequestParam("more than one search parameter", "search")
+				return nil, BadRequestParam("more than one search", "search")
 			}
 
 			req.Search = values[0]
@@ -564,6 +579,9 @@ func (r *Request) Query() url.Values {
 	}
 	if r.PageAfter != "" {
 		values.Set("page[after]", r.PageAfter)
+	}
+	if r.Pagination != "" {
+		values.Set("pagination", r.Pagination)
 	}
 
 	// add sorting
@@ -674,6 +692,9 @@ func (r Request) Merge(reqs ...Request) Request {
 		}
 		if rq.PageAfter != "" {
 			r.PageAfter = rq.PageAfter
+		}
+		if rq.Pagination != "" {
+			r.Pagination = rq.Pagination
 		}
 
 		// check sorting
