@@ -337,7 +337,6 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 			for _, v := range values {
 				req.Include = append(req.Include, strings.Split(v, ",")...)
 			}
-
 			continue
 		}
 
@@ -346,97 +345,6 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 			for _, v := range values {
 				req.Sorting = append(req.Sorting, strings.Split(v, ",")...)
 			}
-
-			continue
-		}
-
-		// set page number
-		if key == "page[number]" {
-			if len(values) != 1 {
-				return nil, BadRequestParam("more than one page number", "page[number]")
-			}
-
-			n, err := strconv.ParseInt(values[0], 10, 0)
-			if err != nil {
-				return nil, BadRequestParam("invalid page number", "page[number]")
-			}
-
-			req.PageNumber = n
-			continue
-		}
-
-		// set page size
-		if key == "page[size]" {
-			if len(values) != 1 {
-				return nil, BadRequestParam("more than one page size", "page[size]")
-			}
-
-			n, err := strconv.ParseInt(values[0], 10, 0)
-			if err != nil {
-				return nil, BadRequestParam("invalid page size", "page[size]")
-			}
-
-			req.PageSize = n
-			continue
-		}
-
-		// set page offset
-		if key == "page[offset]" {
-			if len(values) != 1 {
-				return nil, BadRequestParam("more than one page offset", "page[offset]")
-			}
-
-			n, err := strconv.ParseInt(values[0], 10, 0)
-			if err != nil {
-				return nil, BadRequestParam("invalid page offset", "page[offset]")
-			}
-
-			req.PageOffset = n
-			continue
-		}
-
-		// set page limit
-		if key == "page[limit]" {
-			if len(values) != 1 {
-				return nil, BadRequestParam("more than one page limit", "page[limit]")
-			}
-
-			n, err := strconv.ParseInt(values[0], 10, 0)
-			if err != nil {
-				return nil, BadRequestParam("invalid page limit", "page[limit]")
-			}
-
-			req.PageLimit = n
-			continue
-		}
-
-		// set page before
-		if key == "page[before]" {
-			if len(values) != 1 {
-				return nil, BadRequestParam("more than one page before", "page[before]")
-			}
-
-			req.PageBefore = values[0]
-			continue
-		}
-
-		// set page after
-		if key == "page[after]" {
-			if len(values) != 1 {
-				return nil, BadRequestParam("more than one page after", "page[after]")
-			}
-
-			req.PageAfter = values[0]
-			continue
-		}
-
-		// set pagination
-		if key == "pagination" {
-			if len(values) != 1 {
-				return nil, BadRequestParam("more than one pagination", "pagination")
-			}
-
-			req.Pagination = values[0]
 			continue
 		}
 
@@ -468,11 +376,70 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 			continue
 		}
 
-		if key == "search" {
-			if len(values) != 1 {
-				return nil, BadRequestParam("more than one search", "search")
-			}
+		// check values for all following parameters
+		if len(values) != 1 {
+			return nil, BadRequestParam("more than one parameter", "page[number]")
+		}
 
+		// set page number
+		if key == "page[number]" {
+			n, err := strconv.ParseInt(values[0], 10, 0)
+			if err != nil {
+				return nil, BadRequestParam("invalid page number", "page[number]")
+			}
+			req.PageNumber = n
+			continue
+		}
+
+		// set page size
+		if key == "page[size]" {
+			n, err := strconv.ParseInt(values[0], 10, 0)
+			if err != nil {
+				return nil, BadRequestParam("invalid page size", "page[size]")
+			}
+			req.PageSize = n
+			continue
+		}
+
+		// set page offset
+		if key == "page[offset]" {
+			n, err := strconv.ParseInt(values[0], 10, 0)
+			if err != nil {
+				return nil, BadRequestParam("invalid page offset", "page[offset]")
+			}
+			req.PageOffset = n
+			continue
+		}
+
+		// set page limit
+		if key == "page[limit]" {
+			n, err := strconv.ParseInt(values[0], 10, 0)
+			if err != nil {
+				return nil, BadRequestParam("invalid page limit", "page[limit]")
+			}
+			req.PageLimit = n
+			continue
+		}
+
+		// set page before
+		if key == "page[before]" {
+			req.PageBefore = values[0]
+			continue
+		}
+
+		// set page after
+		if key == "page[after]" {
+			req.PageAfter = values[0]
+			continue
+		}
+
+		// set pagination
+		if key == "pagination" {
+			req.Pagination = values[0]
+			continue
+		}
+
+		if key == "search" {
 			req.Search = values[0]
 			continue
 		}

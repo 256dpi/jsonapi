@@ -75,11 +75,11 @@ func TestParseRequestError(t *testing.T) {
 		},
 		{
 			r: newTestRequest("GET", "foo?page[number]=bar&page[number]=baz"),
-			e: "bad request: more than one page number",
+			e: "bad request: more than one parameter",
 		},
 		{
 			r: newTestRequest("GET", "foo?page[size]=bar&page[size]=baz"),
-			e: "bad request: more than one page size",
+			e: "bad request: more than one parameter",
 		},
 		{
 			r: newTestRequest("GET", "foo?page[offset]=bar"),
@@ -91,11 +91,11 @@ func TestParseRequestError(t *testing.T) {
 		},
 		{
 			r: newTestRequest("GET", "foo?page[offset]=bar&page[offset]=baz"),
-			e: "bad request: more than one page offset",
+			e: "bad request: more than one parameter",
 		},
 		{
 			r: newTestRequest("GET", "foo?page[limit]=bar&page[limit]=baz"),
-			e: "bad request: more than one page limit",
+			e: "bad request: more than one parameter",
 		},
 		{
 			r: newTestRequest("GET", "foo?page[number]=1"),
@@ -107,19 +107,19 @@ func TestParseRequestError(t *testing.T) {
 		},
 		{
 			r: newTestRequest("GET", "foo?page[before]=bar&page[before]=baz"),
-			e: "bad request: more than one page before",
+			e: "bad request: more than one parameter",
 		},
 		{
 			r: newTestRequest("GET", "foo?page[after]=bar&page[after]=baz"),
-			e: "bad request: more than one page after",
+			e: "bad request: more than one parameter",
 		},
 		{
 			r: newTestRequest("GET", "foo?pagination=offset&pagination=cursor"),
-			e: "bad request: more than one pagination",
+			e: "bad request: more than one parameter",
 		},
 		{
 			r: newTestRequest("GET", "foo?search=foo&search=bar"),
-			e: "bad request: more than one search",
+			e: "bad request: more than one parameter",
 		},
 	}
 
