@@ -201,7 +201,11 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 	}
 
 	// de-prefix and trim path
-	location := strings.TrimPrefix(strings.Trim(r.URL.Path, "/"), req.Prefix+"/")
+	trimmed := strings.Trim(r.URL.Path, "/")
+	if req.Prefix != "" && trimmed == req.Prefix {
+		return nil, BadRequest("missing resource type")
+	}
+	location := strings.TrimPrefix(trimmed, req.Prefix+"/")
 
 	// split path
 	segments := strings.Split(location, "/")
