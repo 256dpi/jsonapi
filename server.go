@@ -121,15 +121,20 @@ func (s *Server) listResources(req *Request, w http.ResponseWriter) error {
 
 	// get offset and limit
 	offset := int(req.PageOffset)
-	limit := int(req.PageLimit)
+	limit := offset + int(req.PageLimit)
 	if offset == 0 && req.PageNumber > 0 {
 		offset = int(req.PageNumber * req.PageSize)
 		limit = offset + int(req.PageSize)
 	}
 
-	// check offset and limit
-	if offset > 0 && (offset >= len(list) || limit > len(list)) {
+	// check offset
+	if offset > 0 && offset >= len(list) {
 		return BadRequest("invalid pagination parameters")
+	}
+
+	// clamp limit
+	if limit > len(list) {
+		limit = len(list)
 	}
 
 	// apply pagination
