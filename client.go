@@ -14,8 +14,10 @@ import (
 
 // ClientConfig is used to configure a client.
 type ClientConfig struct {
-	BaseURI       string
-	Authorizer    func(*http.Request)
+	BaseURI    string
+	Authorizer func(*http.Request)
+
+	// ResponseLimit caps the response body size in bytes. Zero means no limit.
 	ResponseLimit int64
 }
 
@@ -35,11 +37,6 @@ func NewClient(config ClientConfig) *Client {
 func NewClientWithClient(config ClientConfig, client *http.Client) *Client {
 	// cleanup config
 	config.BaseURI = strings.TrimSuffix(config.BaseURI, "/")
-
-	// set default response limit
-	if config.ResponseLimit == 0 {
-		config.ResponseLimit = 8192
-	}
 
 	return &Client{
 		config: config,
@@ -158,7 +155,11 @@ func (c *Client) Do(req Request, doc *Document) (*Document, error) {
 	}
 
 	// prepare decoder
-	dec := json.NewDecoder(io.LimitReader(res.Body, c.config.ResponseLimit))
+	var reader io.Reader = res.Body
+	if c.config.ResponseLimit > 0 {
+		reader = io.LimitReader(res.Body, c.config.ResponseLimit)
+	}
+	dec := json.NewDecoder(reader)
 	dec.UseNumber()
 
 	// decode response
