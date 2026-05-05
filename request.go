@@ -378,7 +378,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 
 		// check values for all following parameters
 		if len(values) != 1 {
-			return nil, BadRequestParam("more than one parameter", "page[number]")
+			return nil, BadRequestParam("more than one parameter", key)
 		}
 
 		// set page number
