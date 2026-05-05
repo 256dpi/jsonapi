@@ -215,7 +215,7 @@ func TestServerPagination(t *testing.T) {
 
 		// number and size
 		doc, err = client.List("foo", Request{
-			PageNumber: 1,
+			PageNumber: 2,
 			PageSize:   2,
 		})
 		assert.NoError(t, err)
@@ -227,7 +227,7 @@ func TestServerPagination(t *testing.T) {
 				},
 			},
 			Links: &DocumentLinks{
-				Self: Link(escape("/foo?page[number]=1&page[size]=2")),
+				Self: Link(escape("/foo?page[number]=2&page[size]=2")),
 			},
 		}, doc)
 

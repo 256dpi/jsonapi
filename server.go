@@ -122,12 +122,14 @@ func (s *Server) listResources(req *Request, w http.ResponseWriter) error {
 		return list[i].ID < list[j].ID
 	})
 
-	// get offset and limit
+	// determine pagination
 	offset := int(req.PageOffset)
 	limit := offset + int(req.PageLimit)
-	if offset == 0 && req.PageNumber > 0 {
-		offset = int(req.PageNumber * req.PageSize)
+	paginated := req.PageOffset > 0 || req.PageLimit > 0
+	if !paginated && req.PageNumber > 0 {
+		offset = int((req.PageNumber - 1) * req.PageSize)
 		limit = offset + int(req.PageSize)
+		paginated = true
 	}
 
 	// check offset
@@ -141,7 +143,7 @@ func (s *Server) listResources(req *Request, w http.ResponseWriter) error {
 	}
 
 	// apply pagination
-	if offset > 0 {
+	if paginated {
 		list = list[offset:limit]
 	}
 
