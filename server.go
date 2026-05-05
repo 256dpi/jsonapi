@@ -28,7 +28,10 @@ type Server struct {
 // NewServer will create and return a new server.
 func NewServer(config ServerConfig) *Server {
 	// clean prefix
-	config.Prefix = "/" + strings.Trim(config.Prefix, "/")
+	config.Prefix = strings.Trim(config.Prefix, "/")
+	if config.Prefix != "" {
+		config.Prefix = "/" + config.Prefix
+	}
 
 	// prepare parser
 	parser := &Parser{
