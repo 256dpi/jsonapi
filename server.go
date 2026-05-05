@@ -92,7 +92,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case DeleteResource:
 		err = s.deleteResource(req, w)
 	default:
-		err = BadRequest("unsupported request method")
+		err = BadRequest("unsupported intent")
 	}
 	if err != nil {
 		_ = WriteError(w, err)
