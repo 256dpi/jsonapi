@@ -384,7 +384,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// set page number
 		if key == "page[number]" {
 			n, err := strconv.ParseInt(values[0], 10, 0)
-			if err != nil {
+			if err != nil || n < 0 {
 				return nil, BadRequestParam("invalid page number", "page[number]")
 			}
 			req.PageNumber = n
@@ -394,7 +394,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// set page size
 		if key == "page[size]" {
 			n, err := strconv.ParseInt(values[0], 10, 0)
-			if err != nil {
+			if err != nil || n < 0 {
 				return nil, BadRequestParam("invalid page size", "page[size]")
 			}
 			req.PageSize = n
@@ -404,7 +404,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// set page offset
 		if key == "page[offset]" {
 			n, err := strconv.ParseInt(values[0], 10, 0)
-			if err != nil {
+			if err != nil || n < 0 {
 				return nil, BadRequestParam("invalid page offset", "page[offset]")
 			}
 			req.PageOffset = n
@@ -414,7 +414,7 @@ func (p *Parser) ParseRequest(r *http.Request) (*Request, error) {
 		// set page limit
 		if key == "page[limit]" {
 			n, err := strconv.ParseInt(values[0], 10, 0)
-			if err != nil {
+			if err != nil || n < 0 {
 				return nil, BadRequestParam("invalid page limit", "page[limit]")
 			}
 			req.PageLimit = n
