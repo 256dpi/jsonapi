@@ -166,6 +166,7 @@ func TestParseDocumentWithBigNumbers(t *testing.T) {
 	m := &test{}
 	err = doc.Data.One.Attributes.Assign(m)
 	assert.NoError(t, err)
+	assert.Equal(t, &test{Num: 4699539}, m)
 }
 
 func TestParseDocumentNullLink(t *testing.T) {
